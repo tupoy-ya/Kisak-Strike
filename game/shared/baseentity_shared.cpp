@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -30,7 +30,11 @@
 	#include "waterbullet.h"
 	#include "func_break.h"
 
-	#include "GameStats.h"
+#ifdef HL2MP
+	#include "te_hl2mp_shotgun_shot.h"
+#endif
+
+	#include "gamestats.h"
 
 #endif
 
@@ -41,8 +45,13 @@ ConVar hl2_episodic( "hl2_episodic", "0", FCVAR_REPLICATED );
 #endif//HL2_EPISODIC
 
 #ifdef PORTAL
-	#include "portal_base2d_shared.h"
+	#include "prop_portal_shared.h"
 #endif
+
+#ifdef TF_DLL
+#include "tf_gamerules.h"
+#include "tf_weaponbase.h"
+#endif // TF_DLL
 
 #include "rumble_shared.h"
 
@@ -56,22 +65,22 @@ ConVar hl2_episodic( "hl2_episodic", "0", FCVAR_REPLICATED );
 #endif
 
 bool CBaseEntity::m_bAllowPrecache = false;
-bool CBaseEntity::sm_bAccurateTriggerBboxChecks = true;	// set to false for legacy behavior in ep1
 
 // Set default max values for entities based on the existing constants from elsewhere
 float k_flMaxEntityPosCoord = MAX_COORD_FLOAT;
-float k_flMaxEntityEulerAngle = 360.0 * 1000.0f; // really should be restricted to +/-180, but some code doesn't adhere to this.  It gets wrapped eventually
-float k_flMaxEntitySpeed = k_flMaxVelocity;
-float k_flMaxEntitySpinRate = k_flMaxAngularVelocity;
-
-ConVar  sv_clamp_unsafe_velocities( "sv_clamp_unsafe_velocities", "1", FCVAR_REPLICATED | FCVAR_RELEASE, "Whether the server will attempt to clamp velocities that could cause physics bugs or crashes." );
+float k_flMaxEntityEulerAngle = 360.0 * 1000.0f; // really should be restricted to +/-180, but some code doesn't adhere to this.  let's just trap NANs, etc
+// Sometimes the resulting computed speeds are legitimately above the original
+// constants; use bumped up versions for the downstream validation logic to
+// account for this.
+float k_flMaxEntitySpeed = k_flMaxVelocity * 2.0f;
+float k_flMaxEntitySpinRate = k_flMaxAngularVelocity * 10.0f;
 
 ConVar	ai_shot_bias_min( "ai_shot_bias_min", "-1.0", FCVAR_REPLICATED );
 ConVar	ai_shot_bias_max( "ai_shot_bias_max", "1.0", FCVAR_REPLICATED );
 ConVar	ai_debug_shoot_positions( "ai_debug_shoot_positions", "0", FCVAR_REPLICATED | FCVAR_CHEAT );
 
 // Utility func to throttle rate at which the "reasonable position" spew goes out
-static double s_LastEntityReasonableEmitTime = -DBL_MAX;
+static double s_LastEntityReasonableEmitTime;
 bool CheckEmitReasonablePhysicsSpew()
 {
 
@@ -88,8 +97,6 @@ bool CheckEmitReasonablePhysicsSpew()
 	return true;
 }
 
-
-DEFINE_LOGGING_CHANNEL_NO_TAGS( LOG_DEVELOPER_VERBOSE, "DeveloperVerbose" );
 
 //-----------------------------------------------------------------------------
 // Purpose: Spawn some blood particles
@@ -124,7 +131,7 @@ void CBaseEntity::UnsetPlayerSimulated( void )
 // position of eyes
 Vector CBaseEntity::EyePosition( void )
 { 
-	return GetAbsOrigin() + m_vecViewOffset; 
+	return GetAbsOrigin() + GetViewOffset(); 
 }
 
 const QAngle &CBaseEntity::EyeAngles( void )
@@ -140,7 +147,7 @@ const QAngle &CBaseEntity::LocalEyeAngles( void )
 // position of ears
 Vector CBaseEntity::EarPosition( void )
 { 
-	return EyePosition( ); 
+	return EyePosition(); 
 }
 
 void CBaseEntity::SetViewOffset( const Vector& v ) 
@@ -192,11 +199,6 @@ void CBaseEntity::SetEffects( int nEffects )
 {
 	if ( nEffects != m_fEffects )
 	{
-#if defined ( CLIENT_DLL )
-		bool bFastReflectionChanged =
-			( (nEffects & EF_MARKED_FOR_FAST_REFLECTION ) != ( m_fEffects & EF_MARKED_FOR_FAST_REFLECTION ) );
-#endif
-
 #if !defined( CLIENT_DLL )
 #ifdef HL2_EPISODIC
 		// Hack for now, to avoid player emitting radius with his flashlight
@@ -216,29 +218,10 @@ void CBaseEntity::SetEffects( int nEffects )
 
 		m_fEffects = nEffects;
 
-#if !defined( CLIENT_DLL )
-		if ( nEffects & ( EF_NOINTERP ) )
-		{
-			gEntList.AddPostClientMessageEntity( this );
-		}
-#endif
-
-		if ( ( nEffects & EF_NOINTERP ) && IsPlayer() )
-		{
-			((CBasePlayer *)this)->IncrementEFNoInterpParity();
-		}
-
 #ifndef CLIENT_DLL
 		DispatchUpdateTransmitState();
 #else
 		UpdateVisibility();
-		if ( bFastReflectionChanged )
-		{
-			OnFastReflectionRenderingChanged();
-		}
-		OnDisableShadowDepthRenderingChanged();
-		OnDisableCSMRenderingChanged();
-		OnShadowDepthRenderingCacheableStateChanged();
 #endif
 	}
 }
@@ -258,20 +241,7 @@ void CBaseEntity::AddEffects( int nEffects )
 #endif // HL2_EPISODIC
 #endif // !CLIENT_DLL
 
-	m_fEffects |= nEffects;
-
-#if !defined( CLIENT_DLL )
-	if ( nEffects & ( EF_NOINTERP ) )
-	{
-		gEntList.AddPostClientMessageEntity( this );
-	}
-#else
-	if ( m_fEffects & (EF_DIMLIGHT|EF_DIMLIGHT) )
-	{
-		AddToEntityList(ENTITY_LIST_PRERENDER);
-	}
-#endif
-
+	m_fEffects |= nEffects; 
 
 	if ( nEffects & EF_NODRAW)
 	{
@@ -281,15 +251,6 @@ void CBaseEntity::AddEffects( int nEffects )
 		UpdateVisibility();
 #endif
 	}
-
-#ifdef CLIENT_DLL
-	if ( nEffects & EF_MARKED_FOR_FAST_REFLECTION )
-	{
-		OnFastReflectionRenderingChanged();
-	}
-	OnDisableShadowDepthRenderingChanged();
-	OnShadowDepthRenderingCacheableStateChanged();
-#endif
 }
 
 void CBaseEntity::SetBlocksLOS( bool bBlocksLOS )
@@ -351,8 +312,6 @@ void CBaseEntity::ParseMapData( CEntityMapData *mapData )
 		} 
 		while ( mapData->GetNextKey(keyName, value) );
 	}
-
-	OnParseMapDataFinished();
 }
 
 //-----------------------------------------------------------------------------
@@ -371,15 +330,15 @@ bool CBaseEntity::KeyValue( const char *szKeyName, const char *szValue )
 	if ( FStrEq( szKeyName, "rendercolor" ) || FStrEq( szKeyName, "rendercolor32" ))
 	{
 		color32 tmp;
-		V_StringToColor32( &tmp, szValue );
+		UTIL_StringToColor32( &tmp, szValue );
 		SetRenderColor( tmp.r, tmp.g, tmp.b );
-		SetRenderAlpha( tmp.a );
+		// don't copy alpha, legacy support uses renderamt
 		return true;
 	}
-
+	
 	if ( FStrEq( szKeyName, "renderamt" ) )
 	{
-		SetRenderAlpha( Q_atoi( szValue ) );
+		SetRenderColorA( atoi( szValue ) );
 		return true;
 	}
 
@@ -389,40 +348,6 @@ bool CBaseEntity::KeyValue( const char *szKeyName, const char *szValue )
 		if (val)
 		{
 			AddEffects( EF_NOSHADOW );
-		}
-		return true;
-	}
-
-	if ( FStrEq( szKeyName, "drawinfastreflection" ) )
-	{
-		int val = atoi( szValue );
-		if (val)
-		{
-			AddEffects( EF_MARKED_FOR_FAST_REFLECTION );
-		}
-		return true;
-	}
-
-	if ( FStrEq( szKeyName, "disableshadowdepth" ) )
-	{
-		int val = atoi( szValue );
-		if (val)
-		{
-			AddEffects( EF_NOSHADOWDEPTH );
-		}
-		return true;
-	}
-
-	if ( FStrEq( szKeyName, "shadowdepthnocache" ) )
-	{
-		int val = atoi( szValue );
-		if ( val == 1 )
-		{
-			AddEffects( EF_SHADOWDEPTH_NOCACHE );
-		}
-		else if ( val == 2 )
-		{
-			RemoveEffects( EF_SHADOWDEPTH_NOCACHE );
 		}
 		return true;
 	}
@@ -449,16 +374,6 @@ bool CBaseEntity::KeyValue( const char *szKeyName, const char *szValue )
 		if (val)
 		{
 			AddEffects( EF_NORECEIVESHADOW );
-		}
-		return true;
-	}
-
-	if ( FStrEq( szKeyName, "disableflashlight" ))
-	{
-		int val = atoi( szValue );
-		if (val)
-		{
-			AddEffects( EF_NOFLASHLIGHT );
 		}
 		return true;
 	}
@@ -525,7 +440,7 @@ bool CBaseEntity::KeyValue( const char *szKeyName, const char *szValue )
 	
 	if ( FStrEq( szKeyName, "targetname" ) )
 	{
-		SetName( AllocPooledString( szValue ) );
+		m_iName = AllocPooledString( szValue );
 		return true;
 	}
 
@@ -535,12 +450,7 @@ bool CBaseEntity::KeyValue( const char *szKeyName, const char *szValue )
 		for ( datamap_t *dmap = GetDataDescMap(); dmap != NULL; dmap = dmap->baseMap )
 		{
 			if ( ::ParseKeyvalue(this, dmap->dataDesc, dmap->dataNumFields, szKeyName, szValue) )
-			{
-				//we don't know what changed, so mark us as fully invalid
-				if( edict() )
-					edict()->StateChanged();
 				return true;
-			}
 		}
 	}
 	else
@@ -568,10 +478,6 @@ bool CBaseEntity::KeyValue( const char *szKeyName, const char *szValue )
 
 			if ( ::ParseKeyvalue(this, dmap->dataDesc, dmap->dataNumFields, szKeyName, szValue) )
 			{
-				//we don't know what changed, so mark us as fully invalid
-				if( edict() )
-					edict()->StateChanged();
-
 				if ( printKeyHits )
 					Msg( "(%s) key: %-16s value: %s\n", debugName, szKeyName, szValue );
 				
@@ -581,29 +487,6 @@ bool CBaseEntity::KeyValue( const char *szKeyName, const char *szValue )
 
 		if ( printKeyHits )
 			Msg( "!! (%s) key not handled: \"%s\" \"%s\"\n", STRING(m_iClassname), szKeyName, szValue );
-	}
-#else
-
-	// HACK: Read dxlevels for client-side entities
-	if ( FStrEq( szKeyName, "mincpulevel" ))
-	{
-		m_nMinCPULevel = atoi( szValue );
-		return true;
-	}
-	if ( FStrEq( szKeyName, "maxcpulevel" ))
-	{
-		m_nMaxCPULevel = atoi( szValue );
-		return true;
-	}
-	if ( FStrEq( szKeyName, "mingpulevel" ))
-	{
-		m_nMinGPULevel = atoi( szValue );
-		return true;
-	}
-	if ( FStrEq( szKeyName, "maxgpulevel" ))
-	{
-		m_nMaxGPULevel = atoi( szValue );
-		return true;
 	}
 
 #endif
@@ -617,15 +500,6 @@ bool CBaseEntity::KeyValue( const char *szKeyName, float flValue )
 	char	string[256];
 
 	Q_snprintf(string,sizeof(string), "%f", flValue );
-
-	return KeyValue( szKeyName, string );
-}
-
-bool CBaseEntity::KeyValue( const char *szKeyName, int nValue ) 
-{
-	char	string[256];
-
-	Q_snprintf(string,sizeof(string), "%d", nValue );
 
 	return KeyValue( szKeyName, string );
 }
@@ -649,16 +523,15 @@ bool CBaseEntity::GetKeyValue( const char *szKeyName, char *szValue, int iMaxLen
 {
 	if ( FStrEq( szKeyName, "rendercolor" ) || FStrEq( szKeyName, "rendercolor32" ))
 	{
-		color24 tmp = GetRenderColor();
-		unsigned char a = GetRenderAlpha();
-		Q_snprintf( szValue, iMaxLen, "%d %d %d %d", tmp.r, tmp.g, tmp.b, a );
+		color32 tmp = GetRenderColor();
+		Q_snprintf( szValue, iMaxLen, "%d %d %d %d", tmp.r, tmp.g, tmp.b, tmp.a );
 		return true;
 	}
 	
 	if ( FStrEq( szKeyName, "renderamt" ) )
 	{
-		unsigned char a = GetRenderAlpha();
-		Q_snprintf( szValue, iMaxLen, "%d", a );
+		color32 tmp = GetRenderColor();
+		Q_snprintf( szValue, iMaxLen, "%d", tmp.a );
 		return true;
 	}
 
@@ -683,12 +556,6 @@ bool CBaseEntity::GetKeyValue( const char *szKeyName, char *szValue, int iMaxLen
 	if ( FStrEq( szKeyName, "disablereceiveshadows" ))
 	{
 		Q_snprintf( szValue, iMaxLen, "%d", IsEffectActive( EF_NORECEIVESHADOW ) );
-		return true;
-	}
-
-	if ( FStrEq( szKeyName, "disableflashlight" ))
-	{
-		Q_snprintf( szValue, iMaxLen, "%d", IsEffectActive( EF_NOFLASHLIGHT ) );
 		return true;
 	}
 
@@ -769,19 +636,10 @@ void CBaseEntity::SetPredictionRandomSeed( const CUserCmd *cmd )
 	if ( !cmd )
 	{
 		m_nPredictionRandomSeed = -1;
-
-		#ifndef CLIENT_DLL
-		m_nPredictionRandomSeedServer = -1;
-		#endif
-
 		return;
 	}
 
 	m_nPredictionRandomSeed = ( cmd->random_seed );
-
-	#ifndef CLIENT_DLL
-	m_nPredictionRandomSeedServer = ( cmd->server_random_seed );
-	#endif
 }
 
 
@@ -816,10 +674,6 @@ void CBaseEntity::ImpactTrace( trace_t *pTrace, int iDamageType, const char *pCu
 	data.m_vOrigin = pTrace->endpos;
 	data.m_vStart = pTrace->startpos;
 	data.m_nSurfaceProp = pTrace->surface.surfaceProps;
-	if ( data.m_nSurfaceProp < 0 )
-	{
-		data.m_nSurfaceProp = 0;
-	}
 	data.m_nDamageType = iDamageType;
 	data.m_nHitBox = pTrace->hitbox;
 #ifdef CLIENT_DLL
@@ -864,7 +718,7 @@ char const *CBaseEntity::DamageDecal( int bitsDamageType, int gameMaterial )
 //-----------------------------------------------------------------------------
 int	CBaseEntity::GetIndexForThinkContext( const char *pszContext )
 {
-	for ( int i = 0; i < m_aThinkFunctions.Count(); i++ )
+	for ( int i = 0; i < m_aThinkFunctions.Size(); i++ )
 	{
 		if ( !Q_strncmp( STRING( m_aThinkFunctions[i].m_iszContext ), pszContext, MAX_CONTEXT_LENGTH ) )
 			return i;
@@ -899,14 +753,11 @@ int CBaseEntity::RegisterThinkContext( const char *szContext )
 BASEPTR	CBaseEntity::ThinkSet( BASEPTR func, float thinkTime, const char *szContext )
 {
 #if !defined( CLIENT_DLL )
-#if defined( _DEBUG )
-#if defined( __clang__ ) 
-	COMPILE_TIME_ASSERT( sizeof( func ) == sizeof( m_pfnThink ) );
-#elif defined( GNUC ) || defined( COMPILER_PS3 ) || defined( PLATFORM_64BITS )
-	//lwss update: newer compilers will make class member pointers 2x the size of a pointer
-	COMPILE_TIME_ASSERT( sizeof(func) == 8 || sizeof(func) == 16 );
+#ifdef _DEBUG
+#ifdef GNUC
+	COMPILE_TIME_ASSERT( sizeof(func) == 8 );
 #else
-	COMPILE_TIME_ASSERT( sizeof(func) == 4 || sizeof(func) == 8 );
+	COMPILE_TIME_ASSERT( sizeof(func) == 4 );
 #endif
 #endif
 #endif
@@ -917,7 +768,7 @@ BASEPTR	CBaseEntity::ThinkSet( BASEPTR func, float thinkTime, const char *szCont
 		m_pfnThink = func;
 #if !defined( CLIENT_DLL )
 #ifdef _DEBUG
-		FunctionCheck( reinterpret_cast<inputfunc_t>(m_pfnThink), "BaseThinkFunc" ); 
+		FunctionCheck( *(reinterpret_cast<void **>(&m_pfnThink)), "BaseThinkFunc" ); 
 #endif
 #endif
 		return m_pfnThink;
@@ -933,7 +784,7 @@ BASEPTR	CBaseEntity::ThinkSet( BASEPTR func, float thinkTime, const char *szCont
 	m_aThinkFunctions[ iIndex ].m_pfnThink = func;
 #if !defined( CLIENT_DLL )
 #ifdef _DEBUG
-	FunctionCheck( reinterpret_cast<inputfunc_t>(m_aThinkFunctions[ iIndex ].m_pfnThink), szContext ); 
+	FunctionCheck( *(reinterpret_cast<void **>(&m_aThinkFunctions[ iIndex ].m_pfnThink)), szContext ); 
 #endif
 #endif
 
@@ -1123,34 +974,6 @@ bool CBaseEntity::WillThink()
 	return false;
 }
 
-#if !defined( CLIENT_DLL )
-
-// Rebase all the current ticks in the think functions as delta ticks or from delta ticks to absolute ticks
-void CBaseEntity::RebaseThinkTicks( bool bMakeDeltas )
-{
-	int nCurTick = TIME_TO_TICKS( gpGlobals->curtime );
-	for ( int i = 0; i < m_aThinkFunctions.Count(); i++ )
-	{
-		if ( m_aThinkFunctions[i].m_nNextThinkTick > 0 )
-		{
-			if ( bMakeDeltas )
-			{
-				// Turn into a delta value
-				m_aThinkFunctions[i].m_nNextThinkTick = m_aThinkFunctions[i].m_nNextThinkTick - nCurTick;
-				m_aThinkFunctions[i].m_nLastThinkTick = m_aThinkFunctions[i].m_nLastThinkTick - nCurTick;
-			}
-			else
-			{
-				// Change a delta to an absolute tick value
-				m_aThinkFunctions[i].m_nNextThinkTick = m_aThinkFunctions[i].m_nNextThinkTick + nCurTick;
-				m_aThinkFunctions[i].m_nLastThinkTick = m_aThinkFunctions[i].m_nLastThinkTick + nCurTick;
-			}
-		}
-	}
-}
-
-#endif // !CLIENT_DLL
-
 // returns the first tick the entity will run any think function
 // returns TICK_NEVER_THINK if no think functions are scheduled
 int CBaseEntity::GetFirstThinkTick()
@@ -1277,17 +1100,14 @@ int	CBaseEntity::GetNextThinkTick( int nContextIndex ) const
 	return m_aThinkFunctions[nContextIndex].m_nNextThinkTick; 
 }
 
+
 int CheckEntityVelocity( Vector &v )
 {
-	// If we're not clamping, then return that everything is fine, just fine.
-	if ( !sv_clamp_unsafe_velocities.GetBool() )
-		return 1;
-
 	float r = k_flMaxEntitySpeed;
 	if (
 		v.x > -r && v.x < r &&
 		v.y > -r && v.y < r &&
-		v.z > -r && v.z < r )
+		v.z > -r && v.z < r)
 	{
 		// The usual case.  It's totally reasonable
 		return 1;
@@ -1304,7 +1124,6 @@ int CheckEntityVelocity( Vector &v )
 	return -1;
 }
 
-
 //-----------------------------------------------------------------------------
 // Purpose: My physics object has been updated, react or extract data
 //-----------------------------------------------------------------------------
@@ -1316,6 +1135,7 @@ void CBaseEntity::VPhysicsUpdate( IPhysicsObject *pPhysics )
 		{
 			if ( GetMoveParent() )
 			{
+				DevWarning("Updating physics on object in hierarchy %s!\n", GetClassname());
 				return;
 			}
 			Vector origin;
@@ -1350,19 +1170,6 @@ void CBaseEntity::VPhysicsUpdate( IPhysicsObject *pPhysics )
 			for ( int i = 0; i < 3; ++i )
 			{
 				angles[ i ] = AngleNormalize( angles[ i ] );
-			}
-
-#ifndef CLIENT_DLL 
-			NetworkQuantize( origin, angles );
-#endif
-
-			if ( origin.IsValid() )
-			{
-				SetAbsOrigin( origin );
-			}
-			else
-			{
-				Msg( "Infinite origin from vphysics! (entity %s)\n", GetDebugName() );
 			}
 			SetAbsAngles( angles );
 
@@ -1422,10 +1229,6 @@ IPhysicsObject *CBaseEntity::VPhysicsInitStatic( void )
 	{
 		pPhysicsObject = PhysModelCreateBox( this, WorldAlignMins(), WorldAlignMaxs(), GetAbsOrigin(), true );
 	}
-	else if ( GetSolid() == SOLID_OBB )
-	{
-		pPhysicsObject = PhysModelCreateOBB( this, CollisionProp()->OBBMins(), CollisionProp()->OBBMaxs(), GetAbsOrigin(), GetAbsAngles(), true );
-	}
 	else
 	{
 		pPhysicsObject = PhysModelCreateUnmoveable( this, GetModelIndex(), GetAbsOrigin(), GetAbsAngles() );
@@ -1445,37 +1248,10 @@ void CBaseEntity::VPhysicsSetObject( IPhysicsObject *pPhysics )
 		Warning( "Overwriting physics object for %s\n", GetClassname() );
 	}
 	m_pPhysicsObject = pPhysics;
-#ifndef CLIENT_DLL
-	RemoveSolidFlags(FSOLID_NOT_MOVEABLE);
-#endif
-	if ( m_pPhysicsObject )
-	{
-		m_flNonShadowMass = m_pPhysicsObject->GetMass();
-#ifndef CLIENT_DLL
-		if ( m_pPhysicsObject->IsStatic() )
-		{
-			AddSolidFlags(FSOLID_NOT_MOVEABLE);
-		}
-#endif
-	}
 	if ( pPhysics && !m_pPhysicsObject )
 	{
 		CollisionRulesChanged();
 	}
-}
-
-void CBaseEntity::VPhysicsSwapObject( IPhysicsObject *pSwap )
-{
-	if ( !pSwap )
-	{
-		PhysRemoveShadow(this);
-	}
-
-	if ( !m_pPhysicsObject )
-	{
-		Warning( "Bad vphysics swap for %s\n", STRING(m_iClassname) );
-	}
-	m_pPhysicsObject = pSwap;
 }
 
 //-----------------------------------------------------------------------------
@@ -1507,8 +1283,6 @@ bool CBaseEntity::VPhysicsInitSetup()
 	// If this entity already has a physics object, then it should have been deleted prior to making this call.
 	Assert(!m_pPhysicsObject);
 	VPhysicsDestroyObject();
-
-	m_flNonShadowMass = -1.0f;
 
 	// make sure absorigin / absangles are correct
 	return true;
@@ -1652,7 +1426,6 @@ void CBaseEntity::InvalidatePhysicsRecursive( int nChangeFlags )
 		nDirtyFlags |= EFL_DIRTY_ABSVELOCITY;
 	}
 
-	bool bSurroundDirty = false;
 	if ( nChangeFlags & POSITION_CHANGED )
 	{
 		nDirtyFlags |= EFL_DIRTY_ABSTRANSFORM;
@@ -1662,10 +1435,7 @@ void CBaseEntity::InvalidatePhysicsRecursive( int nChangeFlags )
 #endif
 
 		// NOTE: This will also mark shadow projection + client leaf dirty
-		if ( entindex() != 0 )
-		{
-			CollisionProp()->MarkPartitionHandleDirty();
-		}
+		CollisionProp()->MarkPartitionHandleDirty();
 	}
 
 	// NOTE: This has to be done after velocity + position are changed
@@ -1678,7 +1448,14 @@ void CBaseEntity::InvalidatePhysicsRecursive( int nChangeFlags )
 			// NOTE: This will handle the KD-tree, surrounding bounds, PVS
 			// render-to-texture shadow, shadow projection, and client leaf dirty
 			CollisionProp()->MarkSurroundingBoundsDirty();
-			bSurroundDirty = true;
+		}
+		else
+		{
+#ifdef CLIENT_DLL
+			MarkRenderHandleDirty();
+			g_pClientShadowMgr->AddToDirtyShadowList( this );
+			g_pClientShadowMgr->MarkRenderToTextureShadowDirty( GetShadowHandle() );
+#endif
 		}
 
 		// This is going to be used for all children: children
@@ -1686,46 +1463,14 @@ void CBaseEntity::InvalidatePhysicsRecursive( int nChangeFlags )
 		nChangeFlags |= POSITION_CHANGED | VELOCITY_CHANGED;
 	}
 
-	if ( nChangeFlags & SEQUENCE_CHANGED )
-	{
-		if ( !bSurroundDirty )
-		{
-			if ( CollisionProp()->DoesSequenceChangeInvalidateSurroundingBox() )
-			{
-				// NOTE: This will handle the KD-tree, surrounding bounds, PVS
-				// render-to-texture shadow, shadow projection, and client leaf dirty
-				CollisionProp()->MarkSurroundingBoundsDirty();
-				bSurroundDirty = true;
-			}
-		}
-
-		// Children sequences do not change as a result of parent sequence changes
-		nChangeFlags &= ~SEQUENCE_CHANGED;
-	}
-
-#ifdef CLIENT_DLL
-	if ( !bSurroundDirty && (nChangeFlags & (POSITION_CHANGED|ANGLES_CHANGED|BOUNDS_CHANGED)) )
-	{
-		if ( entindex() != 0 )
-		{
-			MarkRenderHandleDirty();
-			g_pClientShadowMgr->AddToDirtyShadowList( this );
-			g_pClientShadowMgr->MarkRenderToTextureShadowDirty( GetShadowHandle() );
-		}
-	}
-#endif
-
 	AddEFlags( nDirtyFlags );
 
 	// Set flags for children
 	bool bOnlyDueToAttachment = false;
-	if ( nChangeFlags & ( ANIMATION_CHANGED | BOUNDS_CHANGED ) )
+	if ( nChangeFlags & ANIMATION_CHANGED )
 	{
 #ifdef CLIENT_DLL
-		if ( ( nChangeFlags & BOUNDS_CHANGED ) == 0 )
-		{
-			g_pClientShadowMgr->MarkRenderToTextureShadowDirty( GetShadowHandle() );
-		}
+		g_pClientShadowMgr->MarkRenderToTextureShadowDirty( GetShadowHandle() );
 #endif
 
 		// Only set this flag if the only thing that changed us was the animation.
@@ -1755,13 +1500,25 @@ void CBaseEntity::InvalidatePhysicsRecursive( int nChangeFlags )
 		pChild->InvalidatePhysicsRecursive( nChangeFlags );
 	}
 
-	// Clear out cached bones
-	if ( nChangeFlags & (POSITION_CHANGED | ANGLES_CHANGED | ANIMATION_CHANGED) )
-	{
-		CBaseAnimating *pAnim = GetBaseAnimating();
-		if ( pAnim )
-			pAnim->InvalidateBoneCache();		
-	}
+	//
+	// This code should really be in here, or the bone cache should not be in world space.
+	// Since the bone transforms are in world space, if we move or rotate the entity, its
+	// bones should be marked invalid.
+	//
+	// As it is, we're near ship, and don't have time to setup a good A/B test of how much
+	// overhead this fix would add. We've also only got one known case where the lack of
+	// this fix is screwing us, and I just fixed it, so I'm leaving this commented out for now.
+	//
+	// Hopefully, we'll put the bone cache in entity space and remove the need for this fix.
+	//
+	//#ifdef CLIENT_DLL
+	//	if ( nChangeFlags & (POSITION_CHANGED | ANGLES_CHANGED | ANIMATION_CHANGED) )
+	//	{
+	//		C_BaseAnimating *pAnim = GetBaseAnimating();
+	//		if ( pAnim )
+	//			pAnim->InvalidateBoneCache();		
+	//	}
+	//#endif
 }
 
 
@@ -1846,6 +1603,10 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 	
 	bool bDoServerEffects = true;
 
+#if defined( HL2MP ) && defined( GAME_DLL )
+	bDoServerEffects = false;
+#endif
+
 #if defined( GAME_DLL )
 	if( IsPlayer() )
 	{
@@ -1869,12 +1630,12 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 	}
 #endif// GAME_DLL
 
-	float flPlayerDamage = info.m_flPlayerDamage;
-	if ( flPlayerDamage == 0.0f )
+	int iPlayerDamage = info.m_iPlayerDamage;
+	if ( iPlayerDamage == 0 )
 	{
 		if ( nAmmoFlags & AMMO_INTERPRET_PLRDAMAGE_AS_DAMAGE_TO_PLAYER )
 		{
-			flPlayerDamage = pAmmoDef->PlrDamage( info.m_iAmmoType );
+			iPlayerDamage = pAmmoDef->PlrDamage( info.m_iAmmoType );
 		}
 	}
 
@@ -1911,16 +1672,19 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 	bool bStartedInWater = false;
 	if ( bUnderwaterBullets )
 	{
-		bStartedInWater = ( enginetrace->GetPointContents( info.m_vecSrc, MASK_WATER ) & (CONTENTS_WATER|CONTENTS_SLIME) ) != 0;
+		bStartedInWater = ( enginetrace->GetPointContents( info.m_vecSrc ) & (CONTENTS_WATER|CONTENTS_SLIME) ) != 0;
 	}
 
 	// Prediction is only usable on players
 	int iSeed = 0;
 	if ( IsPlayer() )
 	{
-		iSeed = CBaseEntity::GetPredictionRandomSeed( SERVER_PLATTIME_RNG ) & 255;
+		iSeed = CBaseEntity::GetPredictionRandomSeed() & 255;
 	}
 
+#if defined( HL2MP ) && defined( GAME_DLL )
+	int iEffectSeed = iSeed;
+#endif
 	//-----------------------------------------------------
 	// Set up our shot manipulator.
 	//-----------------------------------------------------
@@ -1957,7 +1721,7 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 		vecEnd = info.m_vecSrc + vecDir * info.m_flDistance;
 
 #ifdef PORTAL
-		CPortal_Base2D *pShootThroughPortal = NULL;
+		CProp_Portal *pShootThroughPortal = NULL;
 		float fPortalFraction = 2.0f;
 #endif
 
@@ -1987,6 +1751,17 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 			{
 				pShootThroughPortal = NULL;
 			}
+#elif TF_DLL
+			CTraceFilterIgnoreFriendlyCombatItems traceFilterCombatItem( this, COLLISION_GROUP_NONE, GetTeamNumber() );
+			if ( TFGameRules() && TFGameRules()->GameModeUsesUpgrades() )
+			{
+				CTraceFilterChain traceFilterChain( &traceFilter, &traceFilterCombatItem );
+				AI_TraceLine(info.m_vecSrc, vecEnd, MASK_SHOT, &traceFilterChain, &tr);
+			}
+			else
+			{
+				AI_TraceLine(info.m_vecSrc, vecEnd, MASK_SHOT, &traceFilter, &tr);
+			}
 #else
 			AI_TraceLine(info.m_vecSrc, vecEnd, MASK_SHOT, &traceFilter, &tr);
 #endif //#ifdef PORTAL
@@ -2005,7 +1780,7 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 
 	// bullet's final direction can be changed by passing through a portal
 #ifdef PORTAL
-		if ( !tr.startsolid && tr.fraction > 0.0f )
+		if ( !tr.startsolid )
 		{
 			vecDir = tr.endpos - tr.startpos;
 			VectorNormalize( vecDir );
@@ -2078,7 +1853,7 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 #endif
 
 			// See if the bullet ended up underwater + started out of the water
-			if ( !bHitWater && ( enginetrace->GetPointContents( tr.endpos, MASK_WATER ) & (CONTENTS_WATER|CONTENTS_SLIME) ) )
+			if ( !bHitWater && ( enginetrace->GetPointContents( tr.endpos ) & (CONTENTS_WATER|CONTENTS_SLIME) ) )
 			{
 				bHitWater = HandleShotImpactingWater( info, vecEnd, &traceFilter, &vecTracerDest );
 			}
@@ -2087,18 +1862,18 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 
 			// If we hit a player, and we have player damage specified, use that instead
 			// Adrian: Make sure to use the currect value if we hit a vehicle the player is currently driving.
-			if ( flPlayerDamage != 0.0f )
+			if ( iPlayerDamage )
 			{
 				if ( tr.m_pEnt->IsPlayer() )
 				{
-					flActualDamage = flPlayerDamage;
+					flActualDamage = iPlayerDamage;
 				}
 #ifdef GAME_DLL
 				else if ( tr.m_pEnt->GetServerVehicle() )
 				{
 					if ( tr.m_pEnt->GetServerVehicle()->GetPassenger() && tr.m_pEnt->GetServerVehicle()->GetPassenger()->IsPlayer() )
 					{
-						flActualDamage = flPlayerDamage;
+						flActualDamage = iPlayerDamage;
 					}
 				}
 #endif
@@ -2118,6 +1893,7 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 			{
 				// Damage specified by function parameter
 				CTakeDamageInfo dmgInfo( this, pAttacker, flActualDamage, nActualDamageType );
+				ModifyFireBulletsDamage( &dmgInfo );
 				CalculateBulletDamageForce( &dmgInfo, info.m_iAmmoType, vecDir, tr.endpos );
 				dmgInfo.ScaleDamageForce( info.m_flDamageForceScale );
 				dmgInfo.SetAmmoType( info.m_iAmmoType );
@@ -2238,16 +2014,21 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 		iSeed++;
 	}
 
+#if defined( HL2MP ) && defined( GAME_DLL )
+	if ( bDoServerEffects == false )
+	{
+		TE_HL2MPFireBullets( entindex(), tr.startpos, info.m_vecDirShooting, info.m_iAmmoType, iEffectSeed, info.m_iShots, info.m_vecSpread.x, bDoTracers, bDoImpacts );
+	}
+#endif
+
 #ifdef GAME_DLL
 	ApplyMultiDamage();
 
 	if ( IsPlayer() && flCumulativeDamage > 0.0f )
 	{
-		#ifndef _GAMECONSOLE
-		CTakeDamageInfo dmgInfo( this, pAttacker, flCumulativeDamage, nDamageType );
 		CBasePlayer *pPlayer = static_cast< CBasePlayer * >( this );
+		CTakeDamageInfo dmgInfo( this, pAttacker, flCumulativeDamage, nDamageType );
 		gamestats->Event_WeaponHit( pPlayer, info.m_bPrimaryAttack, pPlayer->GetActiveWeapon()->GetClassname(), dmgInfo );
-		#endif
 	}
 #endif
 }
@@ -2260,7 +2041,7 @@ bool CBaseEntity::ShouldDrawUnderwaterBulletBubbles()
 {
 #if defined( HL2_DLL ) && defined( GAME_DLL )
 	CBaseEntity *pPlayer = ( gpGlobals->maxClients == 1 ) ? UTIL_GetLocalPlayer() : NULL;
-	return pPlayer && (pPlayer->GetWaterLevel() == WL_Eyes);
+	return pPlayer && (pPlayer->GetWaterLevel() == 3);
 #else
 	return false;
 #endif
@@ -2279,7 +2060,7 @@ bool CBaseEntity::HandleShotImpactingWater( const FireBulletsInfo_t &info,
 	AI_TraceLine( info.m_vecSrc, vecEnd, (MASK_SHOT|CONTENTS_WATER|CONTENTS_SLIME), pTraceFilter, &waterTrace );
 	
 	// See if this is the point we entered
-	if ( ( enginetrace->GetPointContents( waterTrace.endpos - Vector(0,0,0.1f), MASK_WATER ) & (CONTENTS_WATER|CONTENTS_SLIME) ) == 0 )
+	if ( ( enginetrace->GetPointContents( waterTrace.endpos - Vector(0,0,0.1f) ) & (CONTENTS_WATER|CONTENTS_SLIME) ) == 0 )
 		return false;
 
 	if ( ShouldDrawWaterImpacts() )
@@ -2325,8 +2106,7 @@ ITraceFilter* CBaseEntity::GetBeamTraceFilter( void )
 	return NULL;
 }
 
-
-void CBaseEntity::DispatchTraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr )
+void CBaseEntity::DispatchTraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator )
 {
 #ifdef GAME_DLL
 	// Make sure our damage filter allows the damage.
@@ -2336,16 +2116,25 @@ void CBaseEntity::DispatchTraceAttack( const CTakeDamageInfo &info, const Vector
 	}
 #endif
 
-	TraceAttack( info, vecDir, ptr );
+	TraceAttack( info, vecDir, ptr, pAccumulator );
 }
 
-void CBaseEntity::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr )
+void CBaseEntity::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator )
 {
 	Vector vecOrigin = ptr->endpos - vecDir * 4;
 
 	if ( m_takedamage )
 	{
-		AddMultiDamage( info, this );
+#ifdef GAME_DLL
+		if ( pAccumulator )
+		{
+			pAccumulator->AccumulateMultiDamage( info, this );
+		}
+		else
+#endif // GAME_DLL
+		{
+			AddMultiDamage( info, this );
+		}
 
 		int blood = BloodColor();
 		
@@ -2373,6 +2162,7 @@ void CBaseEntity::DoImpactEffect( trace_t &tr, int nDamageType )
 //-----------------------------------------------------------------------------
 void CBaseEntity::ComputeTracerStartPosition( const Vector &vecShotSrc, Vector *pVecTracerStart )
 {
+#ifndef HL2MP
 	if ( g_pGameRules->IsMultiplayer() )
 	{
 		// NOTE: we do this because in MakeTracer, we force it to use the attachment position
@@ -2380,6 +2170,7 @@ void CBaseEntity::ComputeTracerStartPosition( const Vector &vecShotSrc, Vector *
 		pVecTracerStart->Init( 999, 999, 999 );
 		return;
 	}
+#endif
 	
 	if ( IsPlayer() )
 	{
@@ -2543,6 +2334,15 @@ const char* CBaseEntity::GetTracerType()
 	return NULL;
 }
 
+void CBaseEntity::ModifyEmitSoundParams( EmitSound_t &params )
+{
+#ifdef CLIENT_DLL
+	if ( GameRules() )
+	{
+		params.m_pSoundName = GameRules()->TranslateEffectForVisionFilter( "sounds", params.m_pSoundName );
+	}
+#endif
+}
 
 //-----------------------------------------------------------------------------
 // These methods encapsulate MOVETYPE_FOLLOW, which became obsolete
@@ -2575,7 +2375,6 @@ void CBaseEntity::SetEffectEntity( CBaseEntity *pEffectEnt )
 	}
 }
 
-
 void CBaseEntity::ApplyLocalVelocityImpulse( const Vector &inVecImpulse )
 {
 	// NOTE: Don't have to use GetVelocity here because local values
@@ -2588,33 +2387,23 @@ void CBaseEntity::ApplyLocalVelocityImpulse( const Vector &inVecImpulse )
 		// Safety check against receive a huge impulse, which can explode physics
 		switch ( CheckEntityVelocity( vecImpulse ) )
 		{
-		case -1:
-			Warning( "Discarding ApplyLocalVelocityImpulse(%f,%f,%f) on %s\n", vecImpulse.x, vecImpulse.y, vecImpulse.z, GetDebugName() );
-			Assert( false );
-			return;
-
-		case 0:
-			if ( CheckEmitReasonablePhysicsSpew() )
-			{
-				Warning( "Bad ApplyLocalVelocityImpulse(%f,%f,%f) on %s\n", vecImpulse.x, vecImpulse.y, vecImpulse.z, GetDebugName() );
-			}
-			Assert( false );
-			break;
-
-		default:
-			break;
-		};
+			case -1:
+				Warning( "Discarding ApplyLocalVelocityImpulse(%f,%f,%f) on %s\n", vecImpulse.x, vecImpulse.y, vecImpulse.z, GetDebugName() );
+				Assert( false );
+				return;
+			case 0:
+				if ( CheckEmitReasonablePhysicsSpew() )
+				{
+					Warning( "Clamping ApplyLocalVelocityImpulse(%f,%f,%f) on %s\n", inVecImpulse.x, inVecImpulse.y, inVecImpulse.z, GetDebugName() );
+				}
+				break;
+		}
 
 		if ( GetMoveType() == MOVETYPE_VPHYSICS )
 		{
-			IPhysicsObject *ppPhysObjs[ VPHYSICS_MAX_OBJECT_LIST_COUNT ];
-			int nNumPhysObjs = VPhysicsGetObjectList( ppPhysObjs, VPHYSICS_MAX_OBJECT_LIST_COUNT );
-			for ( int i = 0; i < nNumPhysObjs; i++ )
-			{
-				Vector worldVel;
-				ppPhysObjs[ i ]->LocalToWorld( &worldVel, vecImpulse );
-				ppPhysObjs[ i ]->AddVelocity(  &worldVel, NULL );
-			}
+			Vector worldVel;
+			VPhysicsGetObject()->LocalToWorld( &worldVel, vecImpulse );
+			VPhysicsGetObject()->AddVelocity( &worldVel, NULL );
 		}
 		else
 		{
@@ -2626,37 +2415,28 @@ void CBaseEntity::ApplyLocalVelocityImpulse( const Vector &inVecImpulse )
 
 void CBaseEntity::ApplyAbsVelocityImpulse( const Vector &inVecImpulse )
 {
-	if (inVecImpulse != vec3_origin )
+	if ( inVecImpulse != vec3_origin )
 	{
 		Vector vecImpulse = inVecImpulse;
 
 		// Safety check against receive a huge impulse, which can explode physics
 		switch ( CheckEntityVelocity( vecImpulse ) )
 		{
-		case -1:
-			Warning( "Discarding ApplyAbsVelocityImpulse(%f,%f,%f) on %s\n", vecImpulse.x, vecImpulse.y, vecImpulse.z, GetDebugName() );
-			Assert( false );
-			return;
-
-		case 0:
-			if ( CheckEmitReasonablePhysicsSpew() )
-			{
-				Warning( "Bad ApplyAbsVelocityImpulse(%f,%f,%f) on %s\n", vecImpulse.x, vecImpulse.y, vecImpulse.z, GetDebugName() );
-			}
-			Assert( false );
-			return;
-		default:
-			break;
+			case -1:
+				Warning( "Discarding ApplyAbsVelocityImpulse(%f,%f,%f) on %s\n", vecImpulse.x, vecImpulse.y, vecImpulse.z, GetDebugName() );
+				Assert( false );
+				return;
+			case 0:
+				if ( CheckEmitReasonablePhysicsSpew() )
+				{
+					Warning( "Clamping ApplyAbsVelocityImpulse(%f,%f,%f) on %s\n", inVecImpulse.x, inVecImpulse.y, inVecImpulse.z, GetDebugName() );
+				}
+				break;
 		}
 
 		if ( GetMoveType() == MOVETYPE_VPHYSICS )
 		{
-			IPhysicsObject *ppPhysObjs[ VPHYSICS_MAX_OBJECT_LIST_COUNT ];
-			int nNumPhysObjs = VPhysicsGetObjectList( ppPhysObjs, VPHYSICS_MAX_OBJECT_LIST_COUNT );
-			for ( int i = 0; i < nNumPhysObjs; i++ )
-			{
-				ppPhysObjs[ i ]->AddVelocity( &vecImpulse, NULL );
-			}
+			VPhysicsGetObject()->AddVelocity( &vecImpulse, NULL );
 		}
 		else
 		{
@@ -2675,22 +2455,14 @@ void CBaseEntity::ApplyLocalAngularVelocityImpulse( const AngularImpulse &angImp
 		// Safety check against receive a huge impulse, which can explode physics
 		if ( !IsEntityAngularVelocityReasonable( angImpulse ) )
 		{
-			if ( CheckEmitReasonablePhysicsSpew() )
-			{
-				Warning( "Bad ApplyLocalAngularVelocityImpulse(%f,%f,%f) on %s\n", angImpulse.x, angImpulse.y, angImpulse.z, GetDebugName() );
-			}
+			Warning( "Bad ApplyLocalAngularVelocityImpulse(%f,%f,%f) on %s\n", angImpulse.x, angImpulse.y, angImpulse.z, GetDebugName() );
 			Assert( false );
 			return;
 		}
 
 		if ( GetMoveType() == MOVETYPE_VPHYSICS )
 		{
-			IPhysicsObject *ppPhysObjs[ VPHYSICS_MAX_OBJECT_LIST_COUNT ];
-			int nNumPhysObjs = VPhysicsGetObjectList( ppPhysObjs, VPHYSICS_MAX_OBJECT_LIST_COUNT );
-			for ( int i = 0; i < nNumPhysObjs; i++ )
-			{
-				ppPhysObjs[ i ]->AddVelocity( NULL, &angImpulse );
-			}
+			VPhysicsGetObject()->AddVelocity( NULL, &angImpulse );
 		}
 		else
 		{
@@ -2753,6 +2525,7 @@ void CBaseEntity::SetWaterType( int nType )
 		m_nWaterType |= 2;
 }
 
+ConVar	sv_alternateticks( "sv_alternateticks", ( IsX360() ) ? "1" : "0", FCVAR_SPONLY, "If set, server only simulates entities on even numbered ticks.\n" );
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -2765,15 +2538,7 @@ bool CBaseEntity::IsSimulatingOnAlternateTicks()
 		return false;
 	}
 
-	static ConVarRef sv_alternateticks( "sv_alternateticks" );
-	if ( sv_alternateticks.IsValid() )
-	{
-		return sv_alternateticks.GetBool();
-	}
-	else
-	{
-		return IsX360();
-	}
+	return sv_alternateticks.GetBool();
 }
 
 #ifdef CLIENT_DLL
@@ -2791,58 +2556,3 @@ bool CBaseEntity::IsToolRecording() const
 #endif
 }
 #endif
-
-#if defined( CLIENT_DLL ) && !defined( PORTAL2 )
-#define FAST_TRIGGER_TOUCH
-extern void TouchTriggerPlayerMovement( C_BaseEntity *pEntity );
-#endif
-
-void CBaseEntity::PhysicsTouchTriggers( const Vector *pPrevAbsOrigin )
-{
-#if defined( CLIENT_DLL )
-#if defined( FAST_TRIGGER_TOUCH )
-	{
-		Assert( !pPrevAbsOrigin );
-		TouchTriggerPlayerMovement( this );
-		return;
-	}
-#endif // FAST_TRIGGER_TOUCH
-	IClientEntity *pEntity = this;
-#else
-	edict_t *pEntity = edict();
-#endif
-
-	if ( pEntity && !IsWorld() )
-	{
-		Assert(CollisionProp());
-		bool isTriggerCheckSolids = IsSolidFlagSet( FSOLID_TRIGGER );
-		bool isSolidCheckTriggers = IsSolid() && !isTriggerCheckSolids;		// NOTE: Moving triggers (items, ammo etc) are not 
-		// checked against other triggers ot reduce the number of touchlinks created
-		if ( !(isSolidCheckTriggers || isTriggerCheckSolids) )
-			return;
-
-		if ( GetSolid() == SOLID_BSP ) 
-		{
-			if ( !GetModel() && Q_strlen( STRING( GetModelName() ) ) == 0 ) 
-			{
-				Warning( "Inserted %s with no model\n", GetClassname() );
-				return;
-			}
-		}
-
-		SetCheckUntouch( true );
-		if ( isSolidCheckTriggers )
-		{
-			engine->SolidMoved( pEntity, CollisionProp(), pPrevAbsOrigin, sm_bAccurateTriggerBboxChecks );
-		}
-		if ( isTriggerCheckSolids )
-		{
-			engine->TriggerMoved( pEntity, sm_bAccurateTriggerBboxChecks );
-		}
-	}
-}
-
-void CBaseEntity::UpdateLastMadeNoiseTime( const char* pszSoundName /*= NULL */ )
-{
-	m_flLastMadeNoiseTime = gpGlobals->curtime;
-}

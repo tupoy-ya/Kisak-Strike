@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Weapon selection handling
 //
@@ -10,7 +10,7 @@
 #include "history_resource.h"
 #include "menu.h"
 #include "in_buttons.h"
-#include <keyvalues.h>
+#include <KeyValues.h>
 #include "filesystem.h"
 #include "iinput.h"
 
@@ -20,7 +20,7 @@
 #define HISTORY_DRAW_TIME	"5"
 
 ConVar hud_drawhistory_time( "hud_drawhistory_time", HISTORY_DRAW_TIME, 0 );
-ConVar hud_fastswitch( "hud_fastswitch", "1", FCVAR_SS ); // [hpe:jason] Enabling weapon fastswitch by default
+ConVar hud_fastswitch( "hud_fastswitch", "0", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 
 //-----------------------------------------------------------------------------
 // Purpose: Weapon Selection commands
@@ -36,20 +36,10 @@ DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, Slot8, "CHudWeaponSelection");
 DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, Slot9, "CHudWeaponSelection");
 DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, Slot0, "CHudWeaponSelection");
 DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, Slot10, "CHudWeaponSelection");
-DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, Slot11, "CHudWeaponSelection");
 DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, Close, "CHudWeaponSelection");
 DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, NextWeapon, "CHudWeaponSelection");
 DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, PrevWeapon, "CHudWeaponSelection");
 DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, LastWeapon, "CHudWeaponSelection");
-DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, NextGrenadeWeapon, "CHudWeaponSelection");
-DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, NextItemWeapon, "CHudWeaponSelection");
-DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, NextNonGrenadeWeapon, "CHudWeaponSelection");
-DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, GamePadSlot1, "CHudWeaponSelection");
-DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, GamePadSlot2, "CHudWeaponSelection");
-DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, GamePadSlot3, "CHudWeaponSelection");
-DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, GamePadSlot4, "CHudWeaponSelection");
-DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, GamePadSlot5, "CHudWeaponSelection");
-DECLARE_HUD_COMMAND_NAME(CBaseHudWeaponSelection, GamePadSlot6, "CHudWeaponSelection");
 
 HOOK_COMMAND( slot1, Slot1 );
 HOOK_COMMAND( slot2, Slot2 );
@@ -62,26 +52,16 @@ HOOK_COMMAND( slot8, Slot8 );
 HOOK_COMMAND( slot9, Slot9 );
 HOOK_COMMAND( slot0, Slot0 );
 HOOK_COMMAND( slot10, Slot10 );
-HOOK_COMMAND( slot11, Slot11 );
-static ConCommand cancelselect( "cancelselect", __CmdFunc_Close, "", FCVAR_SERVER_CAN_EXECUTE | FCVAR_CLIENTCMD_CAN_EXECUTE ); // REI: Was HOOK_COMMAND( cancelselect, Close ), but that doesn't have CLIENTCMD_CAN_EXECUTE on it
+HOOK_COMMAND( cancelselect, Close );
 HOOK_COMMAND( invnext, NextWeapon );
 HOOK_COMMAND( invprev, PrevWeapon );
 HOOK_COMMAND( lastinv, LastWeapon );
-HOOK_COMMAND( invnextgrenade, NextGrenadeWeapon);
-HOOK_COMMAND( invnextitem, NextItemWeapon);
-HOOK_COMMAND( invnextnongrenade, NextNonGrenadeWeapon);
-HOOK_COMMAND( gamepadslot1, GamePadSlot1 );
-HOOK_COMMAND( gamepadslot2, GamePadSlot2 );
-HOOK_COMMAND( gamepadslot3, GamePadSlot3 );
-HOOK_COMMAND( gamepadslot4, GamePadSlot4 );
-HOOK_COMMAND( gamepadslot5, GamePadSlot5 );
-HOOK_COMMAND( gamepadslot6, GamePadSlot6 );
 
 // instance info
-CBaseHudWeaponSelection *CBaseHudWeaponSelection::s_pInstance[MAX_SPLITSCREEN_PLAYERS];
+CBaseHudWeaponSelection *CBaseHudWeaponSelection::s_pInstance = NULL;
 CBaseHudWeaponSelection *CBaseHudWeaponSelection::GetInstance()
 {
-	return s_pInstance[GET_ACTIVE_SPLITSCREEN_SLOT()];
+	return s_pInstance;
 }
 CBaseHudWeaponSelection *GetHudWeaponSelection()
 {
@@ -93,13 +73,9 @@ CBaseHudWeaponSelection *GetHudWeaponSelection()
 //-----------------------------------------------------------------------------
 CBaseHudWeaponSelection::CBaseHudWeaponSelection( const char *pElementName ) : CHudElement( pElementName )
 {
-	s_pInstance[GET_ACTIVE_SPLITSCREEN_SLOT()] = this;
+	s_pInstance = this;
 	
-#ifdef PORTAL2
-	SetHiddenBits( HIDEHUD_WEAPONSELECTION | HIDEHUD_PLAYERDEAD );
-#else
-		SetHiddenBits( HIDEHUD_WEAPONSELECTION | HIDEHUD_NEEDSUIT | HIDEHUD_PLAYERDEAD | HIDEHUD_INVEHICLE );
-#endif // PORTAL2
+	SetHiddenBits( HIDEHUD_WEAPONSELECTION | HIDEHUD_NEEDSUIT | HIDEHUD_PLAYERDEAD | HIDEHUD_INVEHICLE );
 }
 
 //-----------------------------------------------------------------------------
@@ -143,14 +119,12 @@ void CBaseHudWeaponSelection::VidInit(void)
 	// If we've already loaded weapons, let's get new sprites
 	gWR.LoadAllWeaponSprites();
 
-#if !defined( CSTRIKE15 )
 	// set spacing of pickup history
 	CHudHistoryResource *pHudHR = GET_HUDELEMENT( CHudHistoryResource );
 	if( pHudHR )
 	{
 		pHudHR->SetHistoryGap( 21 );
 	}
-#endif // !CSTRIKE15
 
 	Reset();
 }
@@ -184,12 +158,12 @@ void CBaseHudWeaponSelection::ProcessInput()
 	if ( pPlayer->IsInVGuiInputMode() && !pPlayer->IsInViewModelVGuiInputMode() )
 	{
 		// If so, close weapon selection when they press fire
-		if ( GetHud().m_iKeyBits & IN_ATTACK )
+		if ( gHUD.m_iKeyBits & IN_ATTACK )
 		{
 			if ( HUDTYPE_PLUS != hud_fastswitch.GetInt() )
 			{
 				// Swallow the button
-				GetHud().m_iKeyBits &= ~IN_ATTACK;
+				gHUD.m_iKeyBits &= ~IN_ATTACK;
 				input->ClearInputButton( IN_ATTACK );
 			}
 
@@ -199,7 +173,7 @@ void CBaseHudWeaponSelection::ProcessInput()
 	}
 
 	// Has the player selected a weapon?
-	if ( GetHud().m_iKeyBits & ( IN_ATTACK | IN_ATTACK2 | IN_ZOOM ) )
+	if ( gHUD.m_iKeyBits & (IN_ATTACK | IN_ATTACK2) )
 	{
 		if ( IsWeaponSelectable() )
 		{
@@ -208,10 +182,9 @@ void CBaseHudWeaponSelection::ProcessInput()
 #endif
 			{
 				// Swallow the button
-				GetHud().m_iKeyBits &= ~( IN_ATTACK | IN_ATTACK2 | IN_ZOOM );
+				gHUD.m_iKeyBits &= ~(IN_ATTACK | IN_ATTACK2);
 				input->ClearInputButton( IN_ATTACK );
 				input->ClearInputButton( IN_ATTACK2 );
-				input->ClearInputButton( IN_ZOOM );
 			}
 
 			// select weapon
@@ -292,9 +265,6 @@ int	CBaseHudWeaponSelection::KeyInput( int down, ButtonCode_t keynum, const char
 //-----------------------------------------------------------------------------
 void CBaseHudWeaponSelection::OnWeaponPickup( C_BaseCombatWeapon *pWeapon )
 {
-	RANDOM_CEG_TEST_SECRET_PERIOD( 2, 3 )
-
-#if !defined( CSTRIKE15 )
 	// add to pickup history
 	CHudHistoryResource *pHudHR = GET_HUDELEMENT( CHudHistoryResource );
 	
@@ -302,7 +272,6 @@ void CBaseHudWeaponSelection::OnWeaponPickup( C_BaseCombatWeapon *pWeapon )
 	{
 		pHudHR->AddToHistory( pWeapon );
 	}
-#endif // !CSTRIKE15
 }
 
 //------------------------------------------------------------------------
@@ -391,41 +360,6 @@ void CBaseHudWeaponSelection::UserCmd_Slot10(void)
 	SelectSlot( 10 );
 }
 
-void CBaseHudWeaponSelection::UserCmd_Slot11(void)
-{
-	SelectSlot( 11 );
-}
-
-//void CBaseHudWeaponSelection::UserCmd_GamePadSlot1( void )
-//{
-//
-//}
-//
-//void CBaseHudWeaponSelection::UserCmd_GamePadSlot2( void )
-//{
-//
-//}
-//
-//void CBaseHudWeaponSelection::UserCmd_GamePadSlot3( void )
-//{
-//
-//}
-//
-//void CBaseHudWeaponSelection::UserCmd_GamePadSlot4( void )
-//{
-//
-//}
-//
-//void CBaseHudWeaponSelection::UserCmd_GamePadSlot5( void )
-//{
-//
-//}
-//
-//void CBaseHudWeaponSelection::UserCmd_GamePadSlot6( void )
-//{
-//
-//}
-
 //-----------------------------------------------------------------------------
 // Purpose: returns true if the CHudMenu should take slot1, etc commands
 //-----------------------------------------------------------------------------
@@ -502,66 +436,7 @@ void CBaseHudWeaponSelection::UserCmd_NextWeapon(void)
 		return;
 
 	CycleToNextWeapon();
-#if !defined ( CSTRIKE15 )
 	if( hud_fastswitch.GetInt() > 0 )
-#endif
-	{
-		SelectWeapon();
-	}
-	UpdateSelectionTime();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Selects the next grenade or bom in the weapon menu
-//-----------------------------------------------------------------------------
-void CBaseHudWeaponSelection::UserCmd_NextGrenadeWeapon(void)
-{
-	// If we're not allowed to draw, ignore weapon selections
-	if ( !BaseClass::ShouldDraw() )
-		return;
-
-	CycleToNextGrenadeOrBomb();
-#if !defined ( CSTRIKE15 )
-	if( hud_fastswitch.GetInt() > 0 )
-#endif
-	{
-		SelectWeapon();
-	}
-	UpdateSelectionTime();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Selects the next grenade, bomb or melee weapon in the weapon menu
-//-----------------------------------------------------------------------------
-void CBaseHudWeaponSelection::UserCmd_NextItemWeapon(void)
-{
-	// If we're not allowed to draw, ignore weapon selections
-	if ( !BaseClass::ShouldDraw() )
-		return;
-
-	CycleToNextGrenadeBombOrMelee();
-#if !defined ( CSTRIKE15 )
-	if( hud_fastswitch.GetInt() > 0 )
-#endif
-	{
-		SelectWeapon();
-	}
-	UpdateSelectionTime();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Selects the next non grenade item in the weapon menu
-//-----------------------------------------------------------------------------
-void CBaseHudWeaponSelection::UserCmd_NextNonGrenadeWeapon(void)
-{
-	// If we're not allowed to draw, ignore weapon selections
-	if ( !BaseClass::ShouldDraw() )
-		return;
-
-	CycleToNextNonGrenadeOrBomb();
-#if !defined ( CSTRIKE15 )
-	if( hud_fastswitch.GetInt() > 0 )
-#endif
 	{
 		SelectWeapon();
 	}
@@ -579,9 +454,7 @@ void CBaseHudWeaponSelection::UserCmd_PrevWeapon(void)
 
 	CycleToPrevWeapon();
 
-#if !defined ( CSTRIKE15 )
 	if( hud_fastswitch.GetInt() > 0 )
-#endif
 	{
 		SelectWeapon();
 	}
@@ -660,18 +533,8 @@ void CBaseHudWeaponSelection::SelectWeapon( void )
 	
 		engine->ClientCmd( "cancelselect\n" );
 
-		if (player->GetTeamNumber() == TEAM_CT)
-		{
-			// Play the "weapon selected" sound
-			player->EmitSound("Player.WeaponSelected_CT");
-
-		}
-		else
-		{
-			// Play the "weapon selected" sound
-			player->EmitSound("Player.WeaponSelected_T");
-		}
-		
+		// Play the "weapon selected" sound
+		player->EmitSound( "Player.WeaponSelected" );
 	}
 }
 
@@ -693,21 +556,8 @@ void CBaseHudWeaponSelection::CancelWeaponSelection( void )
 
 		m_hSelectedWeapon = NULL;
 
-		// Play the "close weapon selection" sound based on faction
-		//player->EmitSound( "Player.WeaponSelectionClose" );
-
-		if (player->GetTeamNumber() == TEAM_CT)
-		{
-			// Play the CT Suit sound
-			player->EmitSound("Player.WeaponSelectionClose_CT");
-
-		}
-		else
-		{
-			// Play the T Suit sound
-			player->EmitSound("Player.WeaponSelectionClose_T");
-		}
-
+		// Play the "close weapon selection" sound
+		player->EmitSound( "Player.WeaponSelectionClose" );
 	}
 	else
 	{

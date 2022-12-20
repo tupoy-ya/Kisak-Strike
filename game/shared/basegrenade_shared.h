@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -11,12 +11,13 @@
 #pragma once
 #endif
 
+#include "baseprojectile.h"
+
 #if defined( CLIENT_DLL )
 
 #define CBaseGrenade C_BaseGrenade
 
 #include "c_basecombatcharacter.h"
-#include "glow_outline_effect.h"
 
 #else
 
@@ -25,20 +26,17 @@
 
 #endif
 
-#include "cs_shareddefs.h"
-
 #define BASEGRENADE_EXPLOSION_VOLUME	1024
 
 class CTakeDamageInfo;
 
-
 #if !defined( CLIENT_DLL )
-class CBaseGrenade : public CBaseAnimating, public CDefaultPlayerPickupVPhysics
+class CBaseGrenade : public CBaseProjectile, public CDefaultPlayerPickupVPhysics
 #else
-class CBaseGrenade : public CBaseAnimating
+class CBaseGrenade : public CBaseProjectile
 #endif
 {
-	DECLARE_CLASS( CBaseGrenade, CBaseAnimating );
+	DECLARE_CLASS( CBaseGrenade, CBaseProjectile );
 public:
 
 	CBaseGrenade(void);
@@ -74,10 +72,6 @@ public:
 
 	virtual float		GetShakeAmplitude( void ) { return 25.0; }
 	virtual float		GetShakeRadius( void ) { return 750.0; }
-
-	virtual const char *GetParticleSystemName( int pointContents, surfacedata_t *pdata = NULL ) { return NULL; }
-
-	virtual GrenadeType_t GetGrenadeType( void ) { return GRENADE_TYPE_EXPLOSIVE; }
 
 	// Damage accessors.
 	virtual float GetDamage()
@@ -129,10 +123,6 @@ public:
 	CNetworkVar( float, m_flNextAttack );
 	float				m_flDetonateTime;			// Time at which to detonate.
 	float				m_flWarnAITime;				// Time at which to warn the AI
-
-#if defined( CLIENT_DLL )
-	CGlowObject			m_GlowObject;
-#endif
 
 protected:
 

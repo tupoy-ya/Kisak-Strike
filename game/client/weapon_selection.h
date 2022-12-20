@@ -1,4 +1,4 @@
-//========= Copyright 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Weapon selection handling
 //
@@ -10,7 +10,6 @@
 #pragma once
 #endif
 
-#include "inputsystem/ButtonCode.h"
 #include "hudelement.h"
 
 class C_BaseCombatWeapon;
@@ -48,9 +47,6 @@ public:
 	virtual void CycleToNextWeapon( void ) = 0;
 	virtual void CycleToPrevWeapon( void ) = 0;
 	virtual void SwitchToLastWeapon( void );
-	virtual void CycleToNextGrenadeOrBomb( void ) = 0;
-	virtual void CycleToNextGrenadeBombOrMelee( void ) = 0;
-	virtual void CycleToNextNonGrenadeOrBomb( void ) = 0;
 	virtual C_BaseCombatWeapon *GetWeaponInSlot( int iSlot, int iSlotPos ) = 0;
 	virtual void SelectWeaponSlot( int iSlot ) = 0;
 	virtual C_BaseCombatWeapon	*GetFirstPos( int iSlot );
@@ -61,36 +57,24 @@ public:
 	virtual C_BaseCombatWeapon	*GetSelectedWeapon( void ) = 0;
 
 	virtual void OnWeaponPickup( C_BaseCombatWeapon *pWeapon );
-	virtual void OnWeaponDrop( C_BaseCombatWeapon *pWeapon ) {}
-	virtual void OnWeaponSwitch( C_BaseCombatWeapon *pWeapon ) {}
 	virtual bool IsInSelectionMode();
 
 	void UserCmd_Slot1( void );
 	void UserCmd_Slot2( void );
-	virtual void UserCmd_Slot3( void );
-	virtual void UserCmd_Slot4( void );
-	virtual void UserCmd_Slot5( void );
-	virtual void UserCmd_Slot6( void );
-	virtual void UserCmd_Slot7( void );
-	virtual void UserCmd_Slot8( void );
-	virtual void UserCmd_Slot9( void );
+	void UserCmd_Slot3( void );
+	void UserCmd_Slot4( void );
+	void UserCmd_Slot5( void );
+	void UserCmd_Slot6( void );
+	void UserCmd_Slot7( void );
+	void UserCmd_Slot8( void );
+	void UserCmd_Slot9( void );
 	void UserCmd_Slot0( void );
-	virtual void UserCmd_Slot10( void );
-	virtual void UserCmd_Slot11( void );
+	void UserCmd_Slot10( void );
 	void UserCmd_Close( void );
 	void UserCmd_NextWeapon( void );
 	void UserCmd_PrevWeapon( void );
 	void UserCmd_LastWeapon( void );
 	void UserCmd_DropPrimary( void );
-	void UserCmd_NextGrenadeWeapon( void );
-	void UserCmd_NextItemWeapon( void );
-	void UserCmd_NextNonGrenadeWeapon( void );
-	virtual void UserCmd_GamePadSlot1( void )=0;
-	virtual void UserCmd_GamePadSlot2( void )=0;
-	virtual void UserCmd_GamePadSlot3( void )=0;
-	virtual void UserCmd_GamePadSlot4( void )=0;
-	virtual void UserCmd_GamePadSlot5( void )=0;
-	virtual void UserCmd_GamePadSlot6( void )=0;
 
 	virtual void		SelectSlot( int iSlot );
 
@@ -117,7 +101,7 @@ protected:
 
 	float	m_flSelectionTime;	// most recent time at which weapon selection had input
 
-	static CBaseHudWeaponSelection *s_pInstance[MAX_SPLITSCREEN_PLAYERS];
+	static CBaseHudWeaponSelection *s_pInstance;
 
 	bool	m_bSelectionVisible;
 

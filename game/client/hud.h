@@ -1,4 +1,4 @@
-//========= Copyright 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: CHud handles the message, calculation, and drawing the HUD
 //
@@ -16,12 +16,10 @@
 #include <vgui/vgui.h>
 #include <color.h>
 #include <bitbuf.h>
-#include "usermessages.h"
 
 namespace vgui
 {
 	class IScheme;
-	class Panel;
 }
 
 // basic rectangle struct used for drawing
@@ -39,35 +37,9 @@ typedef struct wrect_s
 class CHudTexture
 {
 public:
-	CHudTexture()
-	{
-		Q_memset( szShortName, 0, sizeof( szShortName ) );
-		Q_memset( szTextureFile, 0, sizeof( szTextureFile ) );
-		Q_memset( texCoords, 0, sizeof( texCoords ) );
-		Q_memset( &rc, 0, sizeof( rc ) );
-		textureId = -1;
-		bRenderUsingFont = false;
-		bPrecached = false;
-		cCharacterInFont = 0;
-		hFont = NULL;
-	}
-
-	CHudTexture& operator =( const CHudTexture& src )
-	{
-		if ( this == &src )
-			return *this;
-
-		Q_strncpy( szShortName, src.szShortName, sizeof( szShortName ) );
-		Q_strncpy( szTextureFile, src.szTextureFile, sizeof( szTextureFile ) );
-		Q_memcpy( texCoords, src.texCoords, sizeof( texCoords ) );
-		textureId = src.textureId;
-		rc = src.rc;
-		bRenderUsingFont = src.bRenderUsingFont;
-		cCharacterInFont = src.cCharacterInFont;
-		hFont = src.hFont;
-
-		return *this;
-	}
+	CHudTexture();
+	CHudTexture& operator =( const CHudTexture& src );
+	virtual ~CHudTexture();
 
 	int Width() const
 	{
@@ -86,12 +58,11 @@ public:
 	int EffectiveWidth( float flScale ) const;
 	int EffectiveHeight( float flScale ) const;
 
-	void DrawSelf( int x, int y, const Color& clr, float flApparentZ = vgui::STEREO_NOOP ) const;
-	void DrawSelf( int x, int y, int w, int h, const Color& clr, float flApparentZ = vgui::STEREO_NOOP ) const;
-	void DrawSelfCropped( int x, int y, int cropx, int cropy, int cropw, int croph, Color clr, float flApparentZ = vgui::STEREO_NOOP ) const;
+	void DrawSelf( int x, int y, const Color& clr ) const;
+	void DrawSelf( int x, int y, int w, int h, const Color& clr ) const;
+	void DrawSelfCropped( int x, int y, int cropx, int cropy, int cropw, int croph, Color clr ) const;
 	// new version to scale the texture over a finalWidth and finalHeight passed in
-	void DrawSelfCropped( int x, int y, int cropx, int cropy, int cropw, int croph, int finalWidth, int finalHeight, Color clr, float flApparentZ = vgui::STEREO_NOOP ) const;
-	void DrawSelfScalableCorners( int x, int y, int w, int h, int iSrcCornerW, int iSrcCornerH, int iDrawCornerW, int iDrawCornerH, Color clr, float flApparentZ = vgui::STEREO_NOOP ) const;
+	void DrawSelfCropped( int x, int y, int cropx, int cropy, int cropw, int croph, int finalWidth, int finalHeight, Color clr ) const;
 
 	char		szShortName[ 64 ];
 	char		szTextureFile[ 64 ];
@@ -136,9 +107,9 @@ public:
 	void						VidInit( void );
 	// Shutdown's called when the engine's shutting down
 	void						Shutdown( void );
-	// LevelInit's called whenever a new level's starting
+	// LevelInit's called whenever a new level is starting
 	void						LevelInit( void );
-	// LevelShutdown's called whenever a level's finishing
+	// LevelShutdown's called whenever a level is finishing
 	void						LevelShutdown( void );
 	
 	void						ResetHUD( void );
@@ -146,19 +117,9 @@ public:
 	// A saved game has just been loaded
 	void						OnRestore();
 
-	//							called during simulation, Players and other moving actors
-	// 							may not be in their final position when this is called
-	void						Think( void );
-	
-	//							called just before rendering, Players will be in the right
-	//							position, but scaleform update may not be called between LateThink()
-	//							and when the scaleform display is updated (this is probably not an issue
-	//							just a good-to-know
-	//							Also, late think is only called when in the game.
-    void                        LateThink( void );
+	void						Think();
 
 	void						ProcessInput( bool bActive );
-	void						OnTimeJump();
 	void						UpdateHud( bool bActive );
 
 	void						InitColors( vgui::IScheme *pScheme );
@@ -177,9 +138,17 @@ public:
 	void						DrawProgressBar( int x, int y, int width, int height, float percentage, Color& clr, unsigned char type );
 	void						DrawIconProgressBar( int x, int y, CHudTexture *icon, CHudTexture *icon2, float percentage, Color& clr, int type );
 
+	CHudTexture					*GetIcon( const char *szIcon );
+
+	// loads a new icon into the list, without duplicates
+	CHudTexture					*AddUnsearchableHudIconToList( CHudTexture& texture );
+	CHudTexture					*AddSearchableHudIconToList( CHudTexture& texture );
+
+	void						RefreshHudTextures();
+
 	// User messages
-	bool						MsgFunc_ResetHUD( const CCSUsrMsg_ResetHud& msg );
-	bool 						MsgFunc_SendAudio( const CCSUsrMsg_SendAudio& msg );
+	void						MsgFunc_ResetHUD(bf_read &msg);
+	void 						MsgFunc_SendAudio(bf_read &msg);
 
 	// Hud Render group
 	int							LookupRenderGroupIndexByName( const char *pszGroupName );
@@ -192,23 +161,13 @@ public:
 
 	void						SetScreenShotTime( float flTime ){ m_flScreenShotTime = flTime; }
 
-	CUtlVector< CHudElement * > &GetHudList();
-	const CUtlVector< CHudElement * > &GetHudList() const;
-	CUtlVector< vgui::Panel * > &GetHudPanelList();
-	const CUtlVector< vgui::Panel * > &GetHudPanelList() const;
-	void						OnSplitScreenStateChanged();
-
-	void						DisableHud( void );
-	void						EnableHud( void );
-	bool						HudDisabled( void );
-
 public:
 
 	int							m_iKeyBits;
-
+#ifndef _XBOX
 	float						m_flMouseSensitivity;
 	float						m_flMouseSensitivityFactor;
-
+#endif
 	float						m_flFOVSensitivityAdjust;
 
 	Color						m_clrNormal;
@@ -216,53 +175,24 @@ public:
 	Color						m_clrYellowish;
 
 	CUtlVector< CHudElement * >	m_HudList;
-	// Same list as above, but with vgui::Panel dynamic_cast precomputed.  These should all be non-NULL!!!
-	CUtlVector< vgui::Panel * >	m_HudPanelList; 
 
 private:
 	void						InitFonts();
-    void                        DoElementThink( CHudElement* pElement, vgui::Panel* pPanel );
 
+	void						SetupNewHudTexture( CHudTexture *t );
 
+	bool						m_bHudTexturesLoaded;
+
+	// Global list of known icons
+	CUtlDict< CHudTexture *, int >		m_Icons;
 
 	CUtlVector< const char * >				m_RenderGroupNames;
 	CUtlMap< int, CHudRenderGroup * >		m_RenderGroups;
 
 	float						m_flScreenShotTime; // used to take end-game screenshots
-	int							m_nSplitScreenSlot;
-	bool						m_bEngineIsInGame;
-	int							m_iDisabledCount;
 };
 
-CHud &GetHud( int nSlot = -1 );
-
-class CHudIcons
-{
-public:
-	CHudIcons();
-	~CHudIcons();
-
-	void						Init();
-	void						Shutdown();
-
-	CHudTexture					*GetIcon( const char *szIcon );
-
-	// loads a new icon into the list, without duplicates
-	CHudTexture					*AddUnsearchableHudIconToList( CHudTexture& texture );
-	CHudTexture					*AddSearchableHudIconToList( CHudTexture& texture );
-
-	void						RefreshHudTextures();
-
-private:
-
-	void						SetupNewHudTexture( CHudTexture *t );
-	bool						m_bHudTexturesLoaded;
-	// Global list of known icons
-	CUtlDict< CHudTexture *, int >		m_Icons;
-
-};
-
-CHudIcons &HudIcons();
+extern CHud gHUD;
 
 //-----------------------------------------------------------------------------
 // Global fonts used in the client DLL

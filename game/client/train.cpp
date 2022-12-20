@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -27,15 +27,13 @@ class CHudTrain: public CHudElement, public vgui::Panel
 {
 	DECLARE_CLASS_SIMPLE( CHudTrain, vgui::Panel );
 public:
-	explicit CHudTrain( const char *pElementName );
+	CHudTrain( const char *pElementName );
 	void Init( void );
 	void VidInit( void );
 	bool ShouldDraw( void );
 	virtual void	ApplySchemeSettings( vgui::IScheme *scheme );
 	virtual void	Paint( void );
-	bool MsgFunc_Train(const CCSUsrMsg_Train &msg);
-
-	CUserMessageBinder m_UMCMsgTrain;
+	void MsgFunc_Train(bf_read &msg);
 
 private:
 	int m_iPos;
@@ -108,9 +106,8 @@ void CHudTrain::Paint()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool CHudTrain::MsgFunc_Train( const CCSUsrMsg_Train &msg )
+void CHudTrain::MsgFunc_Train( bf_read &msg )
 {
 	// update Train data
-	m_iPos = msg.train();
-	return true;
+	m_iPos = msg.ReadByte();
 }

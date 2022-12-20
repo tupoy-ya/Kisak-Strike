@@ -24,7 +24,6 @@
 #include "keyvalues.h"
 #include "tier1/utldict.h"
 #include "econ_item_constants.h"
-#include "tier1/utlhashmaplarge.h"
 #include "UtlStringMap.h"
 
 #include "item_selection_criteria.h"

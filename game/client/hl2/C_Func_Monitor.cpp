@@ -1,10 +1,10 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================//
-#include "cbase.h"
+/*#include "cbase.h"
 #include "c_func_brush.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -28,4 +28,4 @@ bool C_FuncMonitor::ShouldDraw()
 {
 	RANDOM_CEG_TEST_SECRET();
 	return true;
-}
+}*/
