@@ -18,6 +18,7 @@
 #ifdef CLIENT_DLL
 #include "achievement_notification_panel.h"
 #include "c_playerresource.h"
+#include "c_cs_player.h"
 #ifdef TF_CLIENT_DLL
 #include "item_inventory.h"
 #endif //TF_CLIENT_DLL
@@ -30,7 +31,7 @@
 #include "steam/isteamfriends.h"
 #include "steam/isteamutils.h"
 #endif
-#include "portal/portal_gamerules.h"
+#include "cs_gamerules.h"
 #include "tier3/tier3.h"
 #include "vgui/ILocalize.h"
 
@@ -53,6 +54,8 @@
 
 #include "matchmaking/imatchframework.h"
 #include "tier0/vprof.h"
+#include "cs_weapon_parse.h"
+#include "achievements_cs.h"
 
 // NOTE: This has to be the last file included!
 #include "tier0/memdbgon.h"
@@ -818,11 +821,10 @@ void CAchievementMgr::SaveGlobalStateIfDirty( )
 bool CAchievementMgr::IsAchievementAllowedInGame( int iAchievementID )
 {
 	// Offline modes with trivial bots disable ALL achievements
-	//if ( CSGameRules() && !CSGameRules()->IsAwardsProgressAllowedForBotDifficulty() )
+	if ( CSGameRules() && !CSGameRules()->IsAwardsProgressAllowedForBotDifficulty() )
 		return false;
 
-	// TODO: Add Achievements. tupoy
-	/*bool isGunGameAchievement = false;
+	bool isGunGameAchievement = false;
 
 	switch( iAchievementID )
 	{
@@ -885,7 +887,7 @@ bool CAchievementMgr::IsAchievementAllowedInGame( int iAchievementID )
 	{
 		// Other achievements are valid for all game types.
 		return true;
-	}*/
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -893,7 +895,6 @@ bool CAchievementMgr::IsAchievementAllowedInGame( int iAchievementID )
 //-----------------------------------------------------------------------------
 void CAchievementMgr::AwardAchievement( int iAchievementID, int nUserSlot )
 {
-/*
 	if( !IsAchievementAllowedInGame( iAchievementID ) )
 		return;
 
@@ -1007,7 +1008,6 @@ void CAchievementMgr::AwardAchievement( int iAchievementID, int nUserSlot )
 	// Add this one to the list of achievements earned during current session
 	m_AchievementsAwardedDuringCurrentGame[nUserSlot].AddToTail( iAchievementID );
 #endif // CLIENT_DLL
-*/
 }
 
 #if defined ( _X360 )
@@ -1515,7 +1515,6 @@ void CAchievementMgr::ResetAchievement( int iAchievementID )
 //-----------------------------------------------------------------------------
 void CAchievementMgr::PrintAchievementStatus()
 {
-/*
 #if defined( CLIENT_DLL )
 	if ( IsPC() && !LoggedIntoSteam() )
 	{
@@ -1589,7 +1588,6 @@ void CAchievementMgr::PrintAchievementStatus()
 	}
 	Msg( "Total achievements: %d  Total possible points: %d\n", iTotalAchievements, iTotalPoints );
 #endif
-*/
 }
 
 //-----------------------------------------------------------------------------

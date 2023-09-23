@@ -3,7 +3,7 @@
 
 # List of targets from VPC
 #                        Dmserializers*         Matchmaking_DS_CSGO*   ServerBrowser*         tier3*
-#                        Dmxloader*             materialsystem*        Server_Portal*           Unitlib*
+#                        Dmxloader*             materialsystem*        Server_CSGO*           Unitlib*
 # appframework*          engine*                mathlib*               shaderapiempty*        valve_avi*
 # bitmap*                engine_ds              mathlib_extended*      shaderlib*             vgui2*
 # bitmap_byteswap*       Fgdlib*                matsys_controls*                              vgui_controls*
@@ -13,7 +13,7 @@
 #                        launcher*              Raytrace*              stdshader_dx9*         vpklib*
 #                        launcher_main*                                studiorender*          vscript*
 #                        localize*                                                            vstdlib*
-# Client_Portal*           matchmakingbase*       resourcefile*          tier0*                 vtf*
+# Client_CSGO*           matchmakingbase*       resourcefile*          tier0*                 vtf*
 # datacache*             matchmakingbase_ds*    responserules_runtime* tier1*
 # Dedicated*             Matchmaking_CSGO*      SceneFileCache*        tier2*
 
@@ -26,7 +26,7 @@ add_subdirectory(appframework)
 add_subdirectory(external/crypto++-5.61)
 add_subdirectory(interfaces)
 add_subdirectory(fgdlib)
-#add_subdirectory(gcsdk)
+add_subdirectory(gcsdk)
 add_subdirectory(tier0)
 add_subdirectory(tier1)
 add_subdirectory(tier2)
@@ -84,9 +84,9 @@ add_subdirectory(togl)
 add_subdirectory(vguimatsurface)
 add_subdirectory(vscript)
 
-add_subdirectory(game/client) #Portal Client
-add_subdirectory(game/server) #Portal Server
-#add_subdirectory(matchmaking) #Does all 4 matchmaking projects
+add_subdirectory(game/client) #CSGO Client
+add_subdirectory(game/server) #CSGO Server
+add_subdirectory(matchmaking) #Does all 4 matchmaking projects
 
 add_subdirectory(launcher)
 add_subdirectory(launcher_main) #The actual executable that just dlopen's launcher

@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -32,13 +32,15 @@ class CHudGeiger: public CHudElement, public vgui::Panel
 {
 	DECLARE_CLASS_SIMPLE( CHudGeiger, vgui::Panel );
 public:
-	CHudGeiger( const char *pElementName );
+	explicit CHudGeiger( const char *pElementName );
 	void Init( void );
 	void VidInit( void );
 	bool ShouldDraw( void );
 	virtual void	ApplySchemeSettings( vgui::IScheme *scheme );
 	virtual void	Paint( void );
-	void MsgFunc_Geiger(bf_read &msg);
+	bool MsgFunc_Geiger(const CCSUsrMsg_Geiger &msg);
+
+	CUserMessageBinder m_UMCMsgGeiger;
 	
 private:
 	int m_iGeigerRange;
@@ -89,11 +91,12 @@ void CHudGeiger::VidInit(void)
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CHudGeiger::MsgFunc_Geiger( bf_read &msg )
+bool CHudGeiger::MsgFunc_Geiger( const CCSUsrMsg_Geiger &msg )
 {
 	// update geiger data
-	m_iGeigerRange = msg.ReadByte();
+	m_iGeigerRange = msg.range();
 	m_iGeigerRange = m_iGeigerRange << 2;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -109,6 +112,9 @@ bool CHudGeiger::ShouldDraw( void )
 //-----------------------------------------------------------------------------
 void CHudGeiger::Paint()
 {
+	if ( !ShouldDraw() )
+		return;
+
 	int pct;
 	float flvol=0;
 	bool highsound = false;

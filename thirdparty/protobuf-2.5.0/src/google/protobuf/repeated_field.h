@@ -43,9 +43,6 @@
 // but should instead use the accessor functions generated automatically by the
 // protocol compiler.
 
-// tupoy-ya this is stupid but i hate this warning.
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-
 #ifndef GOOGLE_PROTOBUF_REPEATED_FIELD_H__
 #define GOOGLE_PROTOBUF_REPEATED_FIELD_H__
 

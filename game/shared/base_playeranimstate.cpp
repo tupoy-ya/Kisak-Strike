@@ -685,7 +685,7 @@ void CBasePlayerAnimState::ComputePoseParam_MoveYaw( CStudioHdr *pStudioHdr )
 			GetOuterAbsVelocity( vel );
 			float flMovementSpeed = vel.Length2D();
 
-			if ( flAnimatedSpeed > 260.f ) // FIXME: This is CS_PLAYER_SPEED_RUN
+			if ( flAnimatedSpeed > CS_PLAYER_SPEED_RUN )
 				flAnimatedSpeed = flMovementSpeed;
 
 			if ( flAnimatedSpeed < MOVEMENT_MINIMUM_ANIMATED_SPEED )

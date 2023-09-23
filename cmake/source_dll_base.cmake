@@ -4,7 +4,7 @@ include("${CMAKE_MODULE_PATH}/source_base.cmake")
 
 MacroRequired(OUTDLLEXT ".so")
 
-add_definitions(-DPORTAL)
+add_definitions(-DCSTRIKE15)
 
 if(POSIX)
 
