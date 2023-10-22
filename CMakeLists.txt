@@ -22,6 +22,9 @@ project(KisakStrike)
 
 include(kisak-strike-build-options.cmake)
 
+# Protobuf warning.
+add_compile_options("-Wno-deprecated-declarations")
+
 add_subdirectory(appframework)
 add_subdirectory(external/crypto++-5.61)
 add_subdirectory(interfaces)

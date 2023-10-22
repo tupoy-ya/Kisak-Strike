@@ -27,7 +27,14 @@ bld/
 # Idea IDE
 .idea/
 
+# Clangd
+.cache/
+
+# Code OSS
+.vscode/
+
 # Ignore cmake-build, but keep placeholder.
+build/
 cmake-build/*
 cmake-dev-test/*
 !cmake-build/placeholder.txt
