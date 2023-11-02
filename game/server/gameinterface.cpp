@@ -2110,6 +2110,7 @@ KeyValues*	CServerGameDLL::GetExtendedServerInfoForNewClient()
 	static KeyValues *s_pExtendedServerInfo = NULL;
 	static char s_szExtendedHashKey[256] = {0};
 
+#if defined( CSTRIKE15 )
 	int iGameType = g_pGameTypes->GetCurrentGameType();
 	int iGameMode = g_pGameTypes->GetCurrentGameMode();
 	int nNumSlots = g_pGameTypes->GetMaxPlayersForTypeAndMode( iGameType, iGameMode );
@@ -2190,6 +2191,7 @@ KeyValues*	CServerGameDLL::GetExtendedServerInfoForNewClient()
 
 		KeyValuesDumpAsDevMsg( s_pExtendedServerInfo, 1, 1 );
 	}
+#endif // CSTRIKE15
 	return s_pExtendedServerInfo;
 }
 
@@ -2278,8 +2280,10 @@ void LoadMOTDFile( const char *stringname, ConVar *pConvarFilename )
 	g_pStringTableInfoPanel->AddString( CBaseEntity::IsServer(), stringname, length+1, data );
 }
 
+#if defined ( CSTRIKE15 )
 extern ConVar sv_server_graphic1;
 extern ConVar sv_server_graphic2;
+#endif
 
 void LoadServerImageFile( const char *stringname )
 {
@@ -2311,8 +2315,10 @@ CEG_NOINLINE void CServerGameDLL::LoadMessageOfTheDay()
 	STEAMWORKS_TESTSECRET();
 	LoadMOTDFile( "motd", &motdfile );
 	LoadMOTDFile( "hostfile", &hostfile );
+#if defined ( CSTRIKE15 )
 	LoadServerImageFile( sv_server_graphic1.GetString() );
 	LoadServerImageFile( sv_server_graphic2.GetString() );
+#endif
 }
 
 PublishedFileId_t CServerGameDLL::GetUGCMapFileID( const char* szMapPath )
@@ -3155,7 +3161,9 @@ CEG_NOINLINE void CServerGameClients::ClientActive( edict_t *pEdict, bool bLoadG
 //-----------------------------------------------------------------------------
 void CServerGameClients::ClientFullyConnect( edict_t *pEdict )
 {
+#if defined ( CSTRIKE15 )
 	::ClientFullyConnect( pEdict );
+#endif
 }
 
 
@@ -3701,14 +3709,16 @@ void CServerGameClients::ClientEarPosition( edict_t *pEdict, Vector *pEarOrigin 
 
 bool CServerGameClients::ClientReplayEvent( edict_t *pEdict, const ClientReplayEventParams_t &params )
 {
+#if defined( CSTRIKE15 )
 	CCSPlayer *pPlayer = ( CCSPlayer * )CBaseEntity::Instance( pEdict );
 	if ( pPlayer )
 	{
 		return pPlayer->StartHltvReplayEvent( params );
 	}
 	else
+#endif
 	{
-		return 0.0f;
+		return false;
 	}
 }
 

@@ -1,18 +1,16 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
 // $NoKeywords: $
-//===========================================================================//
+//=============================================================================//
 
 #include "cbase.h"
 #include "ammodef.h"
 
-#include "tier0/vprof.h"
-
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Switches to the best weapon that is also better than the given weapon.
@@ -57,16 +55,12 @@ bool CBaseCombatCharacter::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmo
 
 	if ( m_hActiveWeapon )
 	{
-		if ( !m_hActiveWeapon->IsAlwaysActive() )
-		{
-			if ( !m_hActiveWeapon->Holster( pWeapon ) )
-			{
-				return false;
-			}
-		}
+		if ( !m_hActiveWeapon->Holster( pWeapon ) )
+			return false;
 	}
 
 	m_hActiveWeapon = pWeapon;
+
 	return pWeapon->Deploy( );
 }
 
@@ -206,68 +200,16 @@ int	CBaseCombatCharacter::GetAmmoCount( char *szName ) const
 //-----------------------------------------------------------------------------
 CBaseCombatWeapon* CBaseCombatCharacter::Weapon_OwnsThisType( const char *pszWeapon, int iSubType ) const
 {
+	// Check for duplicates
 	for ( int i = 0; i < MAX_WEAPONS; i++ ) 
 	{
 		if ( m_hMyWeapons[i].Get() && FClassnameIs( m_hMyWeapons[i], pszWeapon ) )
 		{
 			// Make sure it matches the subtype
 			if ( m_hMyWeapons[i]->GetSubType() == iSubType )
-			{
-				return m_hMyWeapons[i];
-			}
-		}
-	}
-
-	return NULL;
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns the weapon (if any) in the requested slot
-// Input  : slot - which slot to poll
-//-----------------------------------------------------------------------------
-CBaseCombatWeapon *CBaseCombatCharacter::Weapon_GetSlot( int slot ) const
-{
-	int	targetSlot = slot;
-
-	// Check for that slot being occupied already
-	for ( int i=0; i < MAX_WEAPONS; i++ )
-	{
-		if ( m_hMyWeapons[i].Get() != NULL )
-		{
-			// If the slots match, it's already occupied
-			if ( m_hMyWeapons[i]->GetSlot() == targetSlot )
 				return m_hMyWeapons[i];
 		}
 	}
-
-	return NULL;
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns the weapon (if any) in the requested loadout position
-// Input  : position - which slot to poll
-//-----------------------------------------------------------------------------
-CBaseCombatWeapon *CBaseCombatCharacter::Weapon_GetPosition( int position ) const
-{
-	// Check for that slot being occupied already
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
-	{
-		if ( m_hMyWeapons[ i ].Get() != NULL )
-		{
-			CEconItemView * pItem = m_hMyWeapons[ i ]->GetEconItemView() ;
-			if ( !pItem )
-				continue;
-
-			loadout_positions_t unItemPos = ( loadout_positions_t )pItem->GetItemDefinition()->GetLoadoutSlot( GetTeamNumber() );
-
-			// If the slots match, it's already occupied
-			if ( unItemPos == position )
-				return m_hMyWeapons[ i ];
-		}
-	}
-
 	return NULL;
 }
 
@@ -453,10 +395,6 @@ void CCombatCharVisCache::RegisterVisibility( int iCache, bool bEntity1CanSeeEnt
 
 static CCombatCharVisCache s_CombatCharVisCache;
 
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 bool CBaseCombatCharacter::IsAbleToSee( const CBaseEntity *pEntity, FieldOfViewCheckType checkFOV )
 {
 	CBaseCombatCharacter *pBCC = const_cast<CBaseEntity *>( pEntity )->MyCombatCharacterPointer();
@@ -790,3 +728,27 @@ bool CBaseCombatCharacter::IsLineOfSightClear( const Vector &pos, LineOfSightChe
 		return trace.fraction == 1.0f;
 	}
 }
+
+
+/*
+//---------------------------------------------------------------------------------------------------------------------------
+surfacedata_t * CBaseCombatCharacter::GetGroundSurface( void ) const
+{
+	Vector start( vec3_origin );
+	Vector end( 0, 0, -64 );
+
+	Vector vecMins, vecMaxs;
+	CollisionProp()->WorldSpaceAABB( &vecMins, &vecMaxs );
+
+	Ray_t ray;
+	ray.Init( start, end, vecMins, vecMaxs );
+
+	trace_t	trace;
+	UTIL_TraceRay( ray, MASK_SOLID, this, COLLISION_GROUP_PLAYER_MOVEMENT, &trace );
+
+	if ( trace.fraction == 1.0f )
+		return NULL;	// no ground
+
+	return physprops->GetSurfaceData( trace.surface.surfaceProps );
+}
+*/

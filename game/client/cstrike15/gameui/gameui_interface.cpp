@@ -68,11 +68,18 @@
 #include "matsys_controls/matsyscontrols.h"
 #include "steam/steam_api.h"
 #include "protocol.h"
-#include "loadingscreen_scaleform.h"
+#if defined( INCLUDE_SCALEFORM )
+#include "cstrike15/Scaleform/loadingscreen_scaleform.h"
+#include "itempickup_scaleform.h"
+#elif defined( INCLUDE_ROCKETUI )
+#include "cstrike15/RocketUI/rkhud_loadingscreen.h"
+#endif
 #include "GameUI/IGameUI.h"
 #include "inputsystem/iinputsystem.h"
 
+#if defined( CSTRIKE15 )
 #include "cstrike15_item_inventory.h"
+#endif
 
 
 #ifdef PANORAMA_ENABLE
@@ -132,7 +139,7 @@ inline UI_BASEMOD_PANEL_CLASS & ConstructUiBaseModPanelClass() { return *BasePan
 
 #else
 
-#include "BasePanel.h"
+#include "basepanel.h"
 typedef CBasePanel UI_BASEMOD_PANEL_CLASS;
 inline UI_BASEMOD_PANEL_CLASS & GetUiBaseModPanelClass() { return *BasePanel(); }
 inline UI_BASEMOD_PANEL_CLASS & ConstructUiBaseModPanelClass() { return *BasePanelSingleton(); }

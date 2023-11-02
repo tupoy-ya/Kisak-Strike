@@ -28,7 +28,9 @@
 #include "materialsystem/imaterial.h"
 #include "matchmaking/imatchframework.h"
 
+#if defined ( CSTRIKE15 )
 #include "cs_gamerules.h"
+#endif
 
 #ifdef _PS3
 #include "ps3/ps3_core.h"
@@ -338,14 +340,18 @@ CNetGraphPanel::~CNetGraphPanel( void )
 	g_pNetGraphPanel = NULL;
 }
 
+#if defined ( CSTRIKE15 )
 extern ConVar sv_max_allowed_net_graph;
+#endif
 void NetgraphChangeCallback( IConVar *var, const char *pOldValue, float flOldValue )
 {
+#if defined ( CSTRIKE15 )
 	if ( net_graph.GetInt() > sv_max_allowed_net_graph.GetInt() )
 	{
 		net_graph.SetValue( sv_max_allowed_net_graph.GetInt() );
 		Msg( "Server does not allow net_graph values above %d\n", sv_max_allowed_net_graph.GetInt() );
 	}
+#endif
 	
 	if ( g_pNetGraphPanel )
 	{
@@ -1058,7 +1064,11 @@ int CNetGraphPanel::GraphValue( void )
 	// With +graph key, use max area
 	if ( !graphtype )
 	{
+#if defined ( CSTRIKE15 )
 		graphtype = Min( sv_max_allowed_net_graph.GetInt(), 3 );
+#else
+		graphtype = 3;
+#endif
 	}
 
 	return graphtype;
@@ -1194,6 +1204,7 @@ void CNetGraphPanel::DrawServerType( int xright, int y )
 	{
 		INetChannelInfo *pInfo = engine->GetNetChannelInfo();
 		bool bP2P = ( netadr_t( pInfo ? pInfo->GetAddress() : "127.0.0.1" ).GetPort() == 1 );
+#if defined ( CSTRIKE15 )
 		if ( engine->IsHLTV() )
 		{
 			if ( CSGameRules() && CSGameRules()->IsValveDS() )
@@ -1212,6 +1223,7 @@ void CNetGraphPanel::DrawServerType( int xright, int y )
 			else
 				psz = "online";
 		}
+#endif
 	}
 	else if ( engine->IsConnected() )
 		psz = "loading";

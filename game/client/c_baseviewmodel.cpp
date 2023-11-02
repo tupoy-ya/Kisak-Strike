@@ -22,11 +22,14 @@
 #include "dlight.h"
 #include "clientalphaproperty.h"
 #include "iinput.h"
+
+#if defined( CSTRIKE )
 #include "cs_shareddefs.h"
 #include "c_cs_player.h"
-
 #include "weapon_csbase.h"
 #include "weapon_basecsgrenade.h"
+#endif
+
 #include "iclientmode.h"
 
 #include "platforminputdevice.h"
@@ -186,6 +189,7 @@ void C_BaseViewModel::UpdateParticles( int nSlot )
 	if ( !pWeapon )
 		return;
 
+#if defined( CSTRIKE15 )
 	CWeaponCSBase *pCSWeapon = ( CWeaponCSBase* )pPlayer->GetActiveWeapon();
 	if ( !pCSWeapon )
 		return;
@@ -233,6 +237,7 @@ void C_BaseViewModel::UpdateParticles( int nSlot )
 			m_viewmodelParticleEffect = NULL;
 		}
 	}
+#endif
 }
 
 bool C_BaseViewModel::Simulate( void )
@@ -692,7 +697,7 @@ int C_BaseViewModel::DrawModel( int flags, const RenderableInstance_t &instance 
 		}
 		else if ( pWeapon && pWeapon->IsOverridingViewmodel() )
 		{
-			ret = pWeapon->DrawOverriddenViewmodel( this, flags, instance );
+			ret = pWeapon->DrawOverriddenViewmodel( this, flags/*, instance*/ );
 		}
 		else
 		{
@@ -713,7 +718,7 @@ int C_BaseViewModel::DrawModel( int flags, const RenderableInstance_t &instance 
 		// Tell the weapon itself that we've rendered, in case it wants to do something
 		if ( pWeapon )
 		{
-			pWeapon->ViewModelDrawn( flags, this );
+			pWeapon->ViewModelDrawn( this );
 		}
 
 		if ( vm_debug.GetBool() )
@@ -762,7 +767,7 @@ int C_BaseViewModel::DrawModel( int flags, const RenderableInstance_t &instance 
 		}
 	}
 
-
+#ifdef CSTRIKE_DLL
 	if ( flags && vm_draw_addon.GetBool() 
 #ifdef IRONSIGHT
 		&& (GetScopeStencilMaskMode() == false) 
@@ -799,6 +804,7 @@ int C_BaseViewModel::DrawModel( int flags, const RenderableInstance_t &instance 
 			m_viewmodelUidAddon->DrawModel( flags | STUDIO_DONOTMODIFYSTENCILSTATE, instance );
 		}
 	}
+#endif
 	
 #ifdef IRONSIGHT
 	//Scope stencil mask mode is automatically turned off after rendering. It needs to be explicitly enabled before each draw.
@@ -932,7 +938,11 @@ void C_BaseViewModel::GetBoneControllers(float controllers[MAXSTUDIOBONECTRLS])
 
 void C_BaseViewModel::UpdateAllViewmodelAddons( void )
 {
+#if defined( CSTRIKE15 )
 	C_CSPlayer *pPlayer = ToCSPlayer( GetOwner() );
+#else
+	C_BasePlayer *pPlayer = ToBasePlayer( GetOwner() );
+#endif
 
 	// Remove any view model add ons if we're spectating.
 	if ( !pPlayer )
@@ -953,6 +963,7 @@ void C_BaseViewModel::UpdateAllViewmodelAddons( void )
 		RemoveViewmodelStickers();
 		return;
 	}
+#if defined( CSTRIKE15 )
 	CWeaponCSBase* pCSWeapon = dynamic_cast<CWeaponCSBase*>( pWeapon );
 	if ( !pCSWeapon )
 	{
@@ -983,7 +994,7 @@ void C_BaseViewModel::UpdateAllViewmodelAddons( void )
 			pPlayer->m_pViewmodelArmConfig = GetPlayerViewmodelArmConfigForPlayerModel( pHdr->pszName() );
 		}
 	}
-	
+
 	// add gloves and sleeves
 	if ( pPlayer->m_pViewmodelArmConfig != NULL && m_vecViewmodelArmModels.Count() == 0 )
 	{
@@ -992,7 +1003,6 @@ void C_BaseViewModel::UpdateAllViewmodelAddons( void )
 			AddViewmodelArmModel( pPlayer->m_pViewmodelArmConfig->szAssociatedSleeveModel );
 		}
 	}
-
 
 	// econ-related addons follow, so bail out if we can't get at the econitemview
 	CEconItemView *pItem = pWeapon->GetEconItemView();
@@ -1025,6 +1035,8 @@ void C_BaseViewModel::UpdateAllViewmodelAddons( void )
 	// add viewmodel stickers
 	AddViewmodelStickers( pItem, weaponID );
 
+#endif
+
 #ifdef IRONSIGHT
 	if ( m_viewmodelScopeStencilMask )
 	{
@@ -1036,6 +1048,7 @@ void C_BaseViewModel::UpdateAllViewmodelAddons( void )
 
 }
 
+#if defined ( CSTRIKE15 )
 C_ViewmodelAttachmentModel* C_BaseViewModel::FindArmModelForLoadoutPosition( loadout_positions_t nPosition ) const
 {
 	/* Removed for partner depot */
@@ -1174,6 +1187,7 @@ void C_BaseViewModel::AddViewmodelStickers( CEconItemView *pItem, int nWeaponID 
 {
 	/* Removed for partner depot */
 }
+#endif
 
 void C_BaseViewModel::RemoveViewmodelArmModels( void )
 {

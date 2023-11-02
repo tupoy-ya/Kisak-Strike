@@ -12,8 +12,10 @@
 //=============================================================================
 #include "cbase.h"
 #include "gc_clientsystem.h"
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 #include "econ_item_system.h"
 #include "econ_item_inventory.h"
+#endif
 //#include "gcsdk/msgprotobuf.h"
 
 //
@@ -233,7 +235,9 @@ void CGCClientSystem::SetupGC()
 {
     // Pre-Init.
     PreInitGC();
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
     InventoryManager()->PreInitGC();
+#endif
 
     // Init.
     InitGC();

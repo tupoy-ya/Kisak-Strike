@@ -2731,7 +2731,11 @@ void CHudCloseCaption::_ProcessCaption( const wchar_t *caption, unsigned int has
 //			iSize - 
 //			*pbuf - 
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool CHudCloseCaption::MsgFunc_CloseCaption(const CCSUsrMsg_CloseCaption &msg)
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudCloseCaption::MsgFunc_CloseCaption(const CHLUsrMsg_CloseCaption &msg)
+#endif
 {
 	unsigned int hash;
 	hash = msg.hash();
@@ -2749,7 +2753,11 @@ bool CHudCloseCaption::MsgFunc_CloseCaption(const CCSUsrMsg_CloseCaption &msg)
 //			iSize - 
 //			*pbuf - 
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool CHudCloseCaption::MsgFunc_CloseCaptionDirect(const CCSUsrMsg_CloseCaptionDirect &msg)
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudCloseCaption::MsgFunc_CloseCaptionDirect(const CHLUsrMsg_CloseCaptionDirect &msg)
+#endif
 {
 	unsigned int hash;
 	hash = msg.hash();

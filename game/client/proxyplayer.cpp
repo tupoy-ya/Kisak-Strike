@@ -12,12 +12,17 @@
 #include "materialsystem/itexture.h"
 #include "materialsystem/imaterialsystem.h"
 #include "functionproxy.h"
+#if defined ( CSTRIKE15 )
 #include "c_cs_player.h"
 #include "weapon_csbase.h"
-#include "predicted_viewmodel.h"
 #include "cs_client_gamestats.h"
-#include "econ/econ_item_schema.h"
 #include "cstrike15_gcconstants.h"
+#endif
+#include "predicted_viewmodel.h"
+
+#if defined ( USE_ECONOMY_FEATURES )
+#include "econ/econ_item_schema.h"
+#endif
 
 #include "imaterialproxydict.h"
 // memdbgon must be the last include file in a .cpp file!!!
@@ -324,11 +329,6 @@ bool CStatTrakDigitProxy::Init( IMaterial *pMaterial, KeyValues *pKeyValues )
 
 	return true;
 }
-
-#include "c_cs_player.h"
-#include "weapon_csbase.h"
-#include "predicted_viewmodel.h"
-
 bool CStatTrakDigitProxy::HelperOnBindGetStatTrakScore( void *pC_BaseEntity, int *piScore )
 {
 	if ( !pC_BaseEntity )
@@ -344,19 +344,23 @@ bool CStatTrakDigitProxy::HelperOnBindGetStatTrakScore( void *pC_BaseEntity, int
 		C_BaseViewModel *pViewModel = dynamic_cast< C_BaseViewModel* >( pEntity->GetMoveParent() );
 		if ( pViewModel )
 		{
+#if defined ( CSTRIKE15 )
 			C_CSPlayer *pPlayer = ToCSPlayer( pViewModel->GetPredictionOwner() );
 			if ( pPlayer )
 			{
 				CWeaponCSBase *pWeap = pPlayer->GetActiveCSWeapon();
 				if ( pWeap )
 				{
+#if defined ( USE_ECONOMY_FEATURES )
 					if ( CEconItemView *pItemView = pWeap->GetEconItemView() )
 					{
 						// Always get headshot-trak(TM)
 						*piScore = pItemView->GetKillEaterValueByType( 0 );
 					}
+#endif // USE_ECONOMY_FEATURES
 				}
 			}
+#endif // CSTRIKE15
 		}
 	}
 	return true;
@@ -563,6 +567,7 @@ bool CWeaponLabelTextProxy::HelperOnBindGetLabel( void *pC_BaseEntity, const cha
 	if ( !pC_BaseEntity )
 		return false;
 
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 	C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
 	if ( pEntity )
 	{
@@ -582,6 +587,7 @@ bool CWeaponLabelTextProxy::HelperOnBindGetLabel( void *pC_BaseEntity, const cha
 			}
 		}
 	}
+#endif
 
 	return false;
 }
@@ -741,9 +747,15 @@ EXPOSE_MATERIAL_PROXY(CStickerPeelProxy, StickerPeel);
 //-----------------------------------------------------------------------------
 // CrosshairColor proxy
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 extern ConVar cl_crosshaircolor_r;
 extern ConVar cl_crosshaircolor_g;
 extern ConVar cl_crosshaircolor_b;
+#else
+ConVar cl_crosshaircolor_r( "cl_crosshaircolor_r", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE  | FCVAR_SS );
+ConVar cl_crosshaircolor_g( "cl_crosshaircolor_g", "250", FCVAR_CLIENTDLL | FCVAR_ARCHIVE  | FCVAR_SS );
+ConVar cl_crosshaircolor_b( "cl_crosshaircolor_b", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE  | FCVAR_SS );
+#endif
 class CCrossHairColorProxy : public CResultProxy
 {
 public:

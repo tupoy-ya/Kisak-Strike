@@ -7625,6 +7625,8 @@ void CAI_BaseNPC::RemoveMemory( void )
 //-----------------------------------------------------------------------------
 void CAI_BaseNPC::ChangeFaction( int nNewFaction )
 {
+	// HACK: Removed for HL2 to not remove it everywhere from the class.
+	/*
 	BaseClass::ChangeFaction( nNewFaction );
 
 	// Remove anyone who is no longer an enemy
@@ -7637,6 +7639,7 @@ void CAI_BaseNPC::ChangeFaction( int nNewFaction )
 		if ( pEnemy && ( IRelationType( pEnemy ) == D_LI ) )
 			GetEnemies()->ClearMemory( pEnemy );
 	}	
+	*/
 }
 
 //-----------------------------------------------------------------------------

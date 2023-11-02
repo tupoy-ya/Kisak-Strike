@@ -3562,8 +3562,11 @@ void ShowViewPortPanelToAll( const char * name, bool bShow, KeyValues *data )
 
 		subkey = data->GetFirstSubKey(); // reset 
 	}
-
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_VGUIMenu msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_VGUIMenu msg;
+#endif
 
 	msg.set_name( name );
 	msg.set_show( bShow );
@@ -3571,7 +3574,11 @@ void ShowViewPortPanelToAll( const char * name, bool bShow, KeyValues *data )
 	// write additional data (be careful not more than 192 bytes!)
 	while ( subkey )
 	{
+#if defined ( CSTRIKE15 )
 		CCSUsrMsg_VGUIMenu::Subkey *pMsgSubkey = msg.add_subkeys();
+#elif defined ( HL2_DLL )
+		CHLUsrMsg_VGUIMenu::Subkey *pMsgSubkey = msg.add_subkeys();
+#endif
 
 		pMsgSubkey->set_name( subkey->GetName() );
 		pMsgSubkey->set_str( subkey-> GetString() );
@@ -3579,7 +3586,11 @@ void ShowViewPortPanelToAll( const char * name, bool bShow, KeyValues *data )
 		subkey = subkey->GetNextKey();
 	}
 
+#if defined ( CSTRIKE15 )
 	SendUserMessage( filter, CS_UM_VGUIMenu, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( filter, HL_UM_VGUIMenu, msg );
+#endif
 }
 
 

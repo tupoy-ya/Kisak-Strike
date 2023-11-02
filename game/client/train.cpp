@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -33,7 +33,11 @@ public:
 	bool ShouldDraw( void );
 	virtual void	ApplySchemeSettings( vgui::IScheme *scheme );
 	virtual void	Paint( void );
+#if defined ( CSTRIKE15 )
 	bool MsgFunc_Train(const CCSUsrMsg_Train &msg);
+#elif defined ( HL2_CLIENT_DLL )
+	bool MsgFunc_Train(const CHLUsrMsg_Train &msg);
+#endif
 
 	CUserMessageBinder m_UMCMsgTrain;
 
@@ -108,7 +112,11 @@ void CHudTrain::Paint()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool CHudTrain::MsgFunc_Train( const CCSUsrMsg_Train &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudTrain::MsgFunc_Train( const CHLUsrMsg_Train &msg )
+#endif
 {
 	// update Train data
 	m_iPos = msg.train();

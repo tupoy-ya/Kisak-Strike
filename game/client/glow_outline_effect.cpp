@@ -10,7 +10,9 @@
 #include "shaderapi/ishaderapi.h"
 #include "materialsystem/imaterialvar.h"
 #include "view_shared.h"
+#if defined( CSTRIKE15 )
 #include "c_cs_player.h"
+#endif
 #include "tier2/renderutils.h"
 
 #define FULL_FRAME_TEXTURE "_rt_FullFrameFB"
@@ -221,6 +223,7 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 
 		vecGlowObjects[i].DrawModel();
 
+#if defined( CSTRIKE15 )
 		// align and render the glow-only muzzle flash model for glowing weapon fire
 		if ( vecGlowObjects[i].m_flGlowPulseOverdrive >= 0.25f )
 		{
@@ -251,6 +254,7 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 				}
 			}
 		}
+#endif
 
 		// dampen overdrive here. Do this at the end, otherwise our framerate may be low enough that we don't see the effect for even one frame
 		if ( vecGlowObjects[i].m_flGlowPulseOverdrive > 0 )
@@ -634,6 +638,7 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 			stencilState.m_bEnable = true;
 			stencilState.m_nReferenceValue = 2;
 
+#if defined( CSTRIKE15 )
 			C_CSPlayer* pPlayer = ToCSPlayer( m_GlowObjectDefinitions[i].m_pEntity );
 			if ( pPlayer )
 			{
@@ -641,6 +646,7 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 				stencilState.m_nReferenceValue = iTempHealthBarRenderMaskIndex;
 				iTempHealthBarRenderMaskIndex ++;
 			}
+#endif
 
 			stencilState.m_CompareFunc = SHADER_STENCILFUNC_ALWAYS;
 			stencilState.m_PassOp = SHADER_STENCILOP_SET_TO_REFERENCE;
@@ -669,6 +675,7 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 		if ( m_GlowObjectDefinitions[i].IsUnused() || !m_GlowObjectDefinitions[i].ShouldDraw( nSplitScreenSlot ) || m_GlowObjectDefinitions[i].m_nRenderStyle != GLOWRENDERSTYLE_DEFAULT )
 			continue;
 
+#if defined( CSTRIKE15 )
 		C_CSPlayer* pPlayer = ToCSPlayer( m_GlowObjectDefinitions[i].m_pEntity );
 		if ( pPlayer && pPlayer != GetLocalOrInEyeCSPlayer() && pPlayer->IsAlive() )
 		{
@@ -752,6 +759,7 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 			}
 
 		}
+#endif
 
 	}
 

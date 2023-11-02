@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -16,8 +16,13 @@
 // This provides an alternative to HOOK_MESSAGE, where you can declare it globally
 // instead of finding a place to run it.
 // It registers a function called __MsgFunc_<msgName>
+#if defined ( CSTRIKE15 )
 #define USER_MESSAGE_REGISTER( msgName ) \
 	static CUserMessageRegister< CS_UM_##msgName, CCSUsrMsg_##msgName > userMessageRegister_##msgName( __MsgFunc_##msgName );
+#elif defined ( HL2_CLIENT_DLL )
+#define USER_MESSAGE_REGISTER( msgName ) \
+	static CUserMessageRegister< HL_UM_##msgName, CHLUsrMsg_##msgName > userMessageRegister_##msgName( __MsgFunc_##msgName );
+#endif
 
 class CUserMessageRegisterBase
 {

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -209,8 +209,13 @@ void CVoiceGameMgr::UpdateMasks()
 		// Request the state of their "VModEnable" cvar.
 		if(g_bWantModEnable[iClient])
 		{
+#if defined ( CSTRIKE15 )
 			CCSUsrMsg_RequestState msg;
 			SendUserMessage( user, CS_UM_RequestState, msg );
+#elif defined ( HL2_DLL )
+			CHLUsrMsg_RequestState msg;
+			SendUserMessage( user, HL_UM_RequestState, msg );
+#endif
 
 			// Since this is reliable, only send it once
 			g_bWantModEnable[iClient] = false;
@@ -241,18 +246,30 @@ void CVoiceGameMgr::UpdateMasks()
 			g_SentGameRulesMasks[iClient] = gameRulesMask;
 			g_SentBanMasks[iClient] = g_BanMasks[iClient];
 
+#if defined ( CSTRIKE15 )
 			CCSUsrMsg_VoiceMask msg;
+#elif defined ( HL2_DLL )
+			CHLUsrMsg_VoiceMask msg;
+#endif
 
 			int dw;
 			for(dw=0; dw < VOICE_MAX_PLAYERS_DW; dw++)
 			{
+#if defined ( CSTRIKE15 )
 				CCSUsrMsg_VoiceMask::PlayerMask *playerMask = msg.add_player_masks();
+#elif defined ( HL2_DLL )
+				CHLUsrMsg_VoiceMask::PlayerMask *playerMask = msg.add_player_masks();
+#endif
 				playerMask->set_game_rules_mask( gameRulesMask.GetDWord(dw) );
 				playerMask->set_ban_masks( g_BanMasks[iClient].GetDWord(dw) );
 			}
 			msg.set_player_mod_enable( !!g_PlayerModEnable[iClient] );
 
+#if defined ( CSTRIKE15 )
 			SendUserMessage( user, CS_UM_VoiceMask, msg );
+#elif defined ( HL2_DLL )
+			SendUserMessage( user, HL_UM_VoiceMask, msg );
+#endif
 		}
 
 		// Tell the engine.

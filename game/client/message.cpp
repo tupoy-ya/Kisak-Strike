@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -689,7 +689,11 @@ void CHudMessage::MessageAdd( const char *pName )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool CHudMessage::MsgFunc_HudText(const CCSUsrMsg_HudText &msg)
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudMessage::MsgFunc_HudText(const CHLUsrMsg_HudText &msg)
+#endif
 {
 	MessageAdd( msg.text().c_str() );
 	return true;
@@ -701,7 +705,11 @@ bool CHudMessage::MsgFunc_HudText(const CCSUsrMsg_HudText &msg)
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool CHudMessage::MsgFunc_GameTitle(const CCSUsrMsg_GameTitle &msg)
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudMessage::MsgFunc_GameTitle(const CHLUsrMsg_GameTitle &msg)
+#endif
 {
 	m_pGameTitle = TextMessageGet( "GAMETITLE" );
 	if ( m_pGameTitle != NULL )
@@ -734,8 +742,11 @@ bool CHudMessage::MsgFunc_GameTitle(const CCSUsrMsg_GameTitle &msg)
 	return true;
 }
 
-
+#if defined ( CSTRIKE15 )
 bool CHudMessage::MsgFunc_HudMsg(const CCSUsrMsg_HudMsg &msg)
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudMessage::MsgFunc_HudMsg(const CHLUsrMsg_HudMsg &msg)
+#endif
 {
 // Position command $position x y 
 // x & y are from 0 to 1 to be screen resolution independent

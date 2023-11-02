@@ -497,8 +497,6 @@ public:
 
 	bool					HandleVoteCommands( const CCommand &args );
 	IntervalTimer &			GetLastHeldVoteTimer(){ return m_lastHeldVoteTimer; }
-
-	CVoteController *		GetTeamVoteController( void );	// returns one of the two team vote controllers, g_voteControllerT or g_voteControllerCT
 	
 	// Observer functions
 	virtual bool			StartObserverMode(int mode); // true, if successful
@@ -558,7 +556,11 @@ public:
 	void					ItemPreFrame( void );
 	virtual void			ItemPostFrame( void );
 
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 	virtual CBaseEntity		*GiveNamedItem( const char *pchName, int iSubType = 0, CEconItemView *pScriptItem = NULL, bool bForce = false );
+#else
+	virtual CBaseEntity		*GiveNamedItem( const char *pchName, int iSubType = 0, bool bForce = false );
+#endif
 
 	void					EnableControl(bool fControl);
 	virtual void			CheckTrainUpdate( void );

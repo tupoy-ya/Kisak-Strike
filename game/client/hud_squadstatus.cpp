@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -62,7 +62,7 @@ private:
 
 
 DECLARE_HUDELEMENT( CHudSquadStatus );
-DECLARE_HUD_MESSAGE( CHudSquadStatus, SquadMemberDied );
+// DECLARE_HUD_MESSAGE( CHudSquadStatus, SquadMemberDied );
 
 using namespace vgui;
 
@@ -82,7 +82,7 @@ CHudSquadStatus::CHudSquadStatus( const char *pElementName ) : CHudElement( pEle
 //-----------------------------------------------------------------------------
 void CHudSquadStatus::Init( void )
 {
-	HOOK_HUD_MESSAGE( CHudSquadStatus, SquadMemberDied );
+	// HOOK_HUD_MESSAGE( CHudSquadStatus, SquadMemberDied );
 	m_iSquadMembers = 0;
 	m_iSquadMedics = 0;
 	m_bSquadMemberAdded = false;

@@ -120,7 +120,9 @@ public:
 	CBaseEntity				*GetAttributeOwner( void ) { return GetOwnerEntity(); }
 	CAttributeList			*GetAttributeList( void ) { return m_AttributeManager.GetItem()->GetAttributeList(); }
 
+#if defined ( CSTRIKE15 )
 	loadout_positions_t		GetLoadoutPosition( int iTeam = 0 ) const;
+#endif
 	const CEconItemView*	GetEconItemView( void ) const;
 
 	virtual void SetOriginalOwnerXuid( uint32 nLow, uint32 nHigh ) { m_OriginalOwnerXuidLow = nLow; m_OriginalOwnerXuidHigh = nHigh; }

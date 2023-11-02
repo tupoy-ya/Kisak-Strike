@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -21,7 +21,11 @@
 
 /// USER-DEFINED SERVER MESSAGE HANDLERS
 
+#if defined ( CSTRIKE15 )
 bool CHud::MsgFunc_ResetHUD( const CCSUsrMsg_ResetHud& msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool CHud::MsgFunc_ResetHUD( const CHLUsrMsg_ResetHud& msg )
+#endif
 {
 	ResetHUD();
 	return true;
@@ -53,8 +57,11 @@ void CHud::ResetHUD()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-
+#if defined ( CSTRIKE15 )
 bool CHud::MsgFunc_SendAudio(const CCSUsrMsg_SendAudio& msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool CHud::MsgFunc_SendAudio(const CHLUsrMsg_SendAudio& msg )
+#endif
 {
 	CLocalPlayerFilter filter;
 	C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, msg.radio_sound().c_str() );

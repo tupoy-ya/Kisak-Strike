@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -16,13 +16,14 @@
 #include "voice_common.h"
 #include "bitvec.h"
 #include "vgui_avatarimage.h"
-#include "engineinterface.h"
 #include "steam/steam_api.h"
 
 #include "tier0/memdbgon.h"
 
+#if defined ( CSTRIKE15 )
 extern ConVar sv_talk_enemy_dead;
 extern ConVar sv_talk_enemy_living;
+#endif
 //=============================================================================
 // Icon for the local player using voice
 //=============================================================================
@@ -373,6 +374,7 @@ void CHudVoiceStatus::Paint()
 		// Add the location, if any
 		bool usedLocation = false;
 
+#if defined ( CSTRIKE15 )
 		if ( sv_talk_enemy_living.GetBool( ) && sv_talk_enemy_dead.GetBool( ) )
 		{
 			bHearEnemy = true;
@@ -385,6 +387,7 @@ void CHudVoiceStatus::Paint()
 		{
 			bHearEnemy = sv_talk_enemy_living.GetBool( );
 		}
+#endif
 
 		if ( bHearEnemy )
 		{

@@ -33,7 +33,12 @@ public:
 
 	void Init();
 	void Reset();
+
+#if defined ( CSTRIKE15 )
 	bool MsgFunc_HintText( const CCSUsrMsg_HintText &msg );
+#elif defined ( HL2_CLIENT_DLL )
+	bool MsgFunc_HintText( const CHLUsrMsg_HintText &msg );
+#endif
 	void FireGameEvent( IGameEvent * event);
 
 	bool SetHintText( wchar_t *text );
@@ -47,7 +52,7 @@ public:
 #if defined( CSTRIKE15 )
 		return false;
 #else
-		return Super::ShouldDraw();
+		return ( ( GetAlpha() > 0 ) && CHudElement::ShouldDraw() );
 #endif
 	}
 
@@ -266,7 +271,11 @@ void CHudHintDisplay::OnThink()
 //-----------------------------------------------------------------------------
 // Purpose: Activates the hint display
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool CHudHintDisplay::MsgFunc_HintText( const CCSUsrMsg_HintText &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudHintDisplay::MsgFunc_HintText( const CHLUsrMsg_HintText &msg )
+#endif
 {
 #if defined( CSTRIKE15 )
 	// csgo handles their hint text in sfhudinfopanel
@@ -363,7 +372,11 @@ public:
 	explicit CHudHintKeyDisplay( const char *pElementName );
 	void Init();
 	void Reset();
+#if defined ( CSTRIKE15 )
 	bool MsgFunc_KeyHintText( const CCSUsrMsg_KeyHintText &msg );
+#elif defined ( HL2_CLIENT_DLL )
+	bool MsgFunc_KeyHintText( const CHLUsrMsg_KeyHintText &msg );
+#endif
 	bool ShouldDraw();
 
 	bool SetHintText( const char *text );
@@ -764,7 +777,11 @@ bool CHudHintKeyDisplay::SetHintText( const char *text )
 //-----------------------------------------------------------------------------
 // Purpose: Activates the hint display
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool CHudHintKeyDisplay::MsgFunc_KeyHintText( const CCSUsrMsg_KeyHintText &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudHintKeyDisplay::MsgFunc_KeyHintText( const CHLUsrMsg_KeyHintText &msg )
+#endif
 {
 	// how many strings do we receive ?
 	int count = msg.hints_size();

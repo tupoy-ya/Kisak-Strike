@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -29,7 +29,11 @@ public:
 	void VidInit( void );
 	void Reset( void );
 	virtual bool ShouldDraw( void );
+#if defined( CSTRIKE15 )
 	bool MsgFunc_ShowMenu( const CCSUsrMsg_ShowMenu &msg );
+#elif defined ( HL2_CLIENT_DLL )
+	bool MsgFunc_ShowMenu( const CHLUsrMsg_ShowMenu &msg );
+#endif
 	void HideMenu( void );
 	void ShowMenu( const char * menuName, int keySlot );
 	void ShowMenu_KeyValueItems( KeyValues *pKV );

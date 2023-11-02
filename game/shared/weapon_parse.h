@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Weapon data file parsing, shared by game & client dlls.
 //
@@ -16,12 +16,14 @@
 #include "tier1/utlsortvector.h"
 #include "gamestringpool.h"
 
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 #ifdef CLIENT_DLL
 #define CEconItemView C_EconItemView
 #endif
 
 class IFileSystem;
 class CEconItemView;
+#endif
 
 typedef unsigned short WEAPON_FILE_INFO_HANDLE;
 
@@ -166,7 +168,7 @@ public:
 												// it is built left or right handed.
 
 
-
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 	virtual int		GetPrimaryClipSize( const CEconItemView* pWepView = NULL, int nAlt = 0, float flScale = 1.0f ) const { return 0; }
 	virtual int		GetSecondaryClipSize( const CEconItemView* pWepView = NULL, int nAlt = 0, float flScale = 1.0f ) const { return 0; }
 	virtual int		GetDefaultPrimaryClipSize( const CEconItemView* pWepView = NULL, int nAlt = 0, float flScale = 1.0f ) const { return 0; }
@@ -180,6 +182,21 @@ public:
 	const char* GetPrimaryAmmo( const CEconItemView* pWepView = NULL ) const;
 	
 	int GetPrimaryAmmoType( const CEconItemView* pWepView = NULL ) const;
+#else
+	virtual int		GetPrimaryClipSize(int nAlt = 0, float flScale = 1.0f ) const { return 0; }
+	virtual int		GetSecondaryClipSize(int nAlt = 0, float flScale = 1.0f ) const { return 0; }
+	virtual int		GetDefaultPrimaryClipSize(int nAlt = 0, float flScale = 1.0f ) const { return 0; }
+	virtual int		GetDefaultSecondaryClipSize(int nAlt = 0, float flScale = 1.0f ) const{ return 0; }
+	virtual int		GetPrimaryReserveAmmoMax(int nAlt = 0, float flScale = 1.0f ) const{ return 0; }
+	virtual int		GetSecondaryReserveAmmoMax(int nAlt = 0, float flScale = 1.0f ) const{ return 0; }
+
+	const char* GetWorldModel(int iTeam = 0 ) const;
+	const char* GetViewModel(int iTeam = 0 ) const;
+	const char* GetWorldDroppedModel(int iTeam = 0 ) const;
+	const char* GetPrimaryAmmo( void ) const;
+	
+	int GetPrimaryAmmoType( void ) const;
+#endif
 
 // CLIENT DLL
 	// Sprite data, read from the data file
@@ -221,7 +238,9 @@ KeyValues* ReadEncryptedKVFile( IFileSystem *filesystem, const char *szFilenameW
 // Each game implements this. It can return a derived class and override Parse() if it wants.
 extern FileWeaponInfo_t* CreateWeaponInfo();
 
+#if defined ( CSTRIKE15 )
 extern void LoadEquipmentData();
+#endif
 
 class CWeaponDatabase : public CAutoGameSystem, public CGameEventListener
 {
@@ -237,7 +256,9 @@ public:
 	FileWeaponInfo_t *GetFileWeaponInfoFromHandle( WEAPON_FILE_INFO_HANDLE handle );
 
 protected:
+#if defined ( CSTRIKE15 )
 	friend void LoadEquipmentData();
+#endif
 
 	virtual bool Init();
 

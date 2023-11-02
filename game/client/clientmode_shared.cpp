@@ -47,13 +47,16 @@
 #include "fmtstr.h"
 #include "c_playerresource.h"
 #include <localize/ilocalize.h>
-#include "gameui_interface.h"
+#include "gameui/gameui_interface.h"
+#include "vgui/ILocalize.h"
 #include "menu.h" // CHudMenu
 #if defined( _X360 )
 #include "xbox/xbox_console.h"
 #endif
 #include "matchmaking/imatchframework.h"
+#if defined( CSTRIKE15 )
 #include "clientmode_csnormal.h"
+#endif
 
 
 #ifdef PORTAL2
@@ -139,7 +142,11 @@ CON_COMMAND_F( crash, "Crash the client. Optional parameter -- type of crash:\n 
 }
 #endif // _DEBUG
 
+#if defined ( CSTRIKE15 )
 static bool __MsgFunc_Rumble( const CCSUsrMsg_Rumble &msg )
+#elif defined ( HL2_CLIENT_DLL )
+static bool __MsgFunc_Rumble( const CHLUsrMsg_Rumble &msg )
+#endif
 {
 	unsigned char waveformIndex;
 	unsigned char rumbleData;
@@ -156,7 +163,11 @@ static bool __MsgFunc_Rumble( const CCSUsrMsg_Rumble &msg )
 	return true;
 }
 
+#if defined ( CSTRIKE15 )
 static bool __MsgFunc_VGUIMenu( const CCSUsrMsg_VGUIMenu &msg )
+#elif defined ( HL2_CLIENT_DLL )
+static bool __MsgFunc_VGUIMenu( const CHLUsrMsg_VGUIMenu &msg )
+#endif
 {
 	bool bShow = msg.show();
 
@@ -170,7 +181,11 @@ static bool __MsgFunc_VGUIMenu( const CCSUsrMsg_VGUIMenu &msg )
 
 		for (int i = 0; i < msg.subkeys_size(); i ++ )
 		{
+#if defined ( CSTRIKE15 )
 			const CCSUsrMsg_VGUIMenu::Subkey& subkey = msg.subkeys( i );
+#elif defined ( HL2_CLIENT_DLL )
+			const CHLUsrMsg_VGUIMenu::Subkey& subkey = msg.subkeys( i );
+#endif
 						
 			keys->SetString( subkey.name().c_str(), subkey.str().c_str() );
 		}
@@ -283,7 +298,7 @@ void ClientModeShared::Init()
 
 void ClientModeShared::InitChatHudElement()
 {
-	m_pChatElement = CBaseHudChat::GetHudChat();
+	m_pChatElement = ( CBaseHudChat * )GET_HUDELEMENT( CHudChat );
 	Assert( m_pChatElement );
 }
 
@@ -675,6 +690,7 @@ int ClientModeShared::HudElementKeyInput( int down, ButtonCode_t keynum, const c
 		!GetFullscreenClientMode()->HudElementKeyInput( down, keynum, pszCurrentBinding ) )
 		return 0;
 
+#if defined ( CSTRIKE15 )
 	if ( CSGameRules() && CSGameRules()->IsEndMatchVotingForNextMap() )
 	{
 		// this looks messy, but essentially, if the convar is set to true, use the bindings, if not use the raw keys
@@ -723,6 +739,7 @@ int ClientModeShared::HudElementKeyInput( int down, ButtonCode_t keynum, const c
 			return 0;
 		}
 	}
+#endif
 
 	if ( down && pszCurrentBinding && ContainsBinding( pszCurrentBinding, "radio1" ) )
 	{
@@ -1059,7 +1076,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 {
 	ACTIVE_SPLITSCREEN_PLAYER_GUARD( GetSplitScreenPlayerSlot() );
 
-	CBaseHudChat *hudChat = CBaseHudChat::GetHudChat();
+	CBaseHudChat *hudChat = (CBaseHudChat *)GET_HUDELEMENT( CHudChat );
 
 	const char *eventname = event->GetName();
 
@@ -1095,7 +1112,9 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 	{
 		CLocalPlayerFilter filter;
 		C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "Music.StopMenuMusic" );
+#if defined( CSTRIKE15 )
 		GameUI().SetBackgroundMusicDesired( false );
+#endif
 	}
 	else if ( Q_strcmp( "player_disconnect", eventname ) == 0 )
 	{
@@ -1110,8 +1129,10 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 		int userID = event->GetInt("userid");
 		C_BasePlayer *pPlayer = USERID2PLAYER( userID );
 
+#if defined( CSTRIKE15 )
 		// don't show disconnects for bots in coop
 		if ( CSGameRules() && CSGameRules()->IsPlayingCooperativeGametype() && (pPlayer && pPlayer->IsBot()) )
+#endif
 			return;
 
 		if ( !hudChat || !pPlayer )

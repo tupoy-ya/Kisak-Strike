@@ -1560,7 +1560,11 @@ void CInput::MotionControllerMove( float frametime, CUserCmd *cmd )
 {
 	int nSlot = GET_ACTIVE_SPLITSCREEN_SLOT();
 
+#if defined ( CSTRIKE15 )
 	C_CSPlayer* pPlayer = C_CSPlayer::GetLocalCSPlayer();
+#else
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+#endif
 	Assert( pPlayer );
 
 	// [dkorus] make sure our max turn rate is based on our zoom level sensitivity
@@ -1605,15 +1609,19 @@ void CInput::MotionControllerMove( float frametime, CUserCmd *cmd )
 		fY = s_lastCursorValueY * 0.85f;
 	}
 
+#if defined ( CSTRIKE15 )
 	bool bLookingAtTarget = pPlayer->IsCursorOnAutoAimTarget();
+#endif
 
 	// Free moving cursor dampening code.
 	static float s_fDampeningValue = 0.0f;  // s_fDampeningValue: 0.0 don't dampen, 1.0 fully locked in place.
 	float fTargetDampening = 0.0f;
+#if defined ( CSTRIKE15 )
 	if ( bLookingAtTarget )
 	{
 		fTargetDampening = mc_max_dampening.GetFloat();
 	}
+#endif
 	// This little bit of code gives us a frame rate independent blend value.
 	float blend_t = 1.0f - pow( mc_dampening_blend_amount.GetFloat(), frametime );
 	s_fDampeningValue += ( fTargetDampening - s_fDampeningValue )*blend_t;
@@ -1622,10 +1630,12 @@ void CInput::MotionControllerMove( float frametime, CUserCmd *cmd )
 	// Turn Dampening code.
 	static float s_fTurnDampeningValue = 0.0f;
 	float fTargetTurnDampening = 0.0f;
+#if defined ( CSTRIKE15 )
 	if ( bLookingAtTarget )
 	{
 		fTargetTurnDampening = mc_max_turn_dampening.GetFloat();
 	}
+#endif
 	// This little bit of code gives us a frame rate independent blend value.
 	blend_t = 1.0f - pow( mc_turn_dampening_blend_amount.GetFloat(), frametime );
 	s_fTurnDampeningValue += ( fTargetTurnDampening - s_fTurnDampeningValue )*blend_t;
@@ -1634,6 +1644,7 @@ void CInput::MotionControllerMove( float frametime, CUserCmd *cmd )
 	QAngle currentViewAngles;
 	engine->GetViewAngles( currentViewAngles );
 
+#if defined ( CSTRIKE15 )
 	if ( mc_zoomed_aim_style.GetInt() == 1 )
 	{
 		if ( !pPlayer->m_bIsScoped )
@@ -1643,13 +1654,19 @@ void CInput::MotionControllerMove( float frametime, CUserCmd *cmd )
 		}
 	}
 	else
+#endif
 	{
 		s_referenceDirection = currentViewAngles;
 	}
 
+#if defined ( CSTRIKE15 )
 	CWeaponCSBase *pWeapon = ( CWeaponCSBase* )pPlayer->GetActiveWeapon();
+#else
+	C_BaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
+#endif
 
 	float fTurnDampeningMultiplier = 1.0f;
+#if defined ( CSTRIKE15 )
 	if ( pWeapon )
 	{
 		if ( mc_zoomed_aim_style.GetInt() == 1 )
@@ -1688,8 +1705,8 @@ void CInput::MotionControllerMove( float frametime, CUserCmd *cmd )
 			}
 
 		}
-
 	}
+#endif
 
 
 	// We increase the deadzone size for pitch by 1.5
@@ -1804,6 +1821,7 @@ void CInput::MotionControllerMove( float frametime, CUserCmd *cmd )
 
 	pPlayer->SetEyeAngleOffset( viewOffset );
 
+#if defined ( CSTRIKE15 )
 	// Update the camera's angle.
 	if ( mc_zoomed_aim_style.GetInt() == 1 && pPlayer->m_bIsScoped )
 	{
@@ -1812,6 +1830,7 @@ void CInput::MotionControllerMove( float frametime, CUserCmd *cmd )
 		engine->SetViewAngles( aimDirectionAngles );
 	}
 	else
+#endif
 	{
 		engine->SetViewAngles( s_referenceDirection );
 	}

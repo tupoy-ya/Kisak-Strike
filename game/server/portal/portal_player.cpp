@@ -17,7 +17,7 @@
 #include "portal_mp_gamerules.h"
 #include "weapon_portalgun.h"
 #include "portal/weapon_physcannon.h"
-#include "KeyValues.h"
+#include "keyvalues.h"
 #include "team.h"
 #include "eventqueue.h"
 #include "weapon_portalbase.h"

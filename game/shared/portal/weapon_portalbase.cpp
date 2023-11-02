@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -418,7 +418,7 @@ void CWeaponPortalBase::FireBullets( const FireBulletsInfo_t &info )
 {
 	FireBulletsInfo_t modinfo = info;
 
-	modinfo.m_flPlayerDamage = GetPortalWpnData().m_iPlayerDamage;
+	modinfo.m_flPlayerDamage = GetPortalWpnData().m_flPlayerDamage;
 
 	BaseClass::FireBullets( modinfo );
 }

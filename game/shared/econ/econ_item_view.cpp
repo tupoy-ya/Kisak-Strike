@@ -1524,7 +1524,8 @@ int CEconItemView::GetAnimationSlot( void )
 #if defined( CSTRIKE_DLL ) || defined( CSTRIKE_GC_DLL )
 	return -1;
 #else
-	return GetStaticData()->GetAnimSlot();
+	//return GetStaticData()->GetAnimSlot();
+	return -1
 #endif
 }
 

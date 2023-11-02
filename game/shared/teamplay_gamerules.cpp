@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -31,8 +31,13 @@ extern bool		g_fGameOver;
 extern ConVar sv_allchat;
 extern ConVar spec_replay_bot;
 
+#if defined ( CSTRIKE15 )
 // [jason] Used to allow dead chat as well
 extern ConVar sv_deadtalk;
+#else
+// [jason] Can the dead speak to the living?
+ConVar sv_deadtalk( "sv_deadtalk", "0",	FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_RELEASE, "Dead players can speak (voice, text) to the living" );
+#endif
 
 REGISTER_GAMERULES_CLASS( CTeamplayRules );
 

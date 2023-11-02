@@ -17,7 +17,9 @@
 #include "econ/econ_item_view_helpers.h"
 #include "cdll_int.h"
 
+#if defined ( CSTRIKE15 )
 #include "cs_econ_item_string_table.h"
+#endif
 #include "econ_game_account_client.h"
 
 #ifdef CLIENT_DLL

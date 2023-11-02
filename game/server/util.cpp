@@ -818,13 +818,21 @@ inline void TransmitShakeEvent( CBasePlayer *pPlayer, float localAmplitude, floa
 
 		CSingleUserRecipientFilter user( pPlayer );
 		user.MakeReliable();
+#if defined ( CSTRIKE15 )
 		CCSUsrMsg_Shake msg;
+#elif defined ( HL2_DLL )
+		CHLUsrMsg_Shake msg;
+#endif
 		msg.set_command( eCommand );					// shake command (SHAKE_START, STOP, FREQUENCY, AMPLITUDE)
 		msg.set_local_amplitude( localAmplitude );		// shake magnitude/amplitude
 		msg.set_frequency( frequency	 );				// shake noise frequency
 		msg.set_duration( duration );					// shake lasts this long
 
+#if defined ( CSTRIKE15 )
 		SendUserMessage( user, CS_UM_Shake, msg );
+#elif defined ( HL2_DLL )
+		SendUserMessage( user, HL_UM_Shake, msg );
+#endif
 	}
 }
 
@@ -1067,7 +1075,11 @@ void UTIL_ScreenFadeWrite( const ScreenFade_t &fade, CBaseEntity *pEntity )
 	CSingleUserRecipientFilter user( pRecipient );
 	user.MakeReliable();
 
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_Fade msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_Fade msg;
+#endif
 
 	msg.set_duration( fade.duration );		// fade lasts this long
 	msg.set_hold_time( fade.holdTime );		// fade lasts this long
@@ -1077,7 +1089,11 @@ void UTIL_ScreenFadeWrite( const ScreenFade_t &fade, CBaseEntity *pEntity )
 	msg.mutable_clr()->set_b( fade.b );				// fade blue
 	msg.mutable_clr()->set_a( fade.a );				// fade blue
 
-	SendUserMessage( user, CS_UM_Fade, msg );		
+#if defined ( CSTRIKE15 )
+	SendUserMessage( user, CS_UM_Fade, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( user, HL_UM_Fade, msg );
+#endif
 }
 
 
@@ -1121,8 +1137,11 @@ void UTIL_HudMessage( CBasePlayer *pToPlayer, const hudtextparms_t &textparms, c
 	}
 
 	filter.MakeReliable();
-
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_HudMsg msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_HudMsg msg;
+#endif
 	msg.set_channel( textparms.channel & 0xFF );
 	msg.mutable_pos()->set_x( textparms.x );
 	msg.mutable_pos()->set_y( textparms.y );
@@ -1140,7 +1159,12 @@ void UTIL_HudMessage( CBasePlayer *pToPlayer, const hudtextparms_t &textparms, c
 	msg.set_hold_time( textparms.holdTime );
 	msg.set_fx_time( textparms.fxTime );
 	msg.set_text( pMessage );
+
+#if defined ( CSTRIKE15 )
 	SendUserMessage( filter, CS_UM_HudMsg, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( filter, HL_UM_HudMsg, msg );
+#endif
 }
 
 void UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage )
@@ -1155,15 +1179,26 @@ void UTIL_HudHintText( CBaseEntity *pEntity, const char *pMessage )
 
 	CSingleUserRecipientFilter user( (CBasePlayer *)pEntity );
 	user.MakeReliable();
-
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_KeyHintText msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_KeyHintText msg;
+#endif
 	msg.add_hints( pMessage );
+#if defined ( CSTRIKE15 )
 	SendUserMessage( user, CS_UM_KeyHintText, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( user, HL_UM_KeyHintText, msg );
+#endif
 }
 
 void UTIL_ClientPrintFilter( IRecipientFilter& filter, int msg_dest, const char *msg_name, const char *param1, const char *param2, const char *param3, const char *param4 )
 {
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_TextMsg msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_TextMsg msg;
+#endif
 
 	msg.set_msg_dst( msg_dest );
 	msg.add_params( msg_name );
@@ -1188,7 +1223,11 @@ void UTIL_ClientPrintFilter( IRecipientFilter& filter, int msg_dest, const char 
 	else
 		msg.add_params( "" );
 
+#if defined ( CSTRIKE15 )
 	SendUserMessage( filter, CS_UM_TextMsg, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( filter, HL_UM_TextMsg, msg );
+#endif
 }
 					 
 void UTIL_ClientPrintAll( int msg_dest, const char *msg_name, const char *param1, const char *param2, const char *param3, const char *param4 )
@@ -1211,7 +1250,11 @@ void ClientPrint( CBasePlayer *player, int msg_dest, const char *msg_name, const
 
 void UTIL_SayTextFilter( IRecipientFilter& filter, const char *pText, CBasePlayer *pPlayer, EUtilSayTextMessageType_t eMessageType )
 {
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_SayText msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_SayText msg;
+#endif
 	
 	if ( pPlayer ) 
 	{
@@ -1225,12 +1268,20 @@ void UTIL_SayTextFilter( IRecipientFilter& filter, const char *pText, CBasePlaye
 	msg.set_chat( ( eMessageType == kEUtilSayTextMessageType_TeamonlyChat ) || ( eMessageType == kEUtilSayTextMessageType_AllChat ) );
 	msg.set_textallchat( eMessageType == kEUtilSayTextMessageType_AllChat );
 
+#if defined ( CSTRIKE15 )
 	SendUserMessage( filter, CS_UM_SayText, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( filter, HL_UM_SayText, msg );
+#endif
 }
 
 void UTIL_SayText2Filter( IRecipientFilter& filter, CBasePlayer *pEntity, EUtilSayTextMessageType_t eMessageType, const char *msg_name, const char *param1, const char *param2, const char *param3, const char *param4 )
 {
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_SayText2 msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_SayText2 msg;
+#endif
 
 	if ( pEntity )
 	{
@@ -1265,7 +1316,11 @@ void UTIL_SayText2Filter( IRecipientFilter& filter, CBasePlayer *pEntity, EUtilS
 	else
 		msg.add_params( "" );
 
+#if defined ( CSTRIKE15 )
 	SendUserMessage( filter, CS_UM_SayText2, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( filter, HL_UM_SayText2, msg );
+#endif
 }
 
 void UTIL_SayText( const char *pText, CBasePlayer *pToPlayer )
@@ -1299,10 +1354,18 @@ void UTIL_ShowMessage( const char *pString, CBasePlayer *pPlayer )
 	}
 	
 	filter.MakeReliable();
-
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_HudText msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_HudText msg;
+#endif
 	msg.set_text( pString );
+
+#if defined ( CSTRIKE15 )
 	SendUserMessage( filter, CS_UM_HudText, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( filter, HL_UM_HudText, msg );
+#endif
 }
 
 

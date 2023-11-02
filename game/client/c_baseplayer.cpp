@@ -7,7 +7,9 @@
 //===========================================================================//
 #include "cbase.h"
 #include "c_baseplayer.h"
+#if defined( CSTRIKE15 )
 #include "c_cs_player.h"
+#endif
 #include "c_user_message_register.h"
 #include "flashlighteffect.h"
 #include "weapon_selection.h"
@@ -559,7 +561,7 @@ C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset( "C_BasePlayer::m_iv_vecViewOf
 	m_AimDirection.Init();
 
 	m_flDuckAmount = 0.0f;
-	m_flDuckSpeed = CS_PLAYER_DUCK_SPEED_IDEAL;
+	m_flDuckSpeed = 8.0f;
 	m_vecLastPositionAtFullCrouchSpeed = vec2_origin;
 
 	m_bHasWalkMovedSinceLastJump = false;
@@ -596,7 +598,11 @@ C_BasePlayer::~C_BasePlayer()
 	}
 }
 
+#if defined ( CSTRIKE15 )
 bool MsgFunc_SendLastKillerDamageToClient( const CCSUsrMsg_SendLastKillerDamageToClient &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool MsgFunc_SendLastKillerDamageToClient( const CHLUsrMsg_SendLastKillerDamageToClient &msg )
+#endif
 {
 	int nNumHitsGiven = msg.num_hits_given();
 	int nDamageGiven = msg.damage_given();
@@ -617,9 +623,13 @@ bool MsgFunc_SendLastKillerDamageToClient( const CCSUsrMsg_SendLastKillerDamageT
 //-----------------------------------------------------------------------------
 void C_BasePlayer::Spawn( void )
 {
+#if defined ( CSTRIKE15 )
 	m_UMCMsg_SendLastKillerDamageToClient.Bind< CS_UM_SendLastKillerDamageToClient, CCSUsrMsg_SendLastKillerDamageToClient >
 		( UtlMakeDelegate( MsgFunc_SendLastKillerDamageToClient ));
-
+#elif defined ( HL2_CLIENT_DLL )
+	m_UMCMsg_SendLastKillerDamageToClient.Bind< HL_UM_SendLastKillerDamageToClient, CHLUsrMsg_SendLastKillerDamageToClient >
+		( UtlMakeDelegate( MsgFunc_SendLastKillerDamageToClient ));
+#endif
 	// Clear all flags except for FL_FULLEDICT
 	ClearFlags();
 	AddFlag( FL_CLIENT );
@@ -1000,7 +1010,7 @@ void C_BasePlayer::ClientThink()
 
 		if ( GetObserverTarget( ) && ( GetObserverMode( ) == OBS_MODE_IN_EYE || GetObserverMode( ) == OBS_MODE_CHASE ) )
 		{
-			C_CSPlayer *pPlayer = dynamic_cast< C_CSPlayer* >( GetObserverTarget( ) );
+			C_BasePlayer *pPlayer = dynamic_cast< C_BasePlayer* >( GetObserverTarget( ) );
 
 			if ( pPlayer )
 			{
@@ -1028,7 +1038,7 @@ void C_BasePlayer::ClientThink()
 					HLTVCamera( )->SetMode( OBS_MODE_IN_EYE );
 						
 					//HLTVCamera()->SetAutoDirector( C_HLTVCamera::AUTODIRECTOR_PAUSED );
-					HLTVCamera( )->SetAutoDirector( C_HLTVCamera::AUTODIRECTOR_OFF );
+					//HLTVCamera( )->SetAutoDirector( C_HLTVCamera::AUTODIRECTOR_OFF );
 				}
 			}
 			else
@@ -1192,12 +1202,14 @@ void C_BasePlayer::PostDataUpdate( DataUpdateType_t updateType )
 		}
 		else if ( m_bWasFreezeFraming && GetObserverMode() != OBS_MODE_FREEZECAM )
 		{
+#if defined( CSTRIKE15 )
 			if ( spec_freeze_panel_extended_time.GetFloat() > 0 )
 			{
 				m_flFreezePanelExtendedStartTime = gpGlobals->curtime;
 				m_bWasFreezePanelExtended = true;
 			}
 			else
+#endif
 			{
 				bHideFreezePanel = true;
 			}
@@ -1207,11 +1219,13 @@ void C_BasePlayer::PostDataUpdate( DataUpdateType_t updateType )
 			ConVar *pVar = ( ConVar * )cvar->FindVar( "snd_soundmixer" );
 			pVar->Revert();
 		}
+#if defined( CSTRIKE15 )
 		else if ( m_bWasFreezePanelExtended && gpGlobals->curtime >= m_flFreezePanelExtendedStartTime + spec_freeze_panel_extended_time.GetFloat() )
 		{
 			bHideFreezePanel = true;
 			m_bWasFreezePanelExtended = false;
 		}
+#endif
 		else if ( IsAlive() )
 		{
 #if defined( INCLUDE_SCALEFORM )
@@ -1260,11 +1274,11 @@ void C_BasePlayer::PostDataUpdate( DataUpdateType_t updateType )
 	{
 		m_bLastActiveCameraManState = IsActiveCameraMan();
 
-		if ( IsActiveCameraMan() && HLTVCamera()->AutoDirectorState() != C_HLTVCamera::AUTODIRECTOR_OFF )
+		/*if ( IsActiveCameraMan() && HLTVCamera()->AutoDirectorState() != C_HLTVCamera::AUTODIRECTOR_OFF )
 		{
 			// if a cameraman becomes active and the autodirector is on, just set it on again and it'll switch to the cameraman if enabled
 			HLTVCamera()->SetAutoDirector( C_HLTVCamera::AUTODIRECTOR_ON );
-		}
+		}*/
 	}
 
 	// force voice recording on for casters
@@ -1275,12 +1289,15 @@ void C_BasePlayer::PostDataUpdate( DataUpdateType_t updateType )
 
 	int eventType = -1;
 	int nOptionalParam = 0;
+#if defined ( CSTRIKE15 )
 	ConVarRef spec_show_xray( "spec_show_xray" );
+#endif
 
 	CSteamID steamID;
 	// if the state changed for any of the cameraman stuff, send to the local player
 	if ( IsActiveCameraMan() && GetSteamID( &steamID ) )
 	{
+#if defined ( CSTRIKE15 )
 		if ( spec_show_xray.GetBool() != m_bLastCameraManXRayState || m_bCameraManXRay != m_bLastCameraManXRayState )
 		{
 			m_bLastCameraManXRayState = m_bCameraManXRay;
@@ -1288,6 +1305,7 @@ void C_BasePlayer::PostDataUpdate( DataUpdateType_t updateType )
 			if ( eventType != -1 )
 				GetClientMode()->UpdateCameraManUIState( eventType, nOptionalParam, steamID.ConvertToUint64() );
 		}
+#endif
 
 		if ( m_bCameraManOverview != m_bLastCameraManOverviewState )
 		{
@@ -2116,10 +2134,12 @@ void C_BasePlayer::CalcChaseCamView(Vector& eyeOrigin, QAngle& eyeAngles, float&
 		// if this is a train, we want to be back a little further so we can see more of it
 		flMaxDistance *= 2.5f;
 	}
+#if defined ( CSTRIKE_DLL )
 	else if ( pGrenade )
 	{
 		flMaxDistance = 64.0f;
 	}
+#endif
 	m_flObserverChaseDistance = clamp( m_flObserverChaseDistance, 16, flMaxDistance );
 	
 	AngleVectors( viewangles, &forward );
@@ -3768,7 +3788,7 @@ void C_BasePlayer::OnTimeJumpAllPlayers()
 {
 	for ( int i = 1; i <= MAX_PLAYERS; i++ )
 	{
-		C_CSPlayer *pPlayer = ToCSPlayer( UTIL_PlayerByIndex( i ) );
+		C_BasePlayer *pPlayer = UTIL_PlayerByIndex( i );
 		if ( pPlayer )
 		{
 			pPlayer->OnTimeJump();

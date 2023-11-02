@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Contains entities for implementing/changing game rules dynamically within each BSP.
 //
@@ -129,8 +129,10 @@ LINK_ENTITY_TO_CLASS( game_score, CGameScore );
 BEGIN_DATADESC( CGameScore )
 	// Inputs
 	DEFINE_INPUTFUNC( FIELD_VOID, "ApplyScore", InputApplyScore ),
+#if defined( CSTRIKE15 )
 	DEFINE_INPUTFUNC( FIELD_VOID, "AddScoreTerrorist", InputAddScoreTerrorist ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "AddScoreCT", InputAddScoreCT ),
+#endif
 END_DATADESC()
 
 void CGameScore::Spawn( void )
@@ -248,10 +250,14 @@ bool CGameCoopMissionManager::KeyValue( const char *szKeyName, const char *szVal
 
 int	CGameCoopMissionManager::GetWaveNumber( void )
 {
+#if defined( CSTRIKE15 )
 	if ( !CSGameRules() )
 		return 0;
 
 	return CSGameRules()->GetCoopWaveNumber();
+#else
+	return 0;
+#endif
 }
 
 void CGameCoopMissionManager::SetWaveCompleted( void )
@@ -986,6 +992,7 @@ void CGamePlayerEquip::Touch( CBaseEntity *pOther )
 
 void CGamePlayerEquip::EquipPlayer( CBaseEntity *pEntity, const char *szWeapon )
 {
+#if defined( CSTRIKE15 )
 	if ( !pEntity )
 		return;
 
@@ -1079,6 +1086,22 @@ void CGamePlayerEquip::EquipPlayer( CBaseEntity *pEntity, const char *szWeapon )
 			}
 		}
 	}
+#else
+	CBasePlayer *pPlayer = ToBasePlayer(pEntity);
+
+	if ( !pPlayer )
+		return;
+
+	for ( int i = 0; i < MAX_EQUIP; i++ )
+	{
+		if ( !m_weaponNames[i] )
+			break;
+		for ( int j = 0; j < m_weaponCount[i]; j++ )
+		{
+ 			pPlayer->GiveNamedItem( STRING(m_weaponNames[i]) );
+		}
+	}
+#endif // CSTRIKE15
 }
 
 

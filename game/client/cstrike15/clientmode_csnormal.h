@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -70,17 +70,17 @@ public:
 	float	flWeight;
 };
 
-class ClientModeCSNormal : public ClientModeShared, public IMatchEventsSink
+class ClientModeHLNormal : public ClientModeShared, public IMatchEventsSink
 {
-DECLARE_CLASS( ClientModeCSNormal, ClientModeShared );
+DECLARE_CLASS( ClientModeHLNormal, ClientModeShared );
 
 private:
 
 // IClientMode overrides.
 public:
 
-					ClientModeCSNormal();
-					~ClientModeCSNormal();
+					ClientModeHLNormal();
+					~ClientModeHLNormal();
 
 	virtual void	OnEvent( KeyValues *pEvent );
 
@@ -136,7 +136,7 @@ public:
 	void			CheckTitleDataStorageConnected( void );
 
 #if !defined(NO_STEAM) && !defined (_PS3)
-	STEAM_CALLBACK_MANUAL( ClientModeCSNormal, OnScreenshotRequested, ScreenshotRequested_t, m_CallbackScreenshotRequested );
+	STEAM_CALLBACK_MANUAL( ClientModeHLNormal, OnScreenshotRequested, ScreenshotRequested_t, m_CallbackScreenshotRequested );
 #endif
 
 	CUserMessageBinder m_UMCMsgKillCam;
@@ -204,7 +204,7 @@ public:
 
 
 extern IClientMode *GetClientModeNormal();
-extern ClientModeCSNormal* GetClientModeCSNormal();
+extern ClientModeHLNormal* GetClientModeCSNormal();
 
 
 #endif // CS_CLIENTMODE_H

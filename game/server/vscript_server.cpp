@@ -585,6 +585,15 @@ static bool LoopSinglePlayerMaps()
 	return loopsingleplayermaps.GetBool();
 }
 
+static bool IsMultiplayer()
+{
+	if ( GameRules() )
+	{
+		return GameRules()->IsMultiplayer();
+	}
+	return false;
+}
+
 static const char *DoUniqueString( const char *pszBase )
 {
 	static char szBuf[512];
@@ -802,6 +811,7 @@ bool VScriptServerInit()
 				ScriptRegisterFunctionNamed( g_pScriptVM, NDebugOverlay::Line, "DebugDrawLine", "Draw a debug overlay box" );
 				ScriptRegisterFunction( g_pScriptVM, DoIncludeScript, "Execute a script (internal)" );
 				ScriptRegisterFunction( g_pScriptVM, CreateProp, "Create a physics prop" );
+				ScriptRegisterFunction( g_pScriptVM, IsMultiplayer, "Returns true if this is a multiplayer game, or false if singleplayer. " );
 				ScriptRegisterFunctionNamed( g_pScriptVM, DoRecordAchievementEvent, "RecordAchievementEvent", "Records achievement event or progress" );
 				ScriptRegisterFunction( g_pScriptVM, GetDeveloperLevel, "Gets the level of 'developer'" );
 				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptDispatchParticleEffect, "DispatchParticleEffect", "Dispatches a one-off particle system" );

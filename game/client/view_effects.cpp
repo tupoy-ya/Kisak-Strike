@@ -212,7 +212,11 @@ static void ( *s_pfnFadeDoneCallback )( int parm1 );
 //			*pbuf - 
 // Output : static int
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool __MsgFunc_Shake( const CCSUsrMsg_Shake &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool __MsgFunc_Shake( const CHLUsrMsg_Shake &msg )
+#endif
 {
 	ScreenShake_t shake;
 
@@ -279,7 +283,11 @@ void __MsgFunc_Tilt( bf_read &msg )
 //			*pbuf - 
 // Output : static int
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool __MsgFunc_Fade( const CCSUsrMsg_Fade &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool __MsgFunc_Fade( const CHLUsrMsg_Fade &msg )
+#endif
 {
 	ScreenFade_t fade;
 

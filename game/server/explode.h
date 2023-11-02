@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -25,8 +25,8 @@
 #define SF_ENVEXPLOSION_GENERIC_DAMAGE	0x00004000 // don't do BLAST damage
 #define SF_ENVEXPLOSION_ICE			0x00008000 // freeze stuff and do ice type effects
 
-extern int	g_sModelIndexFireball;
-extern int	g_sModelIndexSmoke;
+extern short	g_sModelIndexFireball;
+extern short	g_sModelIndexSmoke;
 
 void ExplosionCreate( const Vector &center, const QAngle &angles, 
 	CBaseEntity *pOwner, int magnitude, int radius, bool doDamage, float flExplosionForce = 0.0f, bool bSurfaceOnly = false, bool bSilent = false, int iCustomDamageType = -1 );

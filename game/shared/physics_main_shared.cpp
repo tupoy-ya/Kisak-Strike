@@ -1671,7 +1671,8 @@ void CBaseEntity::PhysicsToss( void )
 	if (IsEdictFree())
 		return;
 #endif
-	
+
+#if defined( CSTRIKE15 )	
 	if ( debugoverlay && sv_grenade_trajectory.GetInt() && (GetFlags() & FL_GRENADE) )
 	{
 		QAngle angGrTrajAngles;
@@ -1690,6 +1691,7 @@ void CBaseEntity::PhysicsToss( void )
 		if (trace.fraction != 1.0f)
 			debugoverlay->AddBoxOverlay( trace.endpos, Vector( -GRENADE_DEFAULT_SIZE, -GRENADE_DEFAULT_SIZE, -GRENADE_DEFAULT_SIZE ), Vector( GRENADE_DEFAULT_SIZE, GRENADE_DEFAULT_SIZE, GRENADE_DEFAULT_SIZE ), QAngle( 0, 0, 0 ), 220, 0, 0, 190, sv_grenade_trajectory_time.GetFloat( ) );
 	}	
+#endif
 
 	if (trace.fraction != 1.0f)
 	{

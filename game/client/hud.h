@@ -178,8 +178,13 @@ public:
 	void						DrawIconProgressBar( int x, int y, CHudTexture *icon, CHudTexture *icon2, float percentage, Color& clr, int type );
 
 	// User messages
+#if defined ( CSTRIKE15 )
 	bool						MsgFunc_ResetHUD( const CCSUsrMsg_ResetHud& msg );
 	bool 						MsgFunc_SendAudio( const CCSUsrMsg_SendAudio& msg );
+#elif defined ( HL2_CLIENT_DLL )
+	bool						MsgFunc_ResetHUD( const CHLUsrMsg_ResetHud& msg );
+	bool 						MsgFunc_SendAudio( const CHLUsrMsg_SendAudio& msg );
+#endif
 
 	// Hud Render group
 	int							LookupRenderGroupIndexByName( const char *pszGroupName );

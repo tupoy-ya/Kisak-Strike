@@ -1,15 +1,14 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
 // $NoKeywords: $
-//===========================================================================//
+//=============================================================================//
 #include "cbase.h"
 #include "decals.h"
 #include "basegrenade_shared.h"
 #include "shake.h"
 #include "engine/IEngineSound.h"
-#include "particle_parse.h"
 
 #if !defined( CLIENT_DLL )
 
@@ -22,9 +21,9 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-extern int	g_sModelIndexFireball;		// (in combatweapon.cpp) holds the index for the fireball 
-extern int	g_sModelIndexWExplosion;	// (in combatweapon.cpp) holds the index for the underwater explosion
-extern int	g_sModelIndexSmoke;			// (in combatweapon.cpp) holds the index for the smoke cloud
+extern short	g_sModelIndexFireball;		// (in combatweapon.cpp) holds the index for the fireball 
+extern short	g_sModelIndexWExplosion;	// (in combatweapon.cpp) holds the index for the underwater explosion
+extern short	g_sModelIndexSmoke;			// (in combatweapon.cpp) holds the index for the smoke cloud
 extern ConVar    sk_plr_dmg_grenade;
 
 #if !defined( CLIENT_DLL )
@@ -59,6 +58,29 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 
 #endif
 
+
+#ifdef MAPBASE_VSCRIPT
+BEGIN_ENT_SCRIPTDESC( CBaseGrenade, CBaseAnimating, "The base class for grenades." )
+
+	DEFINE_SCRIPTFUNC( GetBlastForce, "Gets the grenade's blast force override. Grenades which use base damage force calculations return 0,0,0" )
+
+	DEFINE_SCRIPTFUNC( GetDamage, "Gets the grenade's blast damage." )
+	DEFINE_SCRIPTFUNC( GetDamageRadius, "Gets the grenade's blast damage radius." )
+	DEFINE_SCRIPTFUNC( SetDamage, "Sets the grenade's blast damage." )
+	DEFINE_SCRIPTFUNC( SetDamageRadius, "Sets the grenade's blast damage radius." )
+
+	DEFINE_SCRIPTFUNC_NAMED( ScriptGetThrower, "GetThrower", "Gets the grenade's thrower." )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetThrower, "SetThrower", "Sets the grenade's thrower." )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptGetOriginalThrower, "GetOriginalThrower", "Gets the grenade's original thrower after the thrower was changed due to being picked up by a gravity gun or something." )
+
+	DEFINE_SCRIPTFUNC_NAMED( GetDetonateTime, "GetTimer", "Gets the grenade's detonate time if it has one." )
+	DEFINE_SCRIPTFUNC( HasWarnedAI, "Whether or not the grenade has issued its DANGER sound to the world sound list yet." )
+	DEFINE_SCRIPTFUNC( IsLive, "Whether or not the grenade has issued its DANGER sound to the world sound list yet." )
+	DEFINE_SCRIPTFUNC( GetWarnAITime, "Gets the time at which the grenade will warn/has warned AI." )
+
+END_SCRIPTDESC();
+#endif
+
 IMPLEMENT_NETWORKCLASS_ALIASED( BaseGrenade, DT_BaseGrenade )
 
 BEGIN_NETWORK_TABLE( CBaseGrenade, DT_BaseGrenade )
@@ -69,8 +91,6 @@ BEGIN_NETWORK_TABLE( CBaseGrenade, DT_BaseGrenade )
 //	SendPropTime( SENDINFO( m_flDetonateTime ) ),
 	SendPropEHandle( SENDINFO( m_hThrower ) ),
 
-	SendPropExclude( "DT_AnimTimeMustBeFirst" , "m_flAnimTime" ),
-	
 	SendPropVector( SENDINFO( m_vecVelocity ), 0, SPROP_NOSCALE ), 
 	// HACK: Use same flag bits as player for now
 	SendPropInt			( SENDINFO(m_fFlags), PLAYER_FLAG_BITS, SPROP_UNSIGNED, SendProxy_CropFlagsToPlayerFlagBitsLength ),
@@ -113,8 +133,6 @@ END_PREDICTION_DATA()
 // Grenades flagged with this will be triggered when the owner calls detonateSatchelCharges
 #define SF_DETONATE		0x0001
 
-#define	MAX_WATER_SURFACE_DISTANCE	512
-
 // UNDONE: temporary scorching for PreAlpha - find a less sleazy permenant solution.
 void CBaseGrenade::Explode( trace_t *pTrace, int bitsDamageType )
 {
@@ -140,74 +158,34 @@ void CBaseGrenade::Explode( trace_t *pTrace, int bitsDamageType )
 	CDisablePredictionFiltering disabler;
 #endif
 
-	// Try using the new particle system instead of temp ents
-	surfacedata_t *pSurfaceData = physprops->GetSurfaceData( pTrace->surface.surfaceProps );
-	const char *pEffectName = GetParticleSystemName( contents, pSurfaceData );
-	if ( pEffectName != NULL )
+	if ( pTrace->fraction != 1.0 )
 	{
-		Vector vecParticleOrigin = vecAbsOrigin;
+		Vector vecNormal = pTrace->plane.normal;
+		surfacedata_t *pdata = physprops->GetSurfaceData( pTrace->surface.surfaceProps );	
+		CPASFilter filter( vecAbsOrigin );
 
-		if ( contents & MASK_WATER )
-		{
-			// Find our water surface by tracing up till we're out of the water
-			trace_t tr;
-			Vector vecTrace( 0, 0, MAX_WATER_SURFACE_DISTANCE );
-			UTIL_TraceLine( vecParticleOrigin, vecParticleOrigin + vecTrace, MASK_WATER, NULL, COLLISION_GROUP_NONE, &tr );
-
-			// If we didn't start in water, we're above it
-			if ( tr.startsolid == false )
-			{
-				// Look downward to find the surface
-				vecTrace.Init( 0, 0, -MAX_WATER_SURFACE_DISTANCE );
-				UTIL_TraceLine( vecParticleOrigin, vecParticleOrigin + vecTrace, MASK_WATER, NULL, COLLISION_GROUP_NONE, &tr );
-
-				// If we hit it, setup the explosion
-				if ( tr.fraction < 1.0f )
-				{
-					vecParticleOrigin = tr.endpos;
-				}
-			}
-			else if ( tr.fractionleftsolid )
-			{
-				// Otherwise we came out of the water at this point
-				vecParticleOrigin = vecParticleOrigin + (vecTrace * tr.fractionleftsolid);
-			}
-		}
-
-		QAngle	vecAngles;
-		DispatchParticleEffect( pEffectName, vecParticleOrigin, vecAngles );
+		te->Explosion( filter, -1.0, // don't apply cl_interp delay
+			vecAbsOrigin,
+			!( contents & MASK_WATER ) ? g_sModelIndexFireball : g_sModelIndexWExplosion,
+			m_DmgRadius * .03, 
+			25,
+			TE_EXPLFLAG_NONE,
+			m_DmgRadius,
+			m_flDamage,
+			&vecNormal,
+			(char) pdata->game.material );
 	}
 	else
 	{
-		if ( pTrace->fraction != 1.0 )
-		{
-			Vector vecNormal = pTrace->plane.normal;
-			surfacedata_t *pdata = physprops->GetSurfaceData( pTrace->surface.surfaceProps );	
-			CPASFilter filter( vecAbsOrigin );
-
-			te->Explosion( filter, -1.0, // don't apply cl_interp delay
-				vecAbsOrigin,
-				!( contents & MASK_WATER ) ? g_sModelIndexFireball : g_sModelIndexWExplosion,
-				m_DmgRadius * .03, 
-				25,
-				TE_EXPLFLAG_NONE,
-				m_DmgRadius,
-				m_flDamage,
-				&vecNormal,
-				(char) pdata->game.material );
-		}
-		else
-		{
-			CPASFilter filter( vecAbsOrigin );
-			te->Explosion( filter, -1.0, // don't apply cl_interp delay
-				vecAbsOrigin, 
-				!( contents & MASK_WATER ) ? g_sModelIndexFireball : g_sModelIndexWExplosion,
-				m_DmgRadius * .03, 
-				25,
-				TE_EXPLFLAG_NONE,
-				m_DmgRadius,
-				m_flDamage );
-		}
+		CPASFilter filter( vecAbsOrigin );
+		te->Explosion( filter, -1.0, // don't apply cl_interp delay
+			vecAbsOrigin, 
+			!( contents & MASK_WATER ) ? g_sModelIndexFireball : g_sModelIndexWExplosion,
+			m_DmgRadius * .03, 
+			25,
+			TE_EXPLFLAG_NONE,
+			m_DmgRadius,
+			m_flDamage );
 	}
 
 #if !defined( CLIENT_DLL )
@@ -217,12 +195,13 @@ void CBaseGrenade::Explode( trace_t *pTrace, int bitsDamageType )
 	// Use the thrower's position as the reported position
 	Vector vecReported = m_hThrower ? m_hThrower->GetAbsOrigin() : vec3_origin;
 	
-	EmitSound( "BaseGrenade.Explode" );
 	CTakeDamageInfo info( this, m_hThrower, GetBlastForce(), GetAbsOrigin(), m_flDamage, bitsDamageType, 0, &vecReported );
 
 	RadiusDamage( info, GetAbsOrigin(), m_DmgRadius, CLASS_NONE, NULL );
 
 	UTIL_DecalTrace( pTrace, "Scorch" );
+
+	EmitSound( "BaseGrenade.Explode" );
 
 	SetThink( &CBaseGrenade::SUB_Remove );
 	SetTouch( NULL );
@@ -386,7 +365,7 @@ void CBaseGrenade::DangerSoundThink( void )
 
 	SetNextThink( gpGlobals->curtime + 0.2 );
 
-	if (GetWaterLevel() != WL_NotInWater)
+	if (GetWaterLevel() != 0)
 	{
 		SetAbsVelocity( GetAbsVelocity() * 0.5 );
 	}
@@ -456,9 +435,9 @@ void CBaseGrenade::BounceTouch( CBaseEntity *pOther )
 		BounceSound();
 	}
 	m_flPlaybackRate = GetAbsVelocity().Length() / 200.0;
-	if (GetPlaybackRate() > 1.0)
+	if (m_flPlaybackRate > 1.0)
 		m_flPlaybackRate = 1;
-	else if (GetPlaybackRate() < 0.5)
+	else if (m_flPlaybackRate < 0.5)
 		m_flPlaybackRate = 0;
 
 }
@@ -520,7 +499,7 @@ void CBaseGrenade ::TumbleThink( void )
 		SetThink( &CBaseGrenade::Detonate );
 	}
 
-	if (GetWaterLevel() != WL_NotInWater)
+	if (GetWaterLevel() != 0)
 	{
 		SetAbsVelocity( GetAbsVelocity() * 0.5 );
 		m_flPlaybackRate = 0.2;
@@ -576,9 +555,6 @@ CBaseGrenade::~CBaseGrenade(void)
 // Output :
 //-----------------------------------------------------------------------------
 CBaseGrenade::CBaseGrenade(void)
-#ifdef CLIENT_DLL
-	:m_GlowObject( this, Vector( 1.0f, 1.0f, 1.0f ), 0.0f, false, false )
-#endif
 {
 	m_hThrower			= NULL;
 	m_hOriginalThrower	= NULL;

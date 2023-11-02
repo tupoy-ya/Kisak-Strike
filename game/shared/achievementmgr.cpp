@@ -18,7 +18,6 @@
 #ifdef CLIENT_DLL
 #include "achievement_notification_panel.h"
 #include "c_playerresource.h"
-#include "c_cs_player.h"
 #ifdef TF_CLIENT_DLL
 #include "item_inventory.h"
 #endif //TF_CLIENT_DLL
@@ -31,7 +30,6 @@
 #include "steam/isteamfriends.h"
 #include "steam/isteamutils.h"
 #endif
-#include "cs_gamerules.h"
 #include "tier3/tier3.h"
 #include "vgui/ILocalize.h"
 
@@ -54,8 +52,6 @@
 
 #include "matchmaking/imatchframework.h"
 #include "tier0/vprof.h"
-#include "cs_weapon_parse.h"
-#include "achievements_cs.h"
 
 // NOTE: This has to be the last file included!
 #include "tier0/memdbgon.h"
@@ -201,7 +197,12 @@ bool CAchievementMgr::Init()
 	for ( int hh = 0; hh < MAX_SPLITSCREEN_PLAYERS; ++hh )
 	{
 		ACTIVE_SPLITSCREEN_PLAYER_GUARD( hh );
+#if defined ( CSTRIKE15 )
 		m_UMCMsgAchievementEvent.Bind< CS_UM_AchievementEvent, CCSUsrMsg_AchievementEvent >( UtlMakeDelegate( MsgFunc_AchievementEvent ) );
+#elif defined ( HL2_CLIENT_DLL )
+		m_UMCMsgAchievementEvent.Bind< HL_UM_AchievementEvent, CHLUsrMsg_AchievementEvent >( UtlMakeDelegate( MsgFunc_AchievementEvent ) );
+#endif
+
 	}
 	ListenForGameEvent( "read_game_titledata" );
 	ListenForGameEvent( "write_game_titledata" );
@@ -820,6 +821,7 @@ void CAchievementMgr::SaveGlobalStateIfDirty( )
 
 bool CAchievementMgr::IsAchievementAllowedInGame( int iAchievementID )
 {
+/*
 	// Offline modes with trivial bots disable ALL achievements
 	if ( CSGameRules() && !CSGameRules()->IsAwardsProgressAllowedForBotDifficulty() )
 		return false;
@@ -888,6 +890,8 @@ bool CAchievementMgr::IsAchievementAllowedInGame( int iAchievementID )
 		// Other achievements are valid for all game types.
 		return true;
 	}
+*/
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -898,7 +902,7 @@ void CAchievementMgr::AwardAchievement( int iAchievementID, int nUserSlot )
 	if( !IsAchievementAllowedInGame( iAchievementID ) )
 		return;
 
-#ifdef CLIENT_DLL
+#if defined ( CLIENT_DLL ) && defined ( CSTRIKE15 )
 	C_BasePlayer *pPlayerLocal = C_BasePlayer::GetLocalPlayer();
 	C_CSPlayer* pPlayer = ToCSPlayer(pPlayerLocal);
 
@@ -1533,6 +1537,7 @@ void CAchievementMgr::PrintAchievementStatus()
 		CFailableAchievement *pFailableAchievement = dynamic_cast<CFailableAchievement *>( pAchievement );
 		if ( pAchievement->IsAchieved() )
 		{
+#if defined ( CSTRIKE15 )
 			CCSBaseAchievement* pCSAchievement = dynamic_cast<CCSBaseAchievement*>(pAchievement);
 
 			// Assign the award date text
@@ -1547,6 +1552,7 @@ void CAchievementMgr::PrintAchievementStatus()
 			{
 				Msg( "%-30s", "ACHIEVED" );
 			}
+#endif
 		}
 		else if ( pFailableAchievement && pFailableAchievement->IsFailed() )
 		{
@@ -2156,7 +2162,11 @@ void CAchievementMgr::ResetAchievement_Internal( CBaseAchievement *pAchievement 
 
 #ifdef CLIENT_DLL
 
+#if defined ( CSTRIKE15 )
 bool MsgFunc_AchievementEvent( const CCSUsrMsg_AchievementEvent &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool MsgFunc_AchievementEvent( const CHLUsrMsg_AchievementEvent &msg )
+#endif
 {
 	int iAchievementID = (int) msg.achievement();
 	CAchievementMgr *pAchievementMgr = CAchievementMgr::GetInstance();

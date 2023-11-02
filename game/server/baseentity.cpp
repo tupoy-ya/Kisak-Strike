@@ -141,6 +141,12 @@ void SendProxy_SimulationTime( const SendProp *pProp, const void *pStruct, const
 {
 	CBaseEntity *pEntity = (CBaseEntity *)pStruct;
 
+	if ( !pEntity || pEntity == (CBaseEntity *)-1 )
+	{
+		DebuggerBreak();
+		return;
+	}
+
 	int ticknumber = TIME_TO_TICKS( pEntity->m_flSimulationTime );
 	// tickbase is current tick rounded down to closest 100 ticks
 	int tickbase = gpGlobals->GetNetworkBase( gpGlobals->tickcount, pEntity->entindex() );

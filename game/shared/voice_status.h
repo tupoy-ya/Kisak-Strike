@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -101,11 +101,19 @@ public:
 	float	GetHeadLabelOffset( void ) const;
 	void	SetHeadLabelsDisabled( bool bDisabled ) { m_bHeadLabelsDisabled = bDisabled; }
 
+#if defined( CSTRIKE15 )
 	// Called when the server registers a change to who this client can hear.
 	bool HandleVoiceMaskMsg(const CCSUsrMsg_VoiceMask &msg);
 
 	// The server sends this message initially to tell the client to send their state.
 	bool	HandleReqStateMsg(const CCSUsrMsg_RequestState &msg);
+#elif defined ( HL2_CLIENT_DLL )
+	// Called when the server registers a change to who this client can hear.
+	bool HandleVoiceMaskMsg(const CHLUsrMsg_VoiceMask &msg);
+
+	// The server sends this message initially to tell the client to send their state.
+	bool	HandleReqStateMsg(const CHLUsrMsg_RequestState &msg);
+#endif
 
 
 // Squelch mode functions.

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -51,9 +51,14 @@ public:
 	virtual void	Paint();
 
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
-	
+
+#if defined ( CSTRIKE15 )
 	bool MsgFunc_CloseCaption(const CCSUsrMsg_CloseCaption &msg);
 	bool MsgFunc_CloseCaptionDirect(const CCSUsrMsg_CloseCaptionDirect &msg);
+#elif defined ( HL2_CLIENT_DLL )
+	bool MsgFunc_CloseCaption(const CHLUsrMsg_CloseCaption &msg);
+	bool MsgFunc_CloseCaptionDirect(const CHLUsrMsg_CloseCaptionDirect &msg);
+#endif
 
 	// Clear all CC data
 	void			Reset( void );

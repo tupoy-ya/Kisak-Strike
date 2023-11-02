@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Weapon data file parsing, shared by game & client dlls.
 //
@@ -12,14 +12,14 @@
 #include "ammodef.h"
 #include "util_shared.h"
 #include "weapon_parse.h"
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 #include "econ_item_view.h"
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 CWeaponDatabase g_WeaponDatabase;
-
-extern void LoadEquipmentData();
 
 // The sound categories found in the weapon classname.txt files
 // This needs to match the WeaponSound_t enum in weapon_parse.h
@@ -383,9 +383,13 @@ void FileWeaponInfo_t::Parse( KeyValues *pKeyValuesData, const char *szWeaponNam
 		}
 	}
 }
-
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 const char* FileWeaponInfo_t::GetWorldModel( const CEconItemView* pWepView, int iTeam ) const
+#else
+const char* FileWeaponInfo_t::GetWorldModel(int iTeam ) const
+#endif
 {
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 	if ( pWepView && pWepView->IsValid() )
 	{
 		const char *pchWorldOverride = pWepView->GetStaticData()->GetEntityOverrideModel();
@@ -397,13 +401,19 @@ const char* FileWeaponInfo_t::GetWorldModel( const CEconItemView* pWepView, int 
 		return pWepView->GetItemDefinition()->GetWorldDisplayModel();
 	}
 	else
+#endif
 	{
 		return szWorldModel;
 	}
 }
 
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 const char* FileWeaponInfo_t::GetViewModel( const CEconItemView* pWepView, int iTeam ) const
+#else
+const char* FileWeaponInfo_t::GetViewModel( int iTeam ) const
+#endif
 {
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 	if ( pWepView && pWepView->IsValid() )
 	{
 		const char *pchViewOverride = pWepView->GetStaticData()->GetViewOverrideModel();
@@ -415,13 +425,19 @@ const char* FileWeaponInfo_t::GetViewModel( const CEconItemView* pWepView, int i
 		return pWepView->GetItemDefinition()->GetBasePlayerDisplayModel();
 	}
 	else
+#endif
 	{
 		return szViewModel;
 	}
 }
 
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 const char* FileWeaponInfo_t::GetWorldDroppedModel( const CEconItemView* pWepView, int iTeam ) const
+#else
+const char* FileWeaponInfo_t::GetWorldDroppedModel(int iTeam ) const
+#endif
 {
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 	if ( pWepView && pWepView->IsValid() )
 	{
 		const char *pchWorldDroppedModel = pWepView->GetItemDefinition()->GetWorldDroppedModel();
@@ -430,13 +446,18 @@ const char* FileWeaponInfo_t::GetWorldDroppedModel( const CEconItemView* pWepVie
 			return pchWorldDroppedModel;
 		}
 	}
+#endif
 	
 	return szWorldDroppedModel;
 }
 
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 const char* FileWeaponInfo_t::GetPrimaryAmmo( const CEconItemView* pWepView ) const
+#else
+const char* FileWeaponInfo_t::GetPrimaryAmmo( void ) const
+#endif
 {
-
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 	if ( pWepView && pWepView->IsValid() )
 	{
 		// TODO: replace visual data with attributes when attributes support strings.
@@ -447,14 +468,18 @@ const char* FileWeaponInfo_t::GetPrimaryAmmo( const CEconItemView* pWepView ) co
 			return pszString;
 		}
 	}
+#endif
 
 	return szAmmo1;
 }
 
-
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 int FileWeaponInfo_t::GetPrimaryAmmoType( const CEconItemView* pWepView ) const
+#else
+int FileWeaponInfo_t::GetPrimaryAmmoType( void ) const
+#endif
 {
-
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 	if ( pWepView && pWepView->IsValid() )
 	{
 		// TODO: replace visual data with attributes when attributes support strings.
@@ -465,6 +490,7 @@ int FileWeaponInfo_t::GetPrimaryAmmoType( const CEconItemView* pWepView ) const
 			return GetAmmoDef()->Index( pszString );
 		}
 	}
+#endif
 
 	return iAmmoType;
 }
@@ -553,7 +579,9 @@ bool CWeaponDatabase::LoadManifest()
 		}
 	}
 
+#if defined ( CSTRIKE15 )
 	LoadEquipmentData();
+#endif
 
 	return true;
 }

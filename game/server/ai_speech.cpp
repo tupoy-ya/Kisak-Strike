@@ -17,7 +17,9 @@
 #include "isaverestore.h"
 #include "sceneentity.h"
 #include "ai_speechqueue.h"
+#if defined (CSTRIKE_DLL)
 #include "cs_gamerules.h"
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -386,12 +388,14 @@ static const int LEN_SPECIFIC_SCENE_MODIFIER = strlen( AI_SPECIFIC_SCENE_MODIFIE
 // alive, etc.
 static void ModifyOrAppendGlobalCriteria( AI_CriteriaSet * RESTRICT outputSet )
 {
+#if defined (CSTRIKE_DLL)
 	// Add the round duration and current round time
 	if ( CSGameRules() )
 	{
 		outputSet->AppendCriteria( "RoundLength", CSGameRules()->GetRoundLength() );
 		outputSet->AppendCriteria( "RoundElapsedTime", CSGameRules()->GetRoundElapsedTime() );
 	}
+#endif
 }
 
 

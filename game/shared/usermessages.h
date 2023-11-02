@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -23,7 +23,11 @@
 #undef TYPE_BOOL
 #endif
 
+#if defined ( CSTRIKE15 )
 #include "cstrike15_usermessages.pb.h"
+#elif defined ( HL2_DLL ) || defined ( HL2_CLIENT_DLL )
+#include "hl2/hl2_usermessages.pb.h"
+#endif
 
 //-----------------------------------------------------------------------------
 class IUserMessageBinder;

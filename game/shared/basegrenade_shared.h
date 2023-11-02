@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -16,7 +16,6 @@
 #define CBaseGrenade C_BaseGrenade
 
 #include "c_basecombatcharacter.h"
-#include "glow_outline_effect.h"
 
 #else
 
@@ -25,12 +24,9 @@
 
 #endif
 
-#include "cs_shareddefs.h"
-
 #define BASEGRENADE_EXPLOSION_VOLUME	1024
 
 class CTakeDamageInfo;
-
 
 #if !defined( CLIENT_DLL )
 class CBaseGrenade : public CBaseAnimating, public CDefaultPlayerPickupVPhysics
@@ -50,6 +46,9 @@ public:
 
 #if !defined( CLIENT_DLL )
 	DECLARE_DATADESC();
+#endif
+#ifdef MAPBASE_VSCRIPT
+	DECLARE_ENT_SCRIPTDESC();
 #endif
 
 	virtual void		Precache( void );
@@ -74,10 +73,6 @@ public:
 
 	virtual float		GetShakeAmplitude( void ) { return 25.0; }
 	virtual float		GetShakeRadius( void ) { return 750.0; }
-
-	virtual const char *GetParticleSystemName( int pointContents, surfacedata_t *pdata = NULL ) { return NULL; }
-
-	virtual GrenadeType_t GetGrenadeType( void ) { return GRENADE_TYPE_EXPLOSIVE; }
 
 	// Damage accessors.
 	virtual float GetDamage()
@@ -109,6 +104,17 @@ public:
 	void				  SetThrower( CBaseCombatCharacter *pThrower );
 	CBaseEntity *GetOriginalThrower() { return m_hOriginalThrower; }
 
+#ifdef MAPBASE_VSCRIPT
+	HSCRIPT				ScriptGetThrower( void ) { return ToHScript( GetThrower() ); }
+	void				ScriptSetThrower( HSCRIPT hThrower ) { SetThrower( ToEnt(hThrower) ? ToEnt(hThrower)->MyCombatCharacterPointer() : NULL ); }
+	HSCRIPT				ScriptGetOriginalThrower() { return ToHScript( GetOriginalThrower() ); }
+
+	float				GetDetonateTime() { return m_flDetonateTime; }
+	bool				HasWarnedAI() { return m_bHasWarnedAI; }
+	bool				IsLive() { return m_bIsLive; }
+	float				GetWarnAITime() { return m_flWarnAITime; }
+#endif
+
 #if !defined( CLIENT_DLL )
 	// Allow +USE pickup
 	int ObjectCaps() 
@@ -129,10 +135,6 @@ public:
 	CNetworkVar( float, m_flNextAttack );
 	float				m_flDetonateTime;			// Time at which to detonate.
 	float				m_flWarnAITime;				// Time at which to warn the AI
-
-#if defined( CLIENT_DLL )
-	CGlowObject			m_GlowObject;
-#endif
 
 protected:
 

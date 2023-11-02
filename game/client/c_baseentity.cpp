@@ -317,6 +317,12 @@ void RecvProxy_SimulationTime( const CRecvProxyData *pData, void *pStruct, void 
 	C_BaseEntity *pEntity = ( C_BaseEntity * )pStruct;
 	Assert( pOut == &pEntity->m_flSimulationTime );
 
+	if ( !pEntity || pEntity == (CBaseEntity *)-1 )
+	{
+		DebuggerBreak();
+		return;
+	}
+
 	int t;
 	int tickbase;
 	int addt;

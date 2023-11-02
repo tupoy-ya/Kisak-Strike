@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -2287,8 +2287,8 @@ void CFuncTankGun::Fire( int bulletCount, const Vector &barrelEnd, const Vector 
 	info.m_vecSpread = gTankSpread[m_spread];
 	info.m_flDistance = MAX_TRACE_LENGTH;
 	info.m_iTracerFreq = 1;
-	info.m_iDamage = m_iBulletDamage;
-	info.m_iPlayerDamage = m_iBulletDamageVsPlayer;
+	info.m_flDamage = m_iBulletDamage;
+	info.m_flPlayerDamage = m_iBulletDamageVsPlayer;
 	info.m_pAttacker = pAttacker;
 	info.m_pAdditionalIgnoreEnt = GetParent();
 

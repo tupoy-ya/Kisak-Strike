@@ -2145,6 +2145,7 @@ public:
 	void StopShooting();
 	void ShootThink();
 	void UpdateTarget();
+#if defined( CSTRIKE15 )
 	void FireBullet(
 		Vector vecSrc,	// shooting postion
 		const QAngle &shootAngles,  //shooting angle
@@ -2159,6 +2160,7 @@ public:
 		float xSpread, float ySpread,
 		const char *pszTracerName
 		);
+#endif
 
 	void InputEnable( inputdata_t &inputdata );
 	void InputDisable( inputdata_t &inputdata );
@@ -2460,6 +2462,7 @@ extern ConVar sv_showbullethits;
 extern ConVar sv_penetration_type;
 #define	CS_MASK_SHOOT (MASK_SOLID|CONTENTS_DEBRIS)
 
+#if defined( CSTRIKE15 )
 void CEnvGunfire::FireBullet(
 	Vector vecSrc,	// shooting postion
 	const QAngle &shootAngles,  //shooting angle
@@ -2798,6 +2801,7 @@ void CEnvGunfire::FireBullet(
 	}
 //#endif
 }
+#endif
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

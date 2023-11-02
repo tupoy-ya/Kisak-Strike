@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Weapon selection handling
 //
@@ -660,6 +660,7 @@ void CBaseHudWeaponSelection::SelectWeapon( void )
 	
 		engine->ClientCmd( "cancelselect\n" );
 
+#if defined ( CSTRIKE15 )
 		if (player->GetTeamNumber() == TEAM_CT)
 		{
 			// Play the "weapon selected" sound
@@ -671,6 +672,10 @@ void CBaseHudWeaponSelection::SelectWeapon( void )
 			// Play the "weapon selected" sound
 			player->EmitSound("Player.WeaponSelected_T");
 		}
+#else
+		// Play the "weapon selected" sound
+		player->EmitSound( "Player.WeaponSelected" );
+#endif
 		
 	}
 }
@@ -693,9 +698,8 @@ void CBaseHudWeaponSelection::CancelWeaponSelection( void )
 
 		m_hSelectedWeapon = NULL;
 
+#if defined ( CSTRIKE15 )
 		// Play the "close weapon selection" sound based on faction
-		//player->EmitSound( "Player.WeaponSelectionClose" );
-
 		if (player->GetTeamNumber() == TEAM_CT)
 		{
 			// Play the CT Suit sound
@@ -707,7 +711,10 @@ void CBaseHudWeaponSelection::CancelWeaponSelection( void )
 			// Play the T Suit sound
 			player->EmitSound("Player.WeaponSelectionClose_T");
 		}
-
+#else
+		// Play the "close weapon selection" sound
+		player->EmitSound( "Player.WeaponSelectionClose" );
+#endif
 	}
 	else
 	{

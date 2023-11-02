@@ -71,8 +71,13 @@ public:
 	void	AddToHistory( int iType, int iId, int iCount = 0 );
 	void	AddToHistory( int iType, const char *szName, int iCount = 0 );
 	void	AddToHistory( C_BaseCombatWeapon *weapon );
+#if defined ( CSTRIKE15 )
 	bool	MsgFunc_ItemPickup( const CCSUsrMsg_ItemPickup &msg );
 	bool	MsgFunc_AmmoDenied( const CCSUsrMsg_AmmoDenied &msg );
+#elif defined ( HL2_CLIENT_DLL )
+	bool	MsgFunc_ItemPickup( const CHLUsrMsg_ItemPickup &msg );
+	bool	MsgFunc_AmmoDenied( const CHLUsrMsg_AmmoDenied &msg );
+#endif
 
 	CUserMessageBinder m_UMCMsgItemPickup;
 	CUserMessageBinder m_UMCMsgAmmoDenied;

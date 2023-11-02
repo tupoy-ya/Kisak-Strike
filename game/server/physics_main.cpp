@@ -34,7 +34,11 @@
 #include "pushentity.h"
 #include "igamemovement.h"
 #include "tier0/cache_hints.h"
+
+#if defined( CSTRIKE15 )
 #include "basecsgrenade_projectile.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -61,6 +65,7 @@ static void Physics_TraceEntity( CBaseEntity* pBaseEntity, const Vector &vecAbsS
 	{
 		GameRules()->WeaponTraceEntity( pBaseEntity, vecAbsStart, vecAbsEnd, mask, ptr );
 	}
+#if defined( CSTRIKE15 )
 	else
 	{
 		UTIL_TraceEntity( pBaseEntity, vecAbsStart, vecAbsEnd, mask, ptr );
@@ -85,6 +90,7 @@ static void Physics_TraceEntity( CBaseEntity* pBaseEntity, const Vector &vecAbsS
 			UTIL_TraceLine( vecAbsStart, vecAbsEnd, mask, pBaseEntity, pBaseEntity->GetCollisionGroup(), ptr );
 		}
 	}
+#endif
 }
 
 
@@ -1471,7 +1477,7 @@ void CBaseEntity::PhysicsPushEntity( const Vector& push, trace_t *pTrace )
 	// if the sweep check starts inside a solid surface, try once more from the last origin
 	if ( pTrace->startsolid )
 	{
-
+#if defined( CSTRIKE15 )
 		CBaseCSGrenadeProjectile* pGrenadeProjectile = dynamic_cast<CBaseCSGrenadeProjectile*>( this );
 		if ( pGrenadeProjectile )
 		{
@@ -1479,6 +1485,7 @@ void CBaseEntity::PhysicsPushEntity( const Vector& push, trace_t *pTrace )
 			UTIL_TraceLine( prevOrigin - push, prevOrigin + push, (CONTENTS_GRENADECLIP|CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_GRATE), this, COLLISION_GROUP_INTERACTIVE_DEBRIS, pTrace );
 		}
 		else
+#endif
 		{
 			::PhysicsCheckSweep( this, prevOrigin - push, push, pTrace );
 		}

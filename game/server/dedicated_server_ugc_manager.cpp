@@ -8,7 +8,10 @@
 #include "steam/isteamhttp.h"
 #include "ugc_utils.h"
 #include "tier2/fileutils.h"
+#if defined ( CSTRIKE15 )
 #include "gametypes.h"
+#endif
+#include "fmtstr.h"
 
 // TODO: can we swap this out based on steam universe?
 const char* g_szAuthKeyFilename = "webapi_authkey.txt";
@@ -338,6 +341,7 @@ void CDedicatedServerWorkshopManager::GetNewestSubscribedFiles( void )
 
 			// If we're hosting a workshop map collection, get the latest version of those maps
 			PublishedFileId_t id =  V_atoui64( gpGlobals->mapGroupName.ToCStr() );
+#if defined ( CSTRIKE15 )
 			if ( g_pGameTypes->IsWorkshopMapGroup( gpGlobals->mapGroupName.ToCStr() ) && id != 0 )
 			{
 				// Clumsy special case for single maps: If there's one entry and it's ID matches the collection name, it's really just a map and not a collection
@@ -351,6 +355,7 @@ void CDedicatedServerWorkshopManager::GetNewestSubscribedFiles( void )
 					m_CollectionInfoQueries.AddToTail( id );
 				}
 			}
+#endif
 
 			m_fTimeLastVersionCheck = Plat_FloatTime();
 		}
@@ -434,6 +439,7 @@ bool CDedicatedServerWorkshopManager::ShouldUpdateCollection( PublishedFileId_t 
 	// For large collections in locations with high ping to steam, getting all that file info takes too long and hangs up level changes.
 	const char *szMapGroup = gpGlobals->mapGroupName.ToCStr();
 	bool bUpdateCollectionFiles = true;
+#if defined ( CSTRIKE15 )
 	if ( m_bHostedCollectionUpdatePending && g_pGameTypes->IsWorkshopMapGroup( szMapGroup ) )
 	{
 		PublishedFileId_t curHostedCollectionID = V_atoui64( szMapGroup );
@@ -468,6 +474,7 @@ bool CDedicatedServerWorkshopManager::ShouldUpdateCollection( PublishedFileId_t 
 		}
 
 	}
+#endif
 
 	return bUpdateCollectionFiles;
 }
@@ -843,10 +850,12 @@ void CDedicatedServerWorkshopManager::OnCollectionInfoReceived( PublishedFileId_
 	if ( vecCollectionItems.Count() > 0 )
 	{
 		PublishedFileId_t curHostedCollection = 0;
+#if defined ( CSTRIKE15 )
 		if( g_pGameTypes->IsWorkshopMapGroup( gpGlobals->mapGroupName.ToCStr() ) )
 		{
 			curHostedCollection = V_atoui64( gpGlobals->mapGroupName.ToCStr() );
 		}
+#endif
 
 		// Make/refresh a mapgroup if it's the one we want to/are hosting.
 		if ( collectionId == m_desiredHostCollection || collectionId == curHostedCollection )
@@ -936,6 +945,7 @@ void CDedicatedServerWorkshopManager::CheckForNewVersion( PublishedFileId_t id )
 	// Remember last time we did full update
 	m_fTimeLastVersionCheck = Plat_FloatTime();
 
+#if defined ( CSTRIKE15 )
 	// check if the map collection changed
 	if ( g_pGameTypes->IsWorkshopMapGroup( gpGlobals->mapGroupName.ToCStr() ) )
 	{
@@ -950,6 +960,7 @@ void CDedicatedServerWorkshopManager::CheckForNewVersion( PublishedFileId_t id )
 			m_bHostedCollectionUpdatePending = true;
 		}
 	}
+#endif
 }
 
 const char* CDedicatedServerWorkshopManager::GetUGCMapPath( PublishedFileId_t id ) const
@@ -1238,7 +1249,9 @@ CWorkshopMapGroupBuilder::CWorkshopMapGroupBuilder( PublishedFileId_t id, const 
 
 void CWorkshopMapGroupBuilder::CreateOrUpdateMapGroup( void )
 {
+#if defined ( CSTRIKE15 )
 	g_pGameTypes->CreateOrUpdateWorkshopMapGroup( CFmtStr( "%llu", m_id ).Access(), m_Maps );
+#endif
 }
 
 const char* CWorkshopMapGroupBuilder::GetFirstMap( void ) const

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:
 //
@@ -31,8 +31,10 @@ CPredictedViewModel::CPredictedViewModel() : m_LagAnglesHistory("CPredictedViewM
 	m_vLagAngles.Init();
 	m_LagAnglesHistory.Setup( &m_vLagAngles, INTERPOLATE_LINEAR_ONLY );
 	m_vPredictedOffset.Init();
+#if defined ( CSTRIKE15 )
 	m_flInaccuracyTilt = 0;
 	m_flOldAccuracyDiffSmoothed = 0;
+#endif
 }
 #else
 CPredictedViewModel::CPredictedViewModel()
@@ -142,8 +144,10 @@ void CPredictedViewModel::ApplyViewModelPitchAndDip( CBasePlayer *owner, Vector&
 
 	QAngle vecLoweredAngles(0,0,0);
 
+#if defined ( CSTRIKE15 )
 	m_vLoweredWeaponOffset.x = Approach( bLowered ? cl_gunlowerangle.GetFloat() : 0, m_vLoweredWeaponOffset.x, cl_gunlowerspeed.GetFloat() );
 	vecLoweredAngles.x += m_vLoweredWeaponOffset.x;
+#endif
 	vecNewAngles -= vecLoweredAngles * 0.2f;
 	vecNewOrigin.z -= vecLoweredAngles.x * 0.4f; // translation offset looks more natural than rotation
 

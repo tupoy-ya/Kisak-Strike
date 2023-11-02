@@ -9,6 +9,8 @@
 #include "c_team.h"
 #include "gamestringpool.h"
 #include "hltvreplaysystem.h"
+#include "fmtstr.h"
+#include "vgui/ILocalize.h"
 
 #if !defined( _X360 )
 #include "xbox/xboxstubs.h"

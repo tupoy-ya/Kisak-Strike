@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2008, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2008, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:		Client handler implementations for instruction players how to play
 //
@@ -877,11 +877,13 @@ bool C_GameInstructor::ReadSaveData( void )
 			continue;
 		}
 
+#if defined( CSTRIKE15 ) || defined ( PORTAL2 )
 		TitleData3::GameInstructorData_t::LessonInfo_t li;
 		li.u8dummy = TitleDataFieldsDescriptionGetValue<uint8>( fdKey, pPlayer );
 		
 		pLesson->SetDisplayCount( li.display );
 		pLesson->SetSuccessCount( li.success );
+#endif
 
 		if ( Q_strcmp( pLesson->GetName(), "version number" ) == 0 )
 		{
@@ -926,6 +928,7 @@ void C_GameInstructor::KeyValueBuilder( KeyValues *pKeyValues )
 
 	TitleDataFieldsDescription_t const *fields = g_pMatchFramework->GetMatchTitle()->DescribeTitleDataStorage();
 
+#if defined( CSTRIKE15 ) || defined ( PORTAL2 )
 	// Build key value data to save
 	for ( int i = 0; i < m_Lessons.Count();++i )
 	{
@@ -947,6 +950,7 @@ void C_GameInstructor::KeyValueBuilder( KeyValues *pKeyValues )
 			DevWarning( "C_GameInstructor::KeyValueBuilder did not save %s; is it missing from inc_gameinstructor_lessons.inc\n", tdKey.Access() );
 		}
 	}
+#endif
 }
 
 void C_GameInstructor::RefreshDisplaysAndSuccesses( void )

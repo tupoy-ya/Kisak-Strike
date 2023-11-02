@@ -320,7 +320,11 @@ CHud &GetHud( int nSlot /*= -1*/ )
 	return gHUD[ nSlot ];
 }
 
+#if defined( CSTRIKE15 )
 bool MsgFunc_ResetHUD( const CCSUsrMsg_ResetHud& msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool MsgFunc_ResetHUD( const CHLUsrMsg_ResetHud& msg )
+#endif
 {
 	ASSERT_LOCAL_PLAYER_RESOLVABLE();
 	return gHUD[ GET_ACTIVE_SPLITSCREEN_SLOT() ].MsgFunc_ResetHUD( msg );
@@ -343,9 +347,11 @@ public:
 
 	void Init()
 	{
+#if defined( CSTRIKE_DLL )
 		m_UMCMsgResetHud.Bind< CS_UM_ResetHud, CCSUsrMsg_ResetHud >( UtlMakeDelegate( MsgFunc_ResetHUD ) );
-#ifdef CSTRIKE_DLL
 		m_UMCMsgSendAudio.Bind< CS_UM_SendAudio, CCSUsrMsg_SendAudio >( UtlMakeDelegate( MsgFunc_SendAudio ) );
+#elif defined ( HL2_CLIENT_DLL )
+		m_UMCMsgResetHud.Bind< HL_UM_ResetHud, CHLUsrMsg_ResetHud >( UtlMakeDelegate( MsgFunc_ResetHUD ) );
 #endif
 	}
 
@@ -877,11 +883,18 @@ bool CHud::IsHidden( int iHudFlags )
 	if ( !m_bEngineIsInGame )
 		return true;
 
+#if defined( CSTRIKE15 )
 	// Grab the local or observed player
 	C_BasePlayer *pPlayer = GetHudPlayer();
 
 	// Grab the local player
 	C_CSPlayer *localPlayer = C_CSPlayer::GetLocalCSPlayer();
+#else
+	// No local player yet?
+	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+	if ( !pPlayer )
+		return true;
+#endif
 
 	if ( !pPlayer )
 		return true;
@@ -897,6 +910,7 @@ bool CHud::IsHidden( int iHudFlags )
 	if ( iHideHud & HIDEHUD_ALL )
 		return true;
 
+#if defined( CSTRIKE15 )
 	// hide health if not chasing a target
 	if ( localPlayer->GetObserverMode() == OBS_MODE_ROAMING || 
 		localPlayer->GetObserverMode() == OBS_MODE_FIXED || 
@@ -906,6 +920,7 @@ bool CHud::IsHidden( int iHudFlags )
 		if ( (iHudFlags & HIDEHUD_HEALTH) || (iHudFlags & HIDEHUD_WEAPONSELECTION) )
 			return true;
 	}
+#endif
 
 	// Hide all hud elements if we're blurring the background, since they don't blur properly
 	if ( GetClientMode()->GetBlurFade() )

@@ -31,10 +31,12 @@
 #include <vgui_controls/EditablePanel.h>
 #include "vgui_int.h"
 #include "cdll_client_int.h"
+#if defined( CSTRIKE15 )
 #include "c_cs_playerresource.h"
 #include "c_cs_player.h"
 #include "cs_gamerules.h"
 #include "weapon_c4.h"
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -128,6 +130,7 @@ int GetSpectatorTarget( void )
 	}
 }
 
+#if defined( CSTRIKE15 )
 // this is meant to be called on a bot character
 // note: This is quite similar to CCSPlayer::CanControlBot.  This is here since calling into the CCSPlayer was unrealistic in some code paths
 // TODO: Fix this so it ACTUALLY calls CanControlBot, there are bugs otherwise (and will be more) do to them being different functions
@@ -173,6 +176,7 @@ bool CanControlSpectatedTarget( void )
 
 	return  true;	
 }
+#endif
 
 bool CanSeeSpectatorOnlyTools( void )
 {
@@ -183,6 +187,7 @@ bool CanSeeSpectatorOnlyTools( void )
 	if ( pPlayer->IsHLTV() )
 		return true;
 
+#if defined( CSTRIKE15 )
 	if ( pPlayer->IsSpectator() )
 	{
 		if ( sv_competitive_official_5v5.GetBool() )
@@ -191,6 +196,7 @@ bool CanSeeSpectatorOnlyTools( void )
 		if ( CSGameRules() && CSGameRules()->IsQueuedMatchmaking() )
 			return true;
 	}
+#endif
 		
 	return false;
 }
@@ -1046,7 +1052,12 @@ unsigned char UTIL_ComputeEntityFade( C_BaseEntity *pEntity, float flMinDist, fl
 	unsigned char nAlpha = 255;
 
 	// If we're taking devshots, don't fade props at all
-	if ( g_MakingDevShots || cl_leveloverview.GetInt() != 0 || input->CAM_IsThirdPersonOverview() )
+	if ( g_MakingDevShots
+	 || cl_leveloverview.GetInt() != 0
+#if defined( CSTRIKE15 )
+	 || input->CAM_IsThirdPersonOverview()
+#endif
+	 )
 		return 255;
 
 #ifdef _DEBUG

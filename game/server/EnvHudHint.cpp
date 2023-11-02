@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Implements visual effects entities: sprites, beams, bubbles, etc.
 //
@@ -88,9 +88,15 @@ void CEnvHudHint::InputShowHudHint( inputdata_t &inputdata )
 		CSingleUserRecipientFilter user( (CBasePlayer *)pPlayer );
 		user.MakeReliable();
 
+#if defined ( CSTRIKE15 )
 		CCSUsrMsg_KeyHintText msg;
 		msg.add_hints( STRING(m_iszMessage) );
 		SendUserMessage( user, CS_UM_KeyHintText, msg );
+#elif defined ( HL2_DLL )
+		CHLUsrMsg_KeyHintText msg;
+		msg.add_hints( STRING(m_iszMessage) );
+		SendUserMessage( user, HL_UM_KeyHintText, msg );
+#endif
 	}
 }
 
@@ -117,8 +123,14 @@ void CEnvHudHint::InputHideHudHint( inputdata_t &inputdata )
 		CSingleUserRecipientFilter user( (CBasePlayer *)pPlayer );
 		user.MakeReliable();
 
+#if defined ( CSTRIKE15 )
 		CCSUsrMsg_KeyHintText msg;
 		msg.add_hints( STRING(NULL_STRING) );
 		SendUserMessage( user, CS_UM_KeyHintText, msg );
+#elif defined ( HL2_DLL )
+		CHLUsrMsg_KeyHintText msg;
+		msg.add_hints( STRING(NULL_STRING) );
+		SendUserMessage( user, HL_UM_KeyHintText, msg );
+#endif
 	}
 }

@@ -25,13 +25,17 @@
 
 #include <game/client/iviewport.h>
 
+#if defined ( CSTRIKE15 )
 #include "cs_gamerules.h"
+#endif
 
 #include "matchmaking/imatchframework.h"
 #include "tier1/netadr.h"
 
 #include "gametypes/igametypes.h"
-#include "gameui_interface.h"
+#include "gameui/gameui_interface.h"
+
+#include "fmtstr.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -44,7 +48,9 @@ extern INetworkStringTable *g_pStringTableInfoPanel;
 
 ConVar cl_disablehtmlmotd( "cl_disablehtmlmotd", "0", FCVAR_ARCHIVE, "Disable HTML motds." );
 ConVar cl_motd_competitive_timeout( "cl_motd_competitive_timeout", "80", FCVAR_DEVELOPMENTONLY, "Competitive motd timeout in seconds." );
+#if defined ( CSTRIKE15 )
 extern ConVar sv_disable_motd;
+#endif
 
 //=============================================================================
 // HPE_BEGIN:
@@ -415,7 +421,7 @@ void CTextWindow::ShowFile( const char *filename )
 
 		char buffer[2048];
 			
-		int size = min( g_pFullFileSystem->Size( f ), sizeof(buffer)-1 ); // just allow 2KB
+		int size = MIN( g_pFullFileSystem->Size( f ), sizeof(buffer)-1 ); // just allow 2KB
 
 		g_pFullFileSystem->Read( buffer, size, f );
 		g_pFullFileSystem->Close( f );
@@ -468,6 +474,7 @@ void CTextWindow::Update( void )
 
 int CTextWindow::GetNumSecondsRequiredByServer() const
 {
+#if defined ( CSTRIKE15 )
 	if ( !g_pGameTypes )
 		return 0;
 
@@ -478,6 +485,9 @@ int CTextWindow::GetNumSecondsRequiredByServer() const
 	if ( numSecondsRequired > 35 )
 		numSecondsRequired = 35; // never allow > 35 second ads
 	return numSecondsRequired;
+#else
+	return 0;
+#endif
 }
 
 int CTextWindow::GetNumSecondsSponsorRequiredRemaining() const
@@ -659,8 +669,13 @@ void CTextWindow::ShowPanel( bool bShow )
 
 void CTextWindow::ShowPanel2( bool bShow )
 {
-	if ( (CSGameRules() && CSGameRules()->IsQueuedMatchmaking()) || sv_disable_motd.GetBool() )
+#if defined ( CSTRIKE15 )
+	if (
+		(CSGameRules() && CSGameRules()->IsQueuedMatchmaking()) || 
+		sv_disable_motd.GetBool()
+	)
 		bShow = false;
+#endif
 
 	g_pInputSystem->SetSteamControllerMode( bShow ? "MenuControls" : NULL, this );
 
@@ -699,7 +714,9 @@ void CTextWindow::PaintBackground()
 	BaseClass::PaintBackground();
 
 	if ( m_uiTimestampStarted && IsVisible() &&
+#if defined ( CSTRIKE15 )
 		CSGameRules() && CSGameRules()->IsQueuedMatchmaking() &&
+#endif
 		( int( Plat_MSTime() - m_uiTimestampStarted ) > 1000*cl_motd_competitive_timeout.GetInt() ) )
 	{
 		m_bForcingWindowCloseRegardlessOfTime = true;

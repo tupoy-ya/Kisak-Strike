@@ -1117,23 +1117,39 @@ public:
 				{
 					if ( bForceSubtitle )
 					{
+#if defined ( CSTRIKE15 )
 						CCSUsrMsg_CloseCaptionDirect msg;
+#elif defined ( HL2_DLL )
+						CHLUsrMsg_CloseCaptionDirect msg;
+#endif
 						msg.set_hash( hash );
 						msg.set_duration( clamp( (int)( duration * 10.0f ), 0, 65535 ) );
 						msg.set_from_player( fromplayer ? 1 : 0 );
 
 						// Send forced caption and duration hint down to client
-						SendUserMessage( filterCopy, CS_UM_CloseCaptionDirect, msg );						
+#if defined ( CSTRIKE15 )
+						SendUserMessage( filterCopy, CS_UM_CloseCaptionDirect, msg );
+#elif defined ( HL2_DLL )
+						SendUserMessage( filterCopy, HL_UM_CloseCaptionDirect, msg );
+#endif
 					}
 					else
 					{
+#if defined ( CSTRIKE15 )
 						CCSUsrMsg_CloseCaption msg;
+#elif defined ( HL2_DLL )
+						CHLUsrMsg_CloseCaption msg;
+#endif
 						msg.set_hash( hash );
 						msg.set_duration( clamp( (int)( duration * 10.0f ), 0, 65535 ) );
 						msg.set_from_player( fromplayer ? 1 : 0 );
 
-						// Send caption and duration hint down to client						
+						// Send caption and duration hint down to client			
+#if defined ( CSTRIKE15 )			
 						SendUserMessage( filterCopy, CS_UM_CloseCaption, msg );
+#elif defined ( HL2_DLL )
+						SendUserMessage( filterCopy, HL_UM_CloseCaption, msg );
+#endif
 					}
 				}
 			}

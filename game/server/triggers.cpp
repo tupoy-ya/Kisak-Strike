@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: Spawn and use functions for editor-placed triggers.
 //
@@ -37,7 +37,9 @@
 #if defined ( PORTAL2 )
 #include "portal_player.h"
 #endif
+#if defined ( CSTRIKE15 )
 #include "weapon_c4.h"
+#endif
 
 #ifdef HL2_DLL
 #include "hl2_player.h"
@@ -2669,6 +2671,7 @@ void CTriggerPush::DrawDebugGeometryOverlays()
 	}	
 }
 
+#if defined ( CSTRIKE15 )
 //-----------------------------------------------------------------------------
 // Bomb reset trigger - places dropped bomb at the last valid player-held location
 //-----------------------------------------------------------------------------
@@ -2705,6 +2708,7 @@ void CTriggerBombReset::Touch(CBaseEntity *pOther)
 		pC4->ResetToLastValidPlayerHeldPosition();
 	}
 }
+#endif
 
 //-----------------------------------------------------------------------------
 // Teleport trigger

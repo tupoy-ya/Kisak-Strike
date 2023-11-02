@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2006, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2006, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: A base class for all material proxies in the client dll
 //
@@ -16,7 +16,9 @@
 // NOTE: This has to be the last file included!
 #include "tier0/memdbgon.h"
 
+#if defined( CSTRIKE15 )
 #include "c_cs_player.h" // for grenades
+#endif
 
 class CEntityOriginMaterialProxy : public CEntityMaterialProxy
 {

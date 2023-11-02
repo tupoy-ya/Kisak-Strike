@@ -25,8 +25,8 @@
 #include "gameui/basemodpanel.h"
 
 #include "components/scaleformcomponent_common.h"
-#include "uicomponents/uicomponent_friendslist.h"
-#include "uicomponents/uicomponent_mypersona.h"
+#include "cstrike15/uicomponents/uicomponent_friendslist.h"
+#include "cstrike15/uicomponents/uicomponent_mypersona.h"
 
 #include "gc_clientsystem.h"
 #include "cstrike15_gcmessages.pb.h"

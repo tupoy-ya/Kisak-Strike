@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2008, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½ 1996-2008, Valve Corporation, All rights reserved. =======
 //
 // Purpose: Add entities to this system, and the Locator will maintain an arrow
 //			on the HUD that points to the entities when they are offscreen.
@@ -11,7 +11,7 @@
 #pragma once
 #endif
 
-
+#include "steam/isteamcontroller.h"
 #include "vgui_controls/PHandle.h"
 
 

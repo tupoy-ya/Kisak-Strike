@@ -1,4 +1,4 @@
-//========= Copyright  1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Client side implementation of CBaseCombatWeapon.
 //
@@ -191,7 +191,7 @@ ShadowType_t C_BaseCombatWeapon::ShadowCastType()
 	if (IsCarriedByLocalPlayer())
 		return SHADOWS_NONE;
 
-	return (m_iState != WEAPON_IS_CARRIED_BY_PLAYER) ? SHADOWS_RENDER_TO_TEXTURE : SHADOWS_NONE;
+	return SHADOWS_RENDER_TO_TEXTURE;
 }
 
 //-----------------------------------------------------------------------------
@@ -289,7 +289,7 @@ void C_BaseCombatWeapon::DrawCrosshair()
 //-----------------------------------------------------------------------------
 // Purpose: This weapon is the active weapon, and the viewmodel for it was just drawn.
 //-----------------------------------------------------------------------------
-void C_BaseCombatWeapon::ViewModelDrawn( int nFlags, C_BaseViewModel *pViewModel )
+void C_BaseCombatWeapon::ViewModelDrawn( C_BaseViewModel *pViewModel )
 {
 }
 
@@ -473,7 +473,7 @@ IClientModelRenderable*	C_BaseCombatWeapon::GetClientModelRenderable()
 	if( IsFirstPersonSpectated() )
 		return NULL;
 
-	VerifyAndSetContextSensitiveWeaponModel();
+	// VerifyAndSetContextSensitiveWeaponModel();
 
 	return BaseClass::GetClientModelRenderable();
 }
@@ -509,6 +509,7 @@ int C_BaseCombatWeapon::DrawModel( int flags, const RenderableInstance_t &instan
 	extern ConVar stickers_debug_randomize;
 #endif
 
+#if defined( CSTRIKE15 )
 void C_BaseCombatWeapon::ApplyThirdPersonStickers( C_BaseAnimating *pWeaponModelTargetOverride )
 {
 #ifdef _DEBUG
@@ -646,8 +647,9 @@ void C_BaseCombatWeapon::ApplyThirdPersonStickers( C_BaseAnimating *pWeaponModel
 	}
 
 	//Msg( "Applied stickers to: %s\n", this->GetName() );
-	
+
 }
+#endif // CSTRIKE15
 
 //-----------------------------------------------------------------------------
 // tool recording

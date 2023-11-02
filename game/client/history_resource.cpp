@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Item pickup history displayed onscreen when items are picked up.
 //
@@ -204,7 +204,11 @@ void CHudHistoryResource::AddIconToHistory( int iType, int iId, C_BaseCombatWeap
 //-----------------------------------------------------------------------------
 // Purpose: Handle an item pickup event from the server
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool CHudHistoryResource::MsgFunc_ItemPickup( const CCSUsrMsg_ItemPickup &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudHistoryResource::MsgFunc_ItemPickup( const CHLUsrMsg_ItemPickup &msg )
+#endif
 {
 	// Add the item to the history
 	AddToHistory( HISTSLOT_ITEM, msg.item().c_str() );
@@ -215,7 +219,11 @@ bool CHudHistoryResource::MsgFunc_ItemPickup( const CCSUsrMsg_ItemPickup &msg )
 //-----------------------------------------------------------------------------
 // Purpose: ammo denied message
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool CHudHistoryResource::MsgFunc_AmmoDenied( const CCSUsrMsg_AmmoDenied &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudHistoryResource::MsgFunc_AmmoDenied( const CHLUsrMsg_AmmoDenied &msg )
+#endif
 {
 	int iAmmo = msg.ammoidx();
 

@@ -11,7 +11,12 @@
 #endif
 
 #include "GameEventListener.h"
+#if defined ( HL2_CLIENT_DLL ) || defined ( HL2_DLL )
+#include "../common/hl2orange.spa.h"
+#elif defined ( CSTRIKE15 )
 #include "../common/xlast_csgo/csgo.spa.h"
+#endif
+
 #include "iachievementmgr.h"
 
 #define AWARD_ID_NONE ""

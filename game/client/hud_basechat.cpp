@@ -20,7 +20,9 @@
 #include <keyvalues.h>
 #include "ienginevgui.h"
 #include "c_playerresource.h"
+#if defined( CSTRIKE15 )
 #include "cstrike15/c_cs_playerresource.h"
+#endif
 #include "ihudlcd.h"
 #include "vgui/IInput.h"
 #include "vgui/ILocalize.h"
@@ -289,10 +291,12 @@ wchar_t* ReadChatTextString( const char *szString, wchar_t *pOut, int outSize, b
 	if ( const char *pszEntIndex = StringAfterPrefix( szString, "#ENTNAME[" ) )
 	{
 		int iEntIndex = V_atoi( pszEntIndex );
+#if defined( CSTRIKE15 )
 		if ( C_CS_PlayerResource *pCSPR = ( C_CS_PlayerResource* ) GameResources() )
 		{
 			pCSPR->GetDecoratedPlayerName( iEntIndex, pOut, outSize, ( EDecoratedPlayerNameFlag_t ) ( k_EDecoratedPlayerNameFlag_DontUseNameOfControllingPlayer | k_EDecoratedPlayerNameFlag_DontUseAssassinationTargetName ) );
 		}
+#endif
 		if ( !pOut[0] )
 		{
 			if ( const char *pszCloseBracket = V_strnchr( pszEntIndex, ']', 64 ) )
@@ -900,7 +904,11 @@ void CBaseHudChat::Init( void )
 //			iSize - 
 //			*pbuf - 
 //-----------------------------------------------------------------------------
+#if defined( CSTRIKE15 )
 bool CBaseHudChat::MsgFunc_SayText( const CCSUsrMsg_SayText &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool CBaseHudChat::MsgFunc_SayText( const CHLUsrMsg_SayText &msg )
+#endif
 {
 	int client = msg.ent_idx();
 	const char *szString =  msg.text().c_str();
@@ -940,7 +948,11 @@ int CBaseHudChat::GetFilterForString( const char *pString )
 //-----------------------------------------------------------------------------
 // Purpose: Reads in a player's Chat text from the server
 //-----------------------------------------------------------------------------
+#if defined( CSTRIKE15 )
 bool CBaseHudChat::MsgFunc_SayText2( const CCSUsrMsg_SayText2 &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool CBaseHudChat::MsgFunc_SayText2( const CHLUsrMsg_SayText2 &msg )
+#endif
 {
 	// Got message during connection
 	if ( !g_PR )
@@ -1004,7 +1016,11 @@ bool CBaseHudChat::MsgFunc_SayText2( const CCSUsrMsg_SayText2 &msg )
 // any string that starts with the character '#' is a message name, and is used to look up the real message in titles.txt
 // the next ( optional) one to four strings are parameters for that string ( which can also be message names if they begin with '#')
 //-----------------------------------------------------------------------------
+#if defined( CSTRIKE15 )
 bool CBaseHudChat::MsgFunc_TextMsg( const CCSUsrMsg_TextMsg &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool CBaseHudChat::MsgFunc_TextMsg( const CHLUsrMsg_TextMsg &msg )
+#endif
 {
 	char szString[2048] = {};
 	int msg_dest = msg.msg_dst();
@@ -1018,6 +1034,7 @@ bool CBaseHudChat::MsgFunc_TextMsg( const CCSUsrMsg_TextMsg &msg )
 		if ( const char *pszEntIndex = StringAfterPrefix( msg.params(i).c_str(), "#ENTNAME[" ) )
 		{
 			int iEntIndex = V_atoi( pszEntIndex );
+#if defined( CSTRIKE15 )
 			wchar_t wszPlayerName[MAX_DECORATED_PLAYER_NAME_LENGTH] = {};
 			if ( C_CS_PlayerResource *pCSPR = ( C_CS_PlayerResource* ) GameResources() )
 			{
@@ -1028,7 +1045,9 @@ bool CBaseHudChat::MsgFunc_TextMsg( const CCSUsrMsg_TextMsg &msg )
 				szString[0] = 0;
 				V_wcscpy_safe( szBuf[ i ], wszPlayerName );
 			}
-			else if ( const char *pszEndBracket = V_strnchr( pszEntIndex, ']', 64 ) )
+			else
+#endif
+			if ( const char *pszEndBracket = V_strnchr( pszEntIndex, ']', 64 ) )
 			{
 				V_strcpy_safe( szString, pszEndBracket + 1 );
 			}

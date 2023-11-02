@@ -1035,7 +1035,7 @@ void CEngineVGui::Init()
 #if defined( TOOLFRAMEWORK_VGUI_REFACTOR )
 		staticGameConsole->SetParent(staticEngineToolsPanel->GetVPanel());
 #elif !defined (CSTRIKE15)
-		staticGameConsole->SetParent(staticGameUIPanel->GetVPanel());
+		//staticGameConsole->SetParent(staticGameUIPanel->GetVPanel());
 #endif
 	}
 

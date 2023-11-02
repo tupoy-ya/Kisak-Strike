@@ -78,9 +78,15 @@ public:
 	void VidInit( void );
 	bool ShouldDraw( void );
 	virtual void Paint();
+#if defined ( CSTRIKE15 )
 	bool MsgFunc_HudText(const CCSUsrMsg_HudText &msg);
 	bool MsgFunc_GameTitle(const CCSUsrMsg_GameTitle &msg);
 	bool MsgFunc_HudMsg(const CCSUsrMsg_HudMsg &msg);
+#elif defined ( HL2_CLIENT_DLL )
+	bool MsgFunc_HudText(const CHLUsrMsg_HudText &msg);
+	bool MsgFunc_GameTitle(const CHLUsrMsg_GameTitle &msg);
+	bool MsgFunc_HudMsg(const CHLUsrMsg_HudMsg &msg);
+#endif
 
 	float FadeBlend( float fadein, float fadeout, float hold, float localTime );
 	int	XPosition( float x, int width, int lineWidth );

@@ -6,7 +6,11 @@
 #include "cbase.h"
 #include "cdll_int.h"
 #include <crtmemdebug.h>
+
+#if defined ( USE_ECONOMY_FEATURES )
 #include <econ/econ_item_system.h>
+#endif
+
 #include "vgui_int.h"
 #include "clientmode.h"
 #include "iinput.h"
@@ -137,6 +141,8 @@
 #include "swarm/gameui/swarm/basemodpanel.h"
 #elif defined( CSTRIKE15 )
 #include "cstrike15/gameui/basepanel.h"
+#elif defined ( HL2_CLIENT_DLL )
+#include "gameui/basemodpanel.h"
 #else
 #error "GAMEUI_EMBEDDED"
 #endif
@@ -219,6 +225,8 @@ extern void ProcessPortalTeleportations( void );
 #include "iloadingdisc.h"
 
 #include "bannedwords.h"
+
+#include "tier1/fmtstr.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -2454,6 +2462,8 @@ CEG_NOINLINE void ConfigureCurrentSystemLevel()
 
 #if defined ( TERROR )
 	char szModName[32] = "left4dead";
+#elif defined ( HL2_CLIENT_DLL )
+	char szModName[32] = "hl2";
 #elif defined ( PAINT )
 	char szModName[32] = "paint";
 #elif defined ( PORTAL2 )
@@ -2544,12 +2554,14 @@ CEG_NOINLINE void CHLClient::LevelInitPreEntity( char const* pMapName )
 
 	IGameSystem::LevelInitPreEntityAllSystems(pMapName);
 
+#if defined( USE_ECONOMY_FEATURES )
     GameItemSchema_t *pItemSchema = ItemSystem()->GetItemSchema();
     if ( pItemSchema )
     {
         //pItemSchema->BInit( "scripts/items/items_game.txt", "MOD" );
         pItemSchema->BInitFromDelayedBuffer();
     }
+#endif
 
 	ResetWindspeed();
 
@@ -3676,6 +3688,7 @@ bool CHLClient::CanRecordDemo( char *errorMsg, int length ) const
 
 bool CHLClient::CanStopRecordDemo( char *errorMsg, int length ) const
 {
+#if defined( CSTRIKE_DLL )
 	if ( CSGameRules() )
 	{
 		if ( CSGameRules()->IsWarmupPeriod() )
@@ -3697,6 +3710,7 @@ bool CHLClient::CanStopRecordDemo( char *errorMsg, int length ) const
 		CSGameRules()->MarkClientStopRecordAtRoundEnd( true );
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -3713,11 +3727,13 @@ void CHLClient::OnDemoRecordStart( char const* pDemoBaseName )
 	}
 #endif
 
+#if defined( CSTRIKE_DLL )
 	if ( CSGameRules() )
 	{
 		// If client was previously marked to stop recording at round end then mark it now as not requiring to stop
 		CSGameRules()->MarkClientStopRecordAtRoundEnd( false );
 	}
+#endif
 }
 
 void CHLClient::OnDemoRecordStop()
@@ -4009,12 +4025,14 @@ int CHLClient::GetSpectatorTarget( ClientDLLObserverMode_t* pObserverMode )
 		*pObserverMode = CLIENT_DLL_OBSERVER_NONE;
 	}
 
+#if defined( CSTRIKE_DLL )
 	C_CSPlayer *pPlayer = GetLocalOrInEyeCSPlayer();
 
 	if ( pPlayer != NULL )
 	{
 		return pPlayer->entindex();
 	}
+#endif
 
 	return -1;
 }
@@ -4386,6 +4404,8 @@ float CHLClient::GetUGCFileDownloadProgress( PublishedFileId_t id )
 {
 #if !defined ( NO_STEAM ) && defined( CSTRIKE15 )
 	return g_CSGOWorkshopMaps.GetFileDownloadProgress( id );
+#else
+	return -1.0f;
 #endif
 }
 
@@ -4408,8 +4428,12 @@ void CHLClient::OnDemoPlaybackTimeJump()
 // Inventory access
 float CHLClient::FindInventoryItemWithMaxAttributeValue( char const *szItemType, char const *szAttrClass )
 {
+#if defined( CSTRIKE15 )
 	CCSPlayerInventory *pLocalInv = CSInventoryManager()->GetLocalCSInventory();
 	return pLocalInv ? pLocalInv->FindInventoryItemWithMaxAttributeValue( szItemType, szAttrClass ) : -1.0f;
+#else
+	return -1.0f;
+#endif
 }
 
 void CHLClient::DetermineSubscriptionKvToAdvertise( KeyValues *kvLocalPlayer )
@@ -4545,6 +4569,7 @@ char const * CHLClient::GetRichPresenceStatusString()
 	char const *szMode = NULL;
 	char const *szGameMode = NULL;
 	
+#if defined ( CSTRIKE15 )
 	if ( bConnectedToServer )
 	{
 		extern ConVar game_type;
@@ -4595,17 +4620,19 @@ char const * CHLClient::GetRichPresenceStatusString()
 			break;
 		}
 	}
+#endif
 	
 	// Score of the match
 	char chScore[64] = {};
 	char const *szScore = NULL;
+#if defined( CSTRIKE15 )
 	if ( bConnectedToServer && !g_bEngineIsHLTV && CSGameRules() )
 	{
 		// Append the score using local player's team first, or CT first
 		bool bLocalPlayerT = false;
 		if ( C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer() )
 		{
-			bLocalPlayerT = ( pLocalPlayer->GetTeamNumber() == TEAM_TERRORIST );
+			bLocalPlayerT = ( pLocalPlayer->GetTeamNumber() == 2 /*TEAM_TERRORIST*/ );
 		}
 
 		C_Team *tTeam = GetGlobalTeam( TEAM_TERRORIST );
@@ -4619,6 +4646,7 @@ char const * CHLClient::GetRichPresenceStatusString()
 			szScore = chScore;
 		}
 	}
+#endif
 
 	// Server type
 	char const *szServerType = NULL; // V for Valve, P for Pinion
@@ -4632,6 +4660,7 @@ char const * CHLClient::GetRichPresenceStatusString()
 	{
 		if ( bWatchingLiveBroadcast )
 		{
+#if defined( CSTRIKE15 )
 			if ( CSGameRules() && CSGameRules()->IsValveDS() )
 			{
 				szServerType = "kv";
@@ -4640,6 +4669,7 @@ char const * CHLClient::GetRichPresenceStatusString()
 				if ( !CSGameRules()->IsPlayingCooperativeGametype() )
 					bCanWatch = true;
 			}
+#endif
 		}
 		else if ( !bPlayingDemo )
 		{
@@ -4654,6 +4684,7 @@ char const * CHLClient::GetRichPresenceStatusString()
 			{
 				szConnectAddress = pNetChanInfo->GetAddress();
 
+#if defined( CSTRIKE15 )
 				if ( CSGameRules() && CSGameRules()->IsValveDS() )
 				{
 					szServerType = "kv";
@@ -4662,6 +4693,7 @@ char const * CHLClient::GetRichPresenceStatusString()
 					if ( !CSGameRules()->IsPlayingCooperativeGametype() )
 						bCanWatch = true;
 				}
+#endif
 
 				if ( !szServerType )
 				{
@@ -4674,7 +4706,10 @@ char const * CHLClient::GetRichPresenceStatusString()
 					}
 				}
 
-				bCanInvite = ( CSGameRules() && !CSGameRules()->IsQueuedMatchmaking() &&	// queued official competitive
+				bCanInvite = ( 
+#if defined( CSTRIKE15 )
+					CSGameRules() && !CSGameRules()->IsQueuedMatchmaking() &&	// queued official competitive
+#endif
 					!engine->IsHLTV() &&			// demo preview or GOTV
 					( adrRemote.GetPort() != 1 )	// SteamID steamcnx for a private match, address is not valid
 					);
@@ -4813,11 +4848,13 @@ char const * CHLClient::GetRichPresenceStatusString()
 
 int CHLClient::GetInEyeEntity() const
 {
+#if defined( CSTRIKE15 )
 	C_CSPlayer* player = GetLocalOrInEyeCSPlayer();
 	if (player != nullptr)
 	{
 		return player->entindex();
 	}
+#endif
 	return -1;
 }
 
@@ -4849,7 +4886,11 @@ IScaleformSlotInitController * CHLClient::GetScaleformSlotInitController()
 #endif
 bool CHLClient::IsConnectedUserInfoChangeAllowed( IConVar *pCvar )
 {
+#if defined( CSTRIKE15 )
 	return CSGameRules() ? CSGameRules()->IsConnectedUserInfoChangeAllowed( NULL ) : true;
+#else
+	return true;
+#endif
 }
 
 void CHLClient::OnCommandDuringPlayback( char const *cmd )
@@ -4859,6 +4900,7 @@ void CHLClient::OnCommandDuringPlayback( char const *cmd )
 
 void CHLClient::RetireAllPlayerDecals( bool bRenderContextValid )
 {
+#if defined ( CSTRIKE15 )
 	extern void OnPlayerDecalsLevelShutdown();
 	OnPlayerDecalsLevelShutdown();
 
@@ -4869,6 +4911,7 @@ void CHLClient::RetireAllPlayerDecals( bool bRenderContextValid )
 		extern void OnPlayerDecalsUpdate();
 		OnPlayerDecalsUpdate();
 	}
+#endif // What?
 }
 
 void CHLClient::EngineGotvSyncPacket( const CEngineGotvSyncPacket *pPkt )
@@ -4885,6 +4928,7 @@ void CHLClient::OnTickPre( int tickcount )
 #endif
 }
 
+#if defined( CSTRIKE15 )
 class ClientJob_EMsgGCCStrike15_GotvSyncPacket : public GCSDK::CGCClientJob
 {
 public:
@@ -4899,6 +4943,7 @@ public:
 	}
 };
 GC_REG_CLIENT_JOB( ClientJob_EMsgGCCStrike15_GotvSyncPacket, k_EMsgGCCStrike15_v2_GotvSyncPacket );
+#endif
 
 
 

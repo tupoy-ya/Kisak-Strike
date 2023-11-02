@@ -1,4 +1,4 @@
-//========= Copyright © Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Forward server log lines to remote listeners
 //
@@ -8,6 +8,8 @@
 #include "gameinterface.h"
 #include "matchmaking/imatchframework.h"
 #include "engine/inetsupport.h"
+#include "fmtstr.h"
+#include "tier0/t0constants.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

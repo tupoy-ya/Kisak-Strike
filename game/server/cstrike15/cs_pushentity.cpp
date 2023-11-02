@@ -9,9 +9,11 @@
 
 #include "cbase.h"
 #include "pushentity.h"
+#if defined ( CSTRIKE15 )
 #include "cs_player.h"
-#include "collisionutils.h"
 #include "cs_gamerules.h"
+#endif
+#include "collisionutils.h"
 //#include "mathlib/mathlib.h"
 
 class CCSPhysicsPushEntities : public CPhysicsPushedEntities

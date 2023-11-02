@@ -2,6 +2,8 @@
 #ifndef HLTV_REPLAY_SYSTEM
 #define HLTV_REPLAY_SYSTEM
 
+#include "utlhashtable.h"
+
 // this struct is followed by matrix3x4a_t bones
 struct ALIGN16 CachedRagdollBones_t
 {

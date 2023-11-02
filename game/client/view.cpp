@@ -54,6 +54,8 @@
 #include "swarm/gameui/swarm/basemodpanel.h"
 #elif defined( CSTRIKE15 )
 #include "gameui/basemodpanel.h"
+#elif defined ( HL2_CLIENT_DLL )
+#include "gameui/basemodpanel.h"
 #else
 #error "GAMEUI_EMBEDDED"
 #endif
@@ -701,7 +703,7 @@ void CViewRender::SetUpView()
 
 	if ( g_bEngineIsHLTV )
 	{
-		HLTVCamera()->CalcView( &view );
+		HLTVCamera()->CalcView( view.origin, view.angles, view.fov );
 	}
 #if defined( REPLAY_ENABLED )
 	else if ( engine->IsReplay() )
@@ -1011,7 +1013,7 @@ void CViewRender::SetUpChaseOverview()
 	if ( m_flNextIdealOverviewScaleUpdate < gpGlobals->curtime )
 	{
 		m_flOldChaseOverviewScale = m_flIdealChaseOverviewScale;
-		m_flIdealChaseOverviewScale = HLTVCamera()->GetIdealOverviewScale();	
+		m_flIdealChaseOverviewScale = 1.0f; // HLTVCamera()->GetIdealOverviewScale();	
 		m_flNextIdealOverviewScaleUpdate = gpGlobals->curtime + flTransTime;
 	}
 

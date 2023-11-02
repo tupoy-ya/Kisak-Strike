@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2001, Valve LLC, All rights reserved. ============
+//========= Copyright ï¿½ 1996-2001, Valve LLC, All rights reserved. ============
 //
 // Purpose:		
 //
@@ -198,11 +198,19 @@ void CBaseMultiplayerPlayer::AwardAchievement( int iAchievement, int iCount )
 
 	int userID = GetPlayerInfo()->GetUserID();
 
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_AchievementEvent msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_AchievementEvent msg;
+#endif
 	msg.set_achievement( iAchievement );
 	msg.set_count( iCount );
 	msg.set_user_id( userID );
+#if defined ( CSTRIKE15 )
 	SendUserMessage( filter, CS_UM_AchievementEvent, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( filter, HL_UM_AchievementEvent, msg );
+#endif
 }
 
 #ifdef _DEBUG

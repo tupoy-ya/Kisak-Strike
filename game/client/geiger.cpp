@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -38,7 +38,11 @@ public:
 	bool ShouldDraw( void );
 	virtual void	ApplySchemeSettings( vgui::IScheme *scheme );
 	virtual void	Paint( void );
+#if defined ( CSTRIKE15 )
 	bool MsgFunc_Geiger(const CCSUsrMsg_Geiger &msg);
+#elif defined ( HL2_CLIENT_DLL )
+	bool MsgFunc_Geiger(const CHLUsrMsg_Geiger &msg);
+#endif
 
 	CUserMessageBinder m_UMCMsgGeiger;
 	
@@ -91,7 +95,11 @@ void CHudGeiger::VidInit(void)
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool CHudGeiger::MsgFunc_Geiger( const CCSUsrMsg_Geiger &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudGeiger::MsgFunc_Geiger( const CHLUsrMsg_Geiger &msg )
+#endif
 {
 	// update geiger data
 	m_iGeigerRange = msg.range();

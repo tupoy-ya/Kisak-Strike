@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2008, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2008, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: See header file
 //
@@ -23,6 +23,7 @@
 #include "vgui_int.h"
 #include "ienginevgui.h"
 #include "inputsystem/iinputsystem.h"
+#include "steam/steam_api.h"
 
 
 // memdbgon must be the last include file in a .cpp file!!!

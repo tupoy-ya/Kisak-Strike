@@ -72,6 +72,11 @@ IMPLEMENT_NETWORKCLASS_ALIASED( GameRulesProxy, DT_GameRulesProxy )
 BEGIN_NETWORK_TABLE_NOBASE( CGameRulesProxy, DT_GameRulesProxy )
 END_NETWORK_TABLE()
 
+BEGIN_SCRIPTDESC_ROOT( CGameRules, SCRIPT_SINGLETON "The container of the game's rules, handling behavior which could be different on a game-by-game basis." )
+
+	DEFINE_SCRIPTFUNC( IsMultiplayer, "Returns true if this is a multiplayer game (like co-op or deathmatch)." )
+
+END_SCRIPTDESC()
 
 CGameRulesProxy::CGameRulesProxy()
 {

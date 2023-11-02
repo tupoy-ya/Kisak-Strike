@@ -3409,8 +3409,8 @@ bool CScriptedIconLesson::ProcessElementAction( int iAction, bool bNot, const ch
 			}
 
 			// Check if the ammo is full
-			int iMaxAmmo = pBaseCombatWeapon->GetReserveAmmoMax( AMMO_POSITION_PRIMARY );
-			int iPlayerAmmo = pBaseCombatWeapon->GetReserveAmmoCount( AMMO_POSITION_PRIMARY );
+			int iMaxAmmo = pBaseCombatWeapon->GetMaxClip1();
+			int iPlayerAmmo = pBaseCombatWeapon->GetPrimaryAmmoCount();
 
 
 			bool bAmmoLow = ( iPlayerAmmo < ( iMaxAmmo / 3 ) );
@@ -3480,8 +3480,8 @@ bool CScriptedIconLesson::ProcessElementAction( int iAction, bool bNot, const ch
 			}
 
 			// Check if the ammo is full
-			int iMaxAmmo = pBaseCombatWeapon->GetReserveAmmoMax( AMMO_POSITION_PRIMARY );
-			int iPlayerAmmo = pBaseCombatWeapon->GetReserveAmmoCount( AMMO_POSITION_PRIMARY );
+			int iMaxAmmo = pBaseCombatWeapon->GetMaxClip1();
+			int iPlayerAmmo = pBaseCombatWeapon->GetPrimaryAmmoCount();
 
 			bool bAmmoFull = ( iPlayerAmmo >= iMaxAmmo );
 
@@ -3545,7 +3545,7 @@ bool CScriptedIconLesson::ProcessElementAction( int iAction, bool bNot, const ch
 			}
 
 			// Check if the ammo is empty
-			int iPlayerAmmo = pBaseCombatWeapon->GetReserveAmmoCount( AMMO_POSITION_PRIMARY );
+			int iPlayerAmmo = pBaseCombatWeapon->GetPrimaryAmmoCount();
 
 			bool bAmmoEmpty = ( iPlayerAmmo <= 0 );
 

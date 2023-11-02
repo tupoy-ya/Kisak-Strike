@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:		An NPC's memory of potential enemies 
 //
@@ -247,15 +247,8 @@ bool CAI_Enemies::ShouldDiscardMemory( AI_EnemyInfo_t *pMemory )
 	if ( pEnemy )
 	{
 		CAI_BaseNPC *pEnemyNPC = pEnemy->MyNPCPointer();
-		if ( pEnemyNPC )
-		{
-			if ( pEnemyNPC->GetState() == NPC_STATE_DEAD )
-				return true;
-
-			// forget about the enemy if he changes faction
-			if ( pEnemyNPC->GetFaction() != pMemory->nFaction )
-				return true;
-		}
+		if ( pEnemyNPC && pEnemyNPC->GetState() == NPC_STATE_DEAD )
+			return true;
 	}
 	else
 	{
@@ -389,16 +382,9 @@ bool CAI_Enemies::UpdateMemory(CAI_Network* pAINet, CBaseEntity *pEnemy, const V
 
 	pAddMemory->bEludedMe = false;
 
-	// I'm either remembering a position of an enemy or just a danger position
+	// I'm either remembering a postion of an enmey of just a danger position
 	pAddMemory->hEnemy = pEnemy;
 	pAddMemory->bDangerMemory = ( pEnemy == NULL );
-
-	if ( pEnemy )
-	{
-		CAI_BaseNPC *pEnemyNPC = pEnemy->MyNPCPointer();
-		if ( pEnemyNPC )
-			pAddMemory->nFaction = pEnemyNPC->GetFaction();
-	}
 
 	// add to the list
 	m_Map.Insert( pEnemy, pAddMemory );

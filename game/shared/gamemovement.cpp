@@ -11,7 +11,9 @@
 #include "decals.h"
 #include "coordsize.h"
 #include "rumble_shared.h"
+#if defined( CSTRIKE15 )
 #include "cstrike15/basecsgrenade_projectile.h"
+#endif
 
 #if defined(HL2_DLL) || defined(HL2_CLIENT_DLL)
 	#include "hl_movedata.h"
@@ -4256,7 +4258,7 @@ void CGameMovement::CategorizePosition( void )
 			else
 			{
 
-#ifndef CLIENT_DLL
+#if !defined ( CLIENT_DLL ) && defined ( CSTRIKE15 )
 				CBaseCSGrenadeProjectile* pGrenadeProjectile = dynamic_cast<CBaseCSGrenadeProjectile*>( pm.m_pEnt );
 				if ( pGrenadeProjectile )
 				{
@@ -4271,7 +4273,7 @@ void CGameMovement::CategorizePosition( void )
 		}
 		else
 		{
-#ifndef CLIENT_DLL
+#if !defined ( CLIENT_DLL ) && defined ( CSTRIKE15 )
 			CBaseCSGrenadeProjectile* pGrenadeProjectile = dynamic_cast<CBaseCSGrenadeProjectile*>( pm.m_pEnt );
 			if ( pGrenadeProjectile )
 			{
@@ -4315,7 +4317,7 @@ void CGameMovement::CategorizePosition( void )
 		pm.fraction > 0.0f &&			// must go somewhere
 		pm.fraction < 1.0f ) 			// must hit something
 	{
-#ifndef CLIENT_DLL
+#if !defined ( CLIENT_DLL ) && defined ( CSTRIKE15 )
 		CBaseCSGrenadeProjectile* pGrenadeProjectile = dynamic_cast<CBaseCSGrenadeProjectile*>( pm.m_pEnt );
 		if ( pGrenadeProjectile )
 		{

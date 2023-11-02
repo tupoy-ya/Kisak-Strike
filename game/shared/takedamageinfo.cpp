@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -9,7 +9,7 @@
 #include "takedamageinfo.h"
 #include "ammodef.h"
 
-#ifdef GAME_DLL
+#if defined ( GAME_DLL ) && defined ( CSTRIKE15 )
 #include "cs_player.h"
 #endif
 
@@ -65,7 +65,7 @@ void CTakeDamageInfo::Init( CBaseEntity *pInflictor, CBaseEntity *pAttacker, CBa
 	m_flRadius = 0.0f;
 	m_iDamagedOtherPlayers = 0;
 	m_iObjectsPenetrated = iObjectsPenetrated;
-#ifdef GAME_DLL
+#if defined ( GAME_DLL ) && defined ( CSTRIKE15 )
 	m_uiBulletID = CCSPlayer::GetBulletGroup();
 #else
 	m_uiBulletID = 0;

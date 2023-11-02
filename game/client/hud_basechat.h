@@ -274,9 +274,15 @@ public:
 	float					m_flHistoryFadeTime;
 	float					m_flHistoryIdleTime;
 
+#if defined( CSTRIKE15 )
 	virtual bool			MsgFunc_SayText( const CCSUsrMsg_SayText &msg );
 	virtual bool			MsgFunc_SayText2( const CCSUsrMsg_SayText2 &msg );
 	virtual bool			MsgFunc_TextMsg( const CCSUsrMsg_TextMsg &msg );
+#elif defined ( HL2_CLIENT_DLL )
+	virtual bool			MsgFunc_SayText( const CHLUsrMsg_SayText &msg );
+	virtual bool			MsgFunc_SayText2( const CHLUsrMsg_SayText2 &msg );
+	virtual bool			MsgFunc_TextMsg( const CHLUsrMsg_TextMsg &msg );
+#endif
 	virtual void			MsgFunc_VoiceSubtitle( bf_read &msg );
 
 	

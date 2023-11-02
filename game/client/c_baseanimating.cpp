@@ -2574,6 +2574,10 @@ void C_BaseAnimating::CalculateIKLocks( float currentTime )
 	Vector up;
 	AngleVectors( GetRenderAngles(), NULL, NULL, &up );
 
+	// FIXME: check number of slots?
+	float minHeight = FLT_MAX;
+	float maxHeight = -FLT_MAX;
+
 	for (int i = 0; i < targetCount; i++)
 	{
 		trace_t trace;
@@ -2582,29 +2586,142 @@ void C_BaseAnimating::CalculateIKLocks( float currentTime )
 		if (!pTarget->IsActive())
 			continue;
 
+
 		switch( pTarget->type)
 		{
 		case IK_GROUND:
 			{
 				Vector estGround;
+				Vector p1, p2;
 
 				// adjust ground to original ground position
 				estGround = (pTarget->est.pos - GetRenderOrigin());
-				// estGround = estGround - (estGround * up) * up;
-				estGround = GetAbsOrigin() + estGround;
+				estGround = estGround - (estGround * up) * up;
+				estGround = GetAbsOrigin() + estGround + pTarget->est.floor * up;
 
-				estGround.z = GetAbsOrigin().z;
+				VectorMA( estGround, pTarget->est.height, up, p1 );
+				VectorMA( estGround, -pTarget->est.height, up, p2 );
 
-				pTarget->SetPos( estGround );
-				pTarget->SetAngles( GetRenderAngles() );
-				pTarget->SetOnWorld( true );
+				float r = MAX( pTarget->est.radius, 1);
 
-				/*
-				if ( pTarget->est.flWeight == 1.0f )
+				// don't IK to other characters
+				ray.Init( p1, p2, Vector(-r,-r,0), Vector(r,r,r*2) );
+				enginetrace->TraceRay( ray, PhysicsSolidMaskForEntity(), &traceFilter, &trace );
+
+				if ( trace.m_pEnt != NULL && trace.m_pEnt->GetMoveType() == MOVETYPE_PUSH )
 				{
-					debugoverlay->AddBoxOverlay( estGround, Vector( -5, -5, -1 ), Vector( 5, 5, 0), QAngle( 0, 0, 0 ), 255, 0, 0, 0, 1.0f );
+					pTarget->SetOwner( trace.m_pEnt->entindex(), trace.m_pEnt->GetAbsOrigin(), trace.m_pEnt->GetAbsAngles() );
 				}
-				*/
+				else
+				{
+					pTarget->ClearOwner( );
+				}
+
+				if (trace.startsolid)
+				{
+					// trace from back towards hip
+					Vector tmp = estGround - pTarget->trace.closest;
+					tmp.NormalizeInPlace();
+					ray.Init( estGround - tmp * pTarget->est.height, estGround, Vector(-r,-r,0), Vector(r,r,1) );
+
+					// debugoverlay->AddLineOverlay( ray.m_Start, ray.m_Start + ray.m_Delta, 255, 0, 0, 0, 0 );
+
+					enginetrace->TraceRay( ray, MASK_SOLID, &traceFilter, &trace );
+
+					if (!trace.startsolid)
+					{
+						p1 = trace.endpos;
+						VectorMA( p1, - pTarget->est.height, up, p2 );
+						ray.Init( p1, p2, Vector(-r,-r,0), Vector(r,r,1) );
+
+						enginetrace->TraceRay( ray, MASK_SOLID, &traceFilter, &trace );
+					}
+
+					// debugoverlay->AddLineOverlay( ray.m_Start, ray.m_Start + ray.m_Delta, 0, 255, 0, 0, 0 );
+				}
+
+
+				if (!trace.startsolid)
+				{
+					if (trace.DidHitWorld())
+					{
+						// clamp normal to 33 degrees
+						const float limit = 0.832;
+						float dot = DotProduct(trace.plane.normal, up);
+						if (dot < limit)
+						{
+							Assert( dot >= 0 );
+							// subtract out up component
+							Vector diff = trace.plane.normal - up * dot;
+							// scale remainder such that it and the up vector are a unit vector
+							float d = sqrt( (1 - limit * limit) / DotProduct( diff, diff ) );
+							trace.plane.normal = up * limit + d * diff;
+						}
+						// FIXME: this is wrong with respect to contact position and actual ankle offset
+						pTarget->SetPosWithNormalOffset( trace.endpos, trace.plane.normal );
+						pTarget->SetNormal( trace.plane.normal );
+						pTarget->SetOnWorld( true );
+
+						// only do this on forward tracking or commited IK ground rules
+						if (pTarget->est.release < 0.1)
+						{
+							// keep track of ground height
+							float offset = DotProduct( pTarget->est.pos, up );
+							if (minHeight > offset )
+								minHeight = offset;
+
+							if (maxHeight < offset )
+								maxHeight = offset;
+						}
+						// FIXME: if we don't drop legs, running down hills looks horrible
+						/*
+						if (DotProduct( pTarget->est.pos, up ) < DotProduct( estGround, up ))
+						{
+							pTarget->est.pos = estGround;
+						}
+						*/
+					}
+					else if (trace.DidHitNonWorldEntity())
+					{
+						pTarget->SetPos( trace.endpos );
+						pTarget->SetAngles( GetRenderAngles() );
+
+						// only do this on forward tracking or commited IK ground rules
+						if (pTarget->est.release < 0.1)
+						{
+							float offset = DotProduct( pTarget->est.pos, up );
+							if (minHeight > offset )
+								minHeight = offset;
+
+							if (maxHeight < offset )
+								maxHeight = offset;
+						}
+						// FIXME: if we don't drop legs, running down hills looks horrible
+						/*
+						if (DotProduct( pTarget->est.pos, up ) < DotProduct( estGround, up ))
+						{
+							pTarget->est.pos = estGround;
+						}
+						*/
+					}
+					else
+					{
+						pTarget->IKFailed( );
+					}
+				}
+				else
+				{
+					if (!trace.DidHitWorld())
+					{
+						pTarget->IKFailed( );
+					}
+					else
+					{
+						pTarget->SetPos( trace.endpos );
+						pTarget->SetAngles( GetRenderAngles() );
+						pTarget->SetOnWorld( true );
+					}
+				}
 
 				/*
 				debugoverlay->AddTextOverlay( p1, i, 0, "%d %.1f %.1f %.1f ", i, 
@@ -2622,7 +2739,7 @@ void C_BaseAnimating::CalculateIKLocks( float currentTime )
 
 				// FIXME: make entity finding sticky!
 				// FIXME: what should the radius check be?
-				for ( CEntitySphereQuery sphere( pTarget->est.pos, 64, 0, PARTITION_CLIENT_IK_ATTACHMENT ); ( pEntity = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
+				for ( CEntitySphereQuery sphere( pTarget->est.pos, 64 ); ( pEntity = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
 				{
 					C_BaseAnimating *pAnim = pEntity->GetBaseAnimating( );
 					if (!pAnim)

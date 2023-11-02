@@ -25,7 +25,7 @@ static bool BannedWords_LoadFileIntoBuffer( char const *szFilename, CUtlBuffer &
 #include "tier1/fileio.h"
 static bool BannedWords_LoadFileIntoBuffer( char const *szFilename, CUtlBuffer &buf )
 {
-	return LoadFileIntoBuffer( szFilename, buf, false );
+	return g_pFullFileSystem->ReadFile( szFilename, "MOD", buf );
 }
 #endif
 

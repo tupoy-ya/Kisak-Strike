@@ -44,9 +44,11 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#if defined ( CSTRIKE15 )
 extern ConVar mp_verbose_changelevel_spew;
 extern ConVar sv_kick_ban_duration;
 extern ConVar mp_autokick;
+#endif
 
 REGISTER_GAMERULES_CLASS( CMultiplayRules );
 
@@ -317,11 +319,7 @@ CMultiplayRules::CMultiplayRules()
 }
 
 
-#ifdef CLIENT_DLL
-
-
-#else 
-
+#ifndef CLIENT_DLL
 	extern bool			g_fGameOver;
 
 	#define ITEM_RESPAWN_TIME	30
@@ -1169,23 +1167,27 @@ CMultiplayRules::CMultiplayRules()
 		const char *mapGroupName = NULL;	
 
 		mapGroupName = STRING( gpGlobals->mapGroupName );
-
+#if defined ( CSTRIKE15 )
 		if ( mp_verbose_changelevel_spew.GetBool() )
 		{
 			Msg( "CHANGELEVEL: Looking for next level in mapgroup '%s'\n", mapGroupName );
 		}
+#endif
 
 		// If mapcycling is disabled, just return the same map name and bail.
 		if ( mapcycledisabled.GetBool() )
 		{
 			Q_strncpy( pszNextMap, STRING( gpGlobals->mapname ), bufsize );
+#if defined ( CSTRIKE15 )
 			if ( mp_verbose_changelevel_spew.GetBool() && pszNextMap )
 			{
 				Msg( "CHANGELEVEL: Map cycle disabled (due to convar '%s') -- not using map group, reloading current map '%s'\n", mapcycledisabled.GetName(), pszNextMap );
 			}
+#endif
 			return;
 		}
 
+#if defined( CSTRIKE15 )
 		const char* nextMapName = NULL;
 		if ( bRandom )
 		{	
@@ -1215,13 +1217,13 @@ CMultiplayRules::CMultiplayRules()
 				}
 			}		
 		}
-
 		if ( nextMapName )
 		{
 			// we have a valid map name from the mapgroup info
 			V_strncpy( pszNextMap, nextMapName, bufsize );
 			return;
 		}
+#endif
 
 		// we were not given a mapgroup name or we were given a mapname that was not in the mapgroup, so we fall back to the old method of cycling maps
 
@@ -1238,10 +1240,12 @@ CMultiplayRules::CMultiplayRules()
 			V_strncpy( szCurrentMapName, STRING(gpGlobals->mapname), MAX_PATH );
 			m_MapList.AddToTail( szCurrentMapName );
 
+#if defined ( CSTRIKE15 )
 			if ( mp_verbose_changelevel_spew.GetBool() && szCurrentMapName )
 			{
 				Msg( "CHANGELEVEL: No maycycle file, using current map '%s'\n", szCurrentMapName );
 			}
+#endif
 		}
 		else
 		{
@@ -1317,10 +1321,12 @@ CMultiplayRules::CMultiplayRules()
 			char *szDefaultMapName = new char[MAX_PATH];
 			V_strncpy( szDefaultMapName, STRING(gpGlobals->mapname), MAX_PATH );
 			m_MapList.AddToTail( szDefaultMapName );
+#if defined ( CSTRIKE15 )
 			if ( mp_verbose_changelevel_spew.GetBool() && szDefaultMapName )
 			{
 				Msg( "CHANGELEVEL: Map list empty or failed to parse, using current map '%s'\n", szDefaultMapName );
 			}
+#endif
 		}
 
 		if ( bRandom )

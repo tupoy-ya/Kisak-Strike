@@ -2568,9 +2568,15 @@ void CDynamicProp::InputSetGlowDisabled( inputdata_t &inputdata )
 	CReliableBroadcastRecipientFilter filter;
 	filter.MakeReliable();
 
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_GlowPropTurnOff msg;
 	msg.set_entidx( entindex() );	// this prop
 	SendUserMessage( filter, CS_UM_GlowPropTurnOff, msg );	
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_GlowPropTurnOff msg;
+	msg.set_entidx( entindex() );	// this prop
+	SendUserMessage( filter, HL_UM_GlowPropTurnOff, msg );	
+#endif
 }
 
 void CDynamicProp::InputSetGlowColor(inputdata_t &inputdata)

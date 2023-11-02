@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2004, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½ 1996-2004, Valve Corporation, All rights reserved. =======
 //
 // Purpose: 
 //
@@ -99,10 +99,15 @@ void CHintMessage::Send( CBasePlayer * client )
 	user.MakeReliable();
 
 	// client can handle 1 string only
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_HintText msg;
 	msg.set_text( m_hintString );
-
 	SendUserMessage( user, CS_UM_HintText, msg );
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_HintText msg;
+	msg.set_text( m_hintString );
+	SendUserMessage( user, HL_UM_HintText, msg );
+#endif
 	
 #endif
 }

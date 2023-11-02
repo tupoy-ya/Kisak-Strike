@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2005, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. =======
 //
 // Purpose: 
 //
@@ -225,6 +225,10 @@ int	CalcTeammateCount();
 extern ConVar	cc_achievement_debug;
 
 #ifdef CLIENT_DLL
+#if defined ( CSTRIKE15 )
 bool MsgFunc_AchievementEvent( const CCSUsrMsg_AchievementEvent &msg );
+#elif defined ( HL2_CLIENT_DLL )
+bool MsgFunc_AchievementEvent( const CHLUsrMsg_AchievementEvent &msg );
+#endif // CSTRIKE15
 #endif // CLIENT_DLL
 #endif // ACHIEVEMENTMGR_H

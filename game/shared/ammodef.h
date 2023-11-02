@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:		Holds defintion for game ammo types
 //
@@ -87,6 +87,7 @@ public:
 
 	void				AddAmmoType(char const* name, int damageType, int tracerType, int plr_dmg, int npc_dmg, int carry, int impulse, int nFlags, int minSplashSize = 4, int maxSplashSize = 8 );
 	void				AddAmmoType(char const* name, int damageType, int tracerType, char const* plr_cvar, char const* npc_var, char const* carry_cvar, char const* impulse_cvar, int nFlags, int minSplashSize = 4, int maxSplashSize = 8 );
+	void				AddAmmoType(char const* name, int damageType, int tracerType, char const* plr_cvar, char const* npc_var, char const* carry_cvar, float physicsForceImpulse, int nFlags, int minSplashSize = 4, int maxSplashSize = 8 );
 	int					NumAmmoTypes() { return m_nAmmoIndex; }
 
 	CAmmoDef(void);

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: CS's custom C_VoteController
 //
@@ -107,44 +107,39 @@ void C_VoteController::ClientThink()
 {
 	BaseClass::ClientThink();
 
-	C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
-
-	if ( pLocalPlayer && ( (m_iOnlyTeamToVote == TEAM_INVALID) || (m_iOnlyTeamToVote == pLocalPlayer->GetTeamNumber()) ) )
+	if ( m_bTypeDirty )
 	{
-		if ( m_bTypeDirty )
-		{
-			m_bTypeDirty = false;
-			m_bVotesDirty = true;
-		}
+		m_bTypeDirty = false;
+		m_bVotesDirty = true;
+	}
 
-		if ( m_bVotesDirty )
+	if ( m_bVotesDirty )
+	{
+		if ( m_nPotentialVotes > 0 )
 		{
-			if ( m_nPotentialVotes > 0 )
+			// Currently hard-coded to MAX_VOTE_COUNT options per issue
+			DevMsg( "Votes: Option1 - %d, Option2 - %d, Option3 - %d, Option4 - %d, Option5 - %d\n",
+				m_nVoteOptionCount[ 0 ], m_nVoteOptionCount[ 1 ], m_nVoteOptionCount[ 2 ], m_nVoteOptionCount[ 3 ], m_nVoteOptionCount[ 4 ] );
+
+			IGameEvent *event = gameeventmanager->CreateEvent( "vote_changed" );
+			if ( event )
 			{
-				// Currently hard-coded to MAX_VOTE_COUNT options per issue
-				DevMsg( "Votes: Option1 - %d, Option2 - %d, Option3 - %d, Option4 - %d, Option5 - %d\n",
-					m_nVoteOptionCount[ 0 ], m_nVoteOptionCount[ 1 ], m_nVoteOptionCount[ 2 ], m_nVoteOptionCount[ 3 ], m_nVoteOptionCount[ 4 ] );
-
-				IGameEvent *event = gameeventmanager->CreateEvent( "vote_changed" );
-				if ( event )
+				for ( int index = 0; index < MAX_VOTE_OPTIONS; index++ )
 				{
-					for ( int index = 0; index < MAX_VOTE_OPTIONS; index++ )
-					{
-						char szOption[ 2 ];
-						Q_snprintf( szOption, sizeof( szOption ), "%i", index + 1 );
+					char szOption[ 2 ];
+					Q_snprintf( szOption, sizeof( szOption ), "%i", index + 1 );
 
-						char szVoteOption[ 13 ] = "vote_option";
-						Q_strncat( szVoteOption, szOption, sizeof( szVoteOption ), COPY_ALL_CHARACTERS );
+					char szVoteOption[ 13 ] = "vote_option";
+					Q_strncat( szVoteOption, szOption, sizeof( szVoteOption ), COPY_ALL_CHARACTERS );
 
-						event->SetInt( szVoteOption, m_nVoteOptionCount[ index ] );
-					}
-					event->SetInt( "potentialVotes", m_nPotentialVotes );
-					gameeventmanager->FireEventClientSide( event );
+					event->SetInt( szVoteOption, m_nVoteOptionCount[ index ] );
 				}
+				event->SetInt( "potentialVotes", m_nPotentialVotes );
+				gameeventmanager->FireEventClientSide( event );
 			}
-
-			m_bVotesDirty = false;
 		}
+
+		m_bVotesDirty = false;
 	}
 
 	SetNextClientThink( gpGlobals->curtime + 0.5f );

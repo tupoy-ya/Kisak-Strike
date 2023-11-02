@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -22,7 +22,7 @@ FileWeaponInfo_t* CreateWeaponInfo()
 
 CPortalSWeaponInfo::CPortalSWeaponInfo()
 {
-	m_iPlayerDamage = 0;
+	m_flPlayerDamage = 0;
 }
 
 
@@ -30,7 +30,7 @@ void CPortalSWeaponInfo::Parse( KeyValues *pKeyValuesData, const char *szWeaponN
 {
 	BaseClass::Parse( pKeyValuesData, szWeaponName );
 
-	m_iPlayerDamage = pKeyValuesData->GetInt( "damage", 0 );
+	m_flPlayerDamage = pKeyValuesData->GetInt( "damage", 0 );
 }
 
 

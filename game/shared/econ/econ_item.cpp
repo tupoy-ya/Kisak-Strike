@@ -1,4 +1,4 @@
-//====== Copyright ©, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½, Valve Corporation, All rights reserved. =======
 //
 // Purpose: CEconItem, a shared object for econ items
 //
@@ -7,6 +7,7 @@
 #include "cbase.h"
 #include "econ_item.h"
 #include "econ_item_schema.h"
+#include "econ_item_view.h"
 #include "smartptr.h"
 
 #ifdef CSTRIKE15

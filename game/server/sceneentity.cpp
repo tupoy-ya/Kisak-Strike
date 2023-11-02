@@ -1953,13 +1953,21 @@ void CSceneEntity::DispatchStartSpeak( CChoreoScene *scene, CBaseFlex *actor, CC
 					{
 						if ( CanEmitCaption( hash ) )
 						{
+#if defined ( CSTRIKE15 )
 							CCSUsrMsg_CloseCaption msg;
+#elif defined ( HL2_DLL )
+							CHLUsrMsg_CloseCaption msg;
+#endif
 							msg.set_hash( hash );
 							msg.set_duration( clamp( (int)( duration * 10.0f ), 0, 65535 ) );
 							msg.set_from_player( 0 );
 
 							// Send caption and duration hint down to client
+#if defined ( CSTRIKE15 )
 							SendUserMessage( filter, CS_UM_CloseCaption, msg );
+#elif defined ( HL2_DLL )
+							SendUserMessage( filter, HL_UM_CloseCaption, msg );
+#endif
 						}
 					}
 				}

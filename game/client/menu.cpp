@@ -454,7 +454,11 @@ void CHudMenu::ShowMenu_KeyValueItems( KeyValues *pKV )
 //		string: menu string to display
 //  if this message is never received, then scores will simply be the combined totals of the players.
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 )
 bool CHudMenu::MsgFunc_ShowMenu( const CCSUsrMsg_ShowMenu &msg)
+#elif defined ( HL2_CLIENT_DLL )
+bool CHudMenu::MsgFunc_ShowMenu( const CHLUsrMsg_ShowMenu &msg)
+#endif
 {
 	m_bitsValidSlots = msg.bits_valid_slots();
 	int DisplayTime = msg.display_time();

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -119,7 +119,11 @@ void ClientVoiceMgr_LevelShutdown()
 
 static CVoiceStatus *g_pInternalVoiceStatus = NULL;
 
+#if defined ( CSTRIKE15 )
 bool __MsgFunc_VoiceMask(const CCSUsrMsg_VoiceMask &msg)
+#elif defined ( HL2_CLIENT_DLL )
+bool __MsgFunc_VoiceMask(const CHLUsrMsg_VoiceMask &msg)
+#endif
 {
 	if(g_pInternalVoiceStatus)
 		return g_pInternalVoiceStatus->HandleVoiceMaskMsg(msg);
@@ -127,7 +131,11 @@ bool __MsgFunc_VoiceMask(const CCSUsrMsg_VoiceMask &msg)
 	return true;
 }
 
+#if defined ( CSTRIKE15 )
 bool __MsgFunc_RequestState(const CCSUsrMsg_RequestState &msg)
+#elif defined ( HL2_CLIENT_DLL )
+bool __MsgFunc_RequestState(const CHLUsrMsg_RequestState &msg)
+#endif
 {
 	if(g_pInternalVoiceStatus)
 		return g_pInternalVoiceStatus->HandleReqStateMsg(msg);
@@ -631,7 +639,11 @@ void CVoiceStatus::UpdateServerState(bool bForce)
 	m_LastUpdateServerState = gpGlobals->curtime;
 }
 
+#if defined ( CSTRIKE15 )
 bool CVoiceStatus::HandleVoiceMaskMsg(const CCSUsrMsg_VoiceMask &msg)
+#elif defined ( HL2_CLIENT_DLL )
+bool CVoiceStatus::HandleVoiceMaskMsg(const CHLUsrMsg_VoiceMask &msg)
+#endif
 {
 	unsigned long dw;
 	for(dw=0; dw < VOICE_MAX_PLAYERS_DW; dw++)
@@ -652,7 +664,11 @@ bool CVoiceStatus::HandleVoiceMaskMsg(const CCSUsrMsg_VoiceMask &msg)
 	return true;
 }
 
+#if defined ( CSTRIKE15 )
 bool CVoiceStatus::HandleReqStateMsg(const CCSUsrMsg_RequestState &msg)
+#elif defined ( HL2_CLIENT_DLL )
+bool CVoiceStatus::HandleReqStateMsg(const CHLUsrMsg_RequestState &msg)
+#endif
 {
 	if( voice_clientdebug.GetInt() == 1 )
 	{
@@ -721,10 +737,12 @@ bool CVoiceStatus::IsPlayerBlocked(int iPlayer)
 
 bool IsPartyMember( XUID xuidPlayer )
 {
+#if defined ( CSTRIKE15 )
 	if ( IMatchSession *pMatchSession = g_pMatchFramework->GetMatchSession() )
 	{
 		return SessionMembersFindPlayer( pMatchSession->GetSessionSettings(), xuidPlayer ) != NULL;
 	}
+#endif
 	return false;
 }
 

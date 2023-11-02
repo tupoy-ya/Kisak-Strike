@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -121,14 +121,16 @@ public:
 
 	void					UpdateAllViewmodelAddons( void );
 
-#if defined ( CLIENT_DLL )
+#if defined ( CLIENT_DLL ) && defined ( CSTRIKE15 )
 	C_ViewmodelAttachmentModel *AddViewmodelArmModel( const char *pszModel, int nSkintoneIndex = -1 );
 	C_ViewmodelAttachmentModel* FindArmModelForLoadoutPosition( loadout_positions_t nPosition ) const;
 #endif
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL )  && !defined ( NO_STEAM )
 	void					AddViewmodelLabel( CEconItemView *pItem );
 	void					AddViewmodelStatTrak( CEconItemView *pItem, int nStatTrakType, int nWeaponID, AccountID_t holderAcctId );
 	void					AddViewmodelStickers( CEconItemView *pItem, int nWeaponID );
 	bool					ViewmodelStickersAreValid( int nWeaponID );
+#endif
 
 	void					RemoveViewmodelArmModels( void );
 	void					RemoveViewmodelLabel( void );

@@ -78,10 +78,16 @@ void CGameTimescale::SetCurrentTimescale( float flTimescale )
 
 	// Pass the change info to the client so it can do prediction
 	CReliableBroadcastRecipientFilter filter;
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_CurrentTimescale msg;
 	msg.set_cur_timescale( m_flCurrentTimescale );
 	SendUserMessage( filter, CS_UM_CurrentTimescale, msg );
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_CurrentTimescale msg;
+	msg.set_cur_timescale( m_flCurrentTimescale );
+	SendUserMessage( filter, HL_UM_CurrentTimescale, msg );
 #endif
+#endif // !CLIENT_DLL
 }
 
 void CGameTimescale::SetDesiredTimescaleAtTime( float flDesiredTimescale, float flDurationRealTimeSeconds /*= 0.0f*/, Interpolators_e nInterpolatorType /*= INTERPOLATOR_LINEAR*/, float flStartBlendTime /*= 0.0f*/ )
@@ -114,13 +120,21 @@ void CGameTimescale::SetDesiredTimescale( float flDesiredTimescale, float flDura
 #ifndef CLIENT_DLL
 	// Pass the change info to the client so it can do prediction
 	CReliableBroadcastRecipientFilter filter;
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_DesiredTimescale msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_DesiredTimescale msg;
+#endif
 	msg.set_desired_timescale( m_flDesiredTimescale );
 	msg.set_duration_realtime_sec( m_flDurationRealTimeSeconds );
 	msg.set_interpolator_type( m_nInterpolatorType );
 	msg.set_start_blend_time( m_flStartBlendTime );
+#if defined ( CSTRIKE15 )
 	SendUserMessage( filter, CS_UM_DesiredTimescale, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( filter, HL_UM_DesiredTimescale, msg );
 #endif
+#endif // !CLIENT_DLL
 }
 
 
@@ -187,7 +201,11 @@ void CGameTimescale::ResetTimescale( void )
 
 #ifdef CLIENT_DLL
 
+#if defined( CSTRIKE15 )
 bool __MsgFunc_CurrentTimescale( const CCSUsrMsg_CurrentTimescale &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool __MsgFunc_CurrentTimescale( const CHLUsrMsg_CurrentTimescale &msg )
+#endif
 {
 	GameTimescale()->SetCurrentTimescale( msg.cur_timescale() );
 
@@ -195,7 +213,11 @@ bool __MsgFunc_CurrentTimescale( const CCSUsrMsg_CurrentTimescale &msg )
 }
 USER_MESSAGE_REGISTER( CurrentTimescale );
 
+#if defined( CSTRIKE15 )
 bool __MsgFunc_DesiredTimescale( const CCSUsrMsg_DesiredTimescale &msg )
+#elif defined ( HL2_CLIENT_DLL )
+bool __MsgFunc_DesiredTimescale( const CHLUsrMsg_DesiredTimescale &msg )
+#endif
 {
 	float flDesiredTimescale = msg.desired_timescale();
 	float flDurationRealTimeSeconds = msg.duration_realtime_sec();

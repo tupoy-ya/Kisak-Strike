@@ -140,8 +140,6 @@ extern ConVar sv_maxunlag;
 extern ConVar sv_turbophysics;
 extern ConVar *sv_maxreplay;
 
-extern ConVar sv_coaching_enabled;
-
 extern CServerGameDLL g_ServerGameDLL;
 
 // TIME BASED DAMAGE AMOUNT
@@ -716,7 +714,7 @@ CBasePlayer::CBasePlayer( )
 	m_iCoachingTeam = 0;
 
 	m_flDuckAmount = 0.0f;
-	m_flDuckSpeed = CS_PLAYER_DUCK_SPEED_IDEAL;
+	m_flDuckSpeed = 8.0f;
 	m_vecLastPositionAtFullCrouchSpeed = vec2_origin;
 	m_flNextDecalTime = 0.0f; // initialize to let this player spray
 	m_bNextDecalTimeExpedited = false;
@@ -1126,7 +1124,7 @@ void CBasePlayer::DamageEffect(float flDamage, int fDamageType)
 		UTIL_ScreenFade( this, blue, 0.2, 0.4, FFADE_MODULATE );
 
 		// Very small screen shake
-		ViewPunch(QAngle(random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1)));
+		ViewPunch(QAngle(random->RandomFloat(-0.1,0.1), random->RandomFloat(-0.1,0.1), random->RandomFloat(-0.1,0.1)));
 
 		// Burn sound 
 		EmitSound( "Player.PlasmaDamage" );
@@ -2188,7 +2186,11 @@ void CBasePlayer::ShowViewPortPanel( const char * name, bool bShow, KeyValues *d
 		subkey = data->GetFirstSubKey(); // reset 
 	}
 
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_VGUIMenu msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_VGUIMenu msg;
+#endif
 
 	msg.set_name( name );
 	msg.set_show( bShow );
@@ -2196,7 +2198,11 @@ void CBasePlayer::ShowViewPortPanel( const char * name, bool bShow, KeyValues *d
 	// write additional data (be careful not more than 192 bytes!)
 	while ( subkey )
 	{
+#if defined ( CSTRIKE15 )
 		CCSUsrMsg_VGUIMenu::Subkey *pMsgSubkey = msg.add_subkeys();
+#elif defined ( HL2_DLL )
+		CHLUsrMsg_VGUIMenu::Subkey *pMsgSubkey = msg.add_subkeys();
+#endif
 
 		pMsgSubkey->set_name( subkey->GetName() );
 		pMsgSubkey->set_str( subkey-> GetString() );
@@ -2208,7 +2214,11 @@ void CBasePlayer::ShowViewPortPanel( const char * name, bool bShow, KeyValues *d
 //	if ( bShow )
 //		x++;
 
+#if defined ( CSTRIKE15 )
 	SendUserMessage( filter, CS_UM_VGUIMenu, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( filter, HL_UM_VGUIMenu, msg );
+#endif
 }
 
 
@@ -2391,8 +2401,13 @@ void CBasePlayer::StopObserverMode()
 	CSingleUserRecipientFilter filter( this );
 	filter.MakeReliable();	
 	
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_StopSpectatorMode msg;
 	SendUserMessage( filter, CS_UM_StopSpectatorMode, msg );
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_StopSpectatorMode msg;
+	SendUserMessage( filter, HL_UM_StopSpectatorMode, msg );
+#endif
 }
 
 bool CBasePlayer::StartObserverMode(int mode)
@@ -3093,7 +3108,7 @@ CBaseEntity * CBasePlayer::FindNextObserverTarget(bool bReverse)
 		currentIndex += iDir;
 
 		// Loop through the clients
-  		if (currentIndex > gpGlobals->maxClients)
+		if (currentIndex > gpGlobals->maxClients)
   			currentIndex = 1;
 		else if (currentIndex < 1)
   			currentIndex = gpGlobals->maxClients;
@@ -4424,9 +4439,15 @@ void CBasePlayer::UpdateGeigerCounter( void )
 		CSingleUserRecipientFilter user( this );
 		user.MakeReliable();
 
+#if defined ( CSTRIKE15 )
 		CCSUsrMsg_Geiger msg;
 		msg.set_range( range );
 		SendUserMessage( user, CS_UM_Geiger, msg );
+#elif defined ( HL2_DLL )
+		CHLUsrMsg_Geiger msg;
+		msg.set_range( range );
+		SendUserMessage( user, HL_UM_Geiger, msg );
+#endif
 	}
 
 	// reset counter and semaphore
@@ -5287,7 +5308,7 @@ void CBasePlayer::Spawn( void )
 	m_iDeathPostEffect = 0;
 
 	m_flDuckAmount = 0;
-	m_flDuckSpeed = CS_PLAYER_DUCK_SPEED_IDEAL;
+	m_flDuckSpeed = 8.0f;
 }
 
 void CBasePlayer::UpdateMapEntityPointers( void )
@@ -5540,6 +5561,7 @@ void CBasePlayer::NotifyNearbyRadiationSource( float flRange )
 
 void CBasePlayer::AllowImmediateDecalPainting()
 {
+#if defined (CSTRIKE15)
 	// No decal expediting during warmup
 	if ( CSGameRules() )
 	{
@@ -5556,6 +5578,9 @@ void CBasePlayer::AllowImmediateDecalPainting()
 		m_flNextDecalTime -= ( PLAYERDECALS_COOLDOWN_SECONDS - 3 );
 		m_bNextDecalTimeExpedited = true;
 	}
+#else
+	m_flNextDecalTime = gpGlobals->curtime;
+#endif
 }
 
 void CBasePlayer::PushAwayDecalPaintingTime( float flTime )
@@ -5887,7 +5912,11 @@ void CBloodSplat::Think( void )
 //-----------------------------------------------------------------------------
 // Purpose: Create and give the named item to the player. Then return it.
 //-----------------------------------------------------------------------------
+#if defined ( CSTRIKE15 ) || defined ( TF_CLIENT_DLL ) || defined ( TF_DLL ) && !defined ( NO_STEAM )
 CBaseEntity	*CBasePlayer::GiveNamedItem( const char *pchName, int iSubType /*= 0*/, CEconItemView *pScriptItem /*= NULL*/, bool bForce /*= false*/ )
+#else
+CBaseEntity	*CBasePlayer::GiveNamedItem( const char *pchName, int iSubType /*= 0*/, bool bForce /*= false*/ )
+#endif
 {
 	// If I already own this type don't create one
 	if ( Weapon_OwnsThisType( pchName, iSubType ) )
@@ -7146,9 +7175,15 @@ void CBasePlayer::UpdateClientData( void )
 		m_fInitHUD = false;
 		gInitHUD = false;
 
+#if defined ( CSTRIKE15 )
 		CCSUsrMsg_ResetHud msg;
 		msg.set_reset( 0 );
 		SendUserMessage( user, CS_UM_ResetHud, msg );
+#elif defined ( HL2_DLL )
+		CHLUsrMsg_ResetHud msg;
+		msg.set_reset( 0 );
+		SendUserMessage( user, HL_UM_ResetHud, msg );
+#endif
 
 		if ( !m_fGameHUDInitialized )
 		{
@@ -7170,8 +7205,13 @@ void CBasePlayer::UpdateClientData( void )
 	CWorld *world = GetWorldEntity();
 	if ( world && world->GetDisplayTitle() )
 	{
+#if defined ( CSTRIKE15 )
 		CCSUsrMsg_GameTitle msg;
 		SendUserMessage( user, CS_UM_GameTitle, msg );
+#elif defined ( HL2_DLL )
+		CHLUsrMsg_GameTitle msg;
+		SendUserMessage( user, HL_UM_GameTitle, msg );
+#endif
 
 		world->SetDisplayTitle( false );
 	}
@@ -7250,12 +7290,20 @@ void CBasePlayer::RumbleEffect( unsigned char index, unsigned char rumbleData, u
 	CSingleUserRecipientFilter filter( this );
 	filter.MakeReliable();
 
+#if defined ( CSTRIKE15 )
 	CCSUsrMsg_Rumble msg;
+#elif defined ( HL2_DLL )
+	CHLUsrMsg_Rumble msg;
+#endif
 	msg.set_index( index );
 	msg.set_data( rumbleData );
 	msg.set_flags( rumbleFlags	);
 
-	SendUserMessage( filter, CS_UM_Rumble, msg );	
+#if defined ( CSTRIKE15 )
+	SendUserMessage( filter, CS_UM_Rumble, msg );
+#elif defined ( HL2_DLL )
+	SendUserMessage( filter, HL_UM_Rumble, msg );
+#endif
 }
 
 void CBasePlayer::EnableControl(bool fControl)
@@ -7274,9 +7322,15 @@ void CBasePlayer::CheckTrainUpdate( void )
 		CSingleUserRecipientFilter user( this );
 		user.MakeReliable();
 
+#if defined ( CSTRIKE15 )
 		CCSUsrMsg_Train msg;
 		msg.set_train( m_iTrain & 0xF );
 		SendUserMessage( user, CS_UM_Train, msg );
+#elif defined ( HL2_DLL )
+		CHLUsrMsg_Train msg;
+		msg.set_train( m_iTrain & 0xF );
+		SendUserMessage( user, HL_UM_Train, msg );
+#endif
 
 		m_iTrain &= ~TRAIN_NEW;
 	}
@@ -9618,7 +9672,7 @@ bool CBasePlayer::EnsureSplitScreenTeam()
 	{
 		if ( GetTeamNumber() != GetSplitScreenPlayerOwner()->GetTeamNumber() )
 		{
-			Msg( "Forcing split screen player onto team %s\n", GetTeamName( GetSplitScreenPlayerOwner()->GetTeamNumber() ) );
+			Msg( "Forcing split screen player onto team %d\n", GetSplitScreenPlayerOwner()->GetTeamNumber() );
 			ForceChangeTeam( GetSplitScreenPlayerOwner()->GetTeamNumber() );
 			return true;
 		}
@@ -9802,27 +9856,9 @@ void CBasePlayer::UpdateFXVolume( void )
 }
 
 
-CVoteController* CBasePlayer::GetTeamVoteController()
-{
-	switch ( GetAssociatedTeamNumber( ) )
-	{
-	case TEAM_CT:
-		return g_voteControllerCT;
-
-	case TEAM_TERRORIST:
-		return g_voteControllerT;
-
-	// SPECTATOR or other
-	default:
-		return g_voteControllerGlobal;
-	}
-
-}
-
-
 bool CBasePlayer::HandleVoteCommands( const CCommand &args )
 {
-	if( !g_voteControllerGlobal && !GetTeamVoteController()  )
+	if( !g_voteController )
 		return false;
 
 	if(  FStrEq( args[0], "Vote" ) )
@@ -9833,30 +9869,7 @@ bool CBasePlayer::HandleVoteCommands( const CCommand &args )
 		const char *arg2 = args[1];
 		char szResultString[MAX_COMMAND_LENGTH];
 
-		CVoteController *pVoteController = NULL;
-
-		// is there a global or team vote to participate in and if so, which?
-		if ( g_voteControllerGlobal && g_voteControllerGlobal->IsAVoteInProgress( ) )
-		{
-			pVoteController = g_voteControllerGlobal;
-		}
-		else if ( GetTeamVoteController( ) && GetTeamVoteController( )->IsAVoteInProgress( ) )
-		{
-			pVoteController = GetTeamVoteController( );
-		}
-		else
-		{
-			Q_snprintf( szResultString, MAX_COMMAND_LENGTH, "Vote failed: no vote in progress.\n" );
-			DevMsg( "%s", szResultString );
-
-			return true;
-		}
-
-		if ( !pVoteController )
-			return true;
-
-
-		CVoteController::TryCastVoteResult nTryResult = pVoteController->TryCastVote( entindex( ), arg2 );
+		CVoteController::TryCastVoteResult nTryResult = g_voteController->TryCastVote( entindex(), arg2 );
 		switch( nTryResult )
 		{
 		case CVoteController::CAST_OK:
@@ -9871,7 +9884,7 @@ bool CBasePlayer::HandleVoteCommands( const CCommand &args )
 			}
 		case CVoteController::CAST_FAIL_NO_ACTIVE_ISSUE:
 			{
-				Q_snprintf( szResultString, MAX_COMMAND_LENGTH, "Vote failed: no active issue.\n" );
+				Q_snprintf( szResultString, MAX_COMMAND_LENGTH, "A vote has not been called.\n" );
 				break;
 			}
 		case CVoteController::CAST_FAIL_TEAM_RESTRICTED:
