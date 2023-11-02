@@ -241,12 +241,10 @@ void ClientModeHLNormal::LevelInit( const char *newmap )
 		mat_ambient_light_b.SetValue( "0" );
 	}
 
-	m_hCurrentColorCorrection = NULL;
-
 	BaseClass::LevelInit(newmap);
 
 	// sdk: make sure no windows are left open from before
-	// SDK_CloseAllWindows();
+	SDK_CloseAllWindows();
 
 	// clear any DSP effects
 	CLocalPlayerFilter filter;
@@ -259,7 +257,7 @@ void ClientModeHLNormal::LevelShutdown( void )
 	BaseClass::LevelShutdown();
 
 	// sdk:shutdown all vgui windows
-	// SDK_CloseAllWindows();
+	SDK_CloseAllWindows();
 }
 void ClientModeHLNormal::FireGameEvent( IGameEvent *event )
 {
@@ -267,7 +265,7 @@ void ClientModeHLNormal::FireGameEvent( IGameEvent *event )
 
 	if ( Q_strcmp( "asw_mission_restart", eventname ) == 0 )
 	{
-		// SDK_CloseAllWindows();
+		SDK_CloseAllWindows();
 	}
 	else if ( Q_strcmp( "game_newmap", eventname ) == 0 )
 	{
@@ -276,6 +274,44 @@ void ClientModeHLNormal::FireGameEvent( IGameEvent *event )
 	else
 	{
 		BaseClass::FireGameEvent(event);
+	}
+}
+
+// Close all ASW specific VGUI windows that the player might have open
+void ClientModeHLNormal::SDK_CloseAllWindows()
+{
+	SDK_CloseAllWindowsFrom(GetViewport());
+}
+
+// recursive search for matching window names
+void ClientModeHLNormal::SDK_CloseAllWindowsFrom(vgui::Panel* pPanel)
+{
+	if (!pPanel)
+		return;
+
+	int num_names = NELEMS(s_CloseWindowNames);
+
+	for (int k=0;k<pPanel->GetChildCount();k++)
+	{
+		Panel *pChild = pPanel->GetChild(k);
+		if (pChild)
+		{
+			SDK_CloseAllWindowsFrom(pChild);
+		}
+	}
+
+	// When VGUI is shutting down (i.e. if the player closes the window), GetName() can return NULL
+	const char *pPanelName = pPanel->GetName();
+	if ( pPanelName != NULL )
+	{
+		for (int i=0;i<num_names;i++)
+		{
+			if ( !strcmp( pPanelName, s_CloseWindowNames[i] ) )
+			{
+				pPanel->SetVisible(false);
+				pPanel->MarkForDeletion();
+			}
+		}
 	}
 }
 

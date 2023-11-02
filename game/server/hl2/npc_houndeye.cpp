@@ -2,6 +2,7 @@
 //
 // Purpose: Houndeye - a spooky sonic dog.
 //
+// No need it in ASW [str]
 // $NoKeywords: $
 //=============================================================================//
 
@@ -12,7 +13,7 @@
 #include "ai_route.h"
 #include "AI_Navigator.h"
 #include "AI_Motor.h"
-#include "ai_squad.h"
+#include "AI_Squad.h"
 #include "AI_TacticalServices.h"
 #include "soundent.h"
 #include "EntityList.h"
@@ -23,7 +24,7 @@
 #include "energy_wave.h"
 #include "ai_interactions.h"
 #include "ndebugoverlay.h"
-#include "npcevent.h"
+#include "NPCEvent.h"
 #include "player.h"
 #include "vstdlib/random.h"
 #include "engine/IEngineSound.h"
@@ -529,7 +530,7 @@ void CNPC_Houndeye::DeathSound ( void )
 //=========================================================
 // PainSound 
 //=========================================================
-void CNPC_Houndeye::PainSound ( const CTakeDamageInfo &info )
+void CNPC_Houndeye::PainSound ( void )
 {
 	EmitSound( "NPC_Houndeye.Pain" );
 }

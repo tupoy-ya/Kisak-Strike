@@ -143,7 +143,7 @@ public:
 	int RangeAttack1Conditions ( float flDot, float flDist ) { return( 0 ); }
 	
 	virtual float GetHitgroupDamageMultiplier( int iHitGroup, const CTakeDamageInfo &info );
-	void TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator );
+	void TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr );
 	int OnTakeDamage_Alive( const CTakeDamageInfo &info );
 	virtual float	GetReactionDelay( CBaseEntity *pEnemy ) { return 0.0; }
 
@@ -182,6 +182,7 @@ public:
 	// Headcrab releasing/breaking apart
 	void RemoveHead( void );
 	virtual void SetZombieModel( void ) { };
+	virtual void SetHeadlessModel( void ) { };
 	virtual void BecomeTorso( const Vector &vecTorsoForce, const Vector &vecLegsForce );
 	virtual bool CanBecomeLiveTorso() { return false; }
 	virtual bool HeadcrabFits( CBaseAnimating *pCrab );
@@ -238,8 +239,6 @@ public:
 
 public:
 	CAI_ActBusyBehavior		m_ActBusyBehavior;
-
-
 
 protected:
 

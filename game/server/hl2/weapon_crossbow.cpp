@@ -191,6 +191,9 @@ void CCrossbowBolt::Precache( void )
 	// This is used by C_TEStickyBolt, despte being different from above!!!
 	PrecacheModel( "models/crossbow_bolt.mdl" );
 
+	PrecacheEffect( "BoltImpact" );
+	PrecacheEffect( "CrossbowLoad" );
+
 	PrecacheModel( "sprites/light_glow02_noz.vmt" );
 }
 
@@ -520,6 +523,8 @@ void CWeaponCrossbow::Precache( void )
 	PrecacheScriptSound( "Weapon_Crossbow.BoltHitWorld" );
 	PrecacheScriptSound( "Weapon_Crossbow.BoltSkewer" );
 
+	PrecacheEffect( "CrossbowLoad" );
+	
 	PrecacheModel( CROSSBOW_GLOW_SPRITE );
 	PrecacheModel( CROSSBOW_GLOW_SPRITE2 );
 

@@ -2185,12 +2185,14 @@ void CWeaponRPG::StopLaserEffects( void )
 	if ( m_hLaserBeam != NULL )
 	{
 		m_hLaserBeam->SetBrightness( 0 );
+		UTIL_Remove(m_hLaserBeam);
 	}
 	
 	if ( m_hLaserMuzzleSprite != NULL )
 	{
 		m_hLaserMuzzleSprite->SetScale( 0.01f );
 		m_hLaserMuzzleSprite->SetBrightness( 0, 0.5f );
+		UTIL_Remove(m_hLaserMuzzleSprite);
 	}
 }
 

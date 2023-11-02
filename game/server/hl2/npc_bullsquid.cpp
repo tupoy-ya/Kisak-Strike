@@ -127,7 +127,7 @@ void CNPC_Bullsquid::Spawn()
 	SetMoveType( MOVETYPE_STEP );
 	m_bloodColor		= BLOOD_COLOR_GREEN;
 	
-	SetRenderColor( 255, 255, 255);
+	SetRenderColor( 255, 255, 255, 255 );
 	
 	m_iHealth			= sk_bullsquid_health.GetFloat();
 	m_flFieldOfView		= 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -256,7 +256,7 @@ float CNPC_Bullsquid::MaxYawSpeed( void )
 //=========================================================
 void CNPC_Bullsquid::HandleAnimEvent( animevent_t *pEvent )
 {
-	switch( pEvent->Event() )
+	switch( pEvent->event )
 	{
 		case BSQUID_AE_SPIT:
 		{

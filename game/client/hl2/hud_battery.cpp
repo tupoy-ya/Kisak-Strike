@@ -38,7 +38,7 @@ public:
 	void Reset( void );
 	void VidInit( void );
 	void OnThink( void );
-	void MsgFunc_Battery(CHLUsrMsg_Battery &msg );
+	bool MsgFunc_Battery(CHLUsrMsg_Battery &msg );
 	bool ShouldDraw();
 	
 private:
@@ -141,7 +141,9 @@ void CHudBattery::OnThink( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CHudBattery::MsgFunc_Battery( bf_read &msg )
+bool CHudBattery::MsgFunc_Battery(CHLUsrMsg_Battery &msg );
 {
-	m_iNewBat = msg.ReadShort();
+	m_iNewBat 0; // = msg.ReadShort();
+	// TODO: Implement.
+	return true;
 }

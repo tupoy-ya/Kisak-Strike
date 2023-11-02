@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: No need it in ASW [str]
 //
 // $NoKeywords: $
 //=============================================================================//

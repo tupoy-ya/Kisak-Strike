@@ -150,7 +150,7 @@ bool CNPC_PlayerCompanion::CreateBehaviors()
 {
 #ifdef HL2_EPISODIC
 	AddBehavior( &m_FearBehavior );
-	AddBehavior( &m_PassengerBehavior );
+//	AddBehavior( &m_PassengerBehavior );
 #endif // HL2_EPISODIC	
 
 	AddBehavior( &m_ActBusyBehavior );
@@ -517,11 +517,11 @@ void CNPC_PlayerCompanion::DoCustomSpeechAI( void )
 	CBasePlayer *pPlayer = AI_GetSinglePlayer();
 	
 	// Don't allow this when we're getting in the car
-#ifdef HL2_EPISODIC
-	bool bPassengerInTransition = ( IsInAVehicle() && ( m_PassengerBehavior.GetPassengerState() == PASSENGER_STATE_ENTERING || m_PassengerBehavior.GetPassengerState() == PASSENGER_STATE_EXITING ) );
-#else
+//#ifdef HL2_EPISODIC
+//	bool bPassengerInTransition = ( IsInAVehicle() && ( m_PassengerBehavior.GetPassengerState() == PASSENGER_STATE_ENTERING || m_PassengerBehavior.GetPassengerState() == PASSENGER_STATE_EXITING ) );
+//#else
 	bool bPassengerInTransition = false;
-#endif
+//#endif
 
 	Vector vecEyePosition = EyePosition();
 	if ( bPassengerInTransition == false && pPlayer && pPlayer->FInViewCone( vecEyePosition ) && pPlayer->FVisible( vecEyePosition ) )
@@ -3529,6 +3529,7 @@ void CNPC_PlayerCompanion::InputGiveWeapon( inputdata_t &inputdata )
 //------------------------------------------------------------------------------
 void CNPC_PlayerCompanion::InputClearAllOuputs( inputdata_t &inputdata )
 {
+	// Fix it later... [str]
 	datamap_t *dmap = GetDataDescMap();
 	while ( dmap )
 	{
@@ -3538,7 +3539,7 @@ void CNPC_PlayerCompanion::InputClearAllOuputs( inputdata_t &inputdata )
 			typedescription_t *dataDesc = &dmap->dataDesc[i];
 			if ( ( dataDesc->fieldType == FIELD_CUSTOM ) && ( dataDesc->flags & FTYPEDESC_OUTPUT ) )
 			{
-				CBaseEntityOutput *pOutput = (CBaseEntityOutput *)((intp)this + (intp)dataDesc->fieldOffset[0]);
+				CBaseEntityOutput *pOutput = (CBaseEntityOutput *)((int)this + (int)dataDesc->fieldOffset/*[TD_OFFSET_NORMAL]*/);
 				pOutput->DeleteAllElements();
 				/*
 				int nConnections = pOutput->NumberOfElements();

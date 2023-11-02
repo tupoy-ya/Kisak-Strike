@@ -494,7 +494,7 @@ void CFuncTank::NPC_FindController( void )
 			}
 
 			trace_t tr;
-			UTIL_TraceEntity( pNPC, vecMountPos, vecMountPos, MASK_NPCSOLID, this, pNPC->GetCollisionGroup(), &tr );
+			UTIL_TraceEntity( pNPC, vecMountPos, vecMountPos, pNPC->GetAITraceMask(), this, pNPC->GetCollisionGroup(), &tr );
 			if( tr.startsolid || tr.fraction < 1.0 )
 			{
 				// Don't mount the tank if someone/something is located on the control point.
@@ -868,65 +868,7 @@ void CFuncTank::Spawn( void )
 void CFuncTank::Activate( void )
 {
 	BaseClass::Activate();
-	
-	CBaseEntity *pParent = gEntList.FindEntityByName( NULL, m_iParent );
 
-	if ((pParent != NULL) && (pParent->edict() != NULL))
-	{
-		SetParent( pParent );
-	}
-
-	if ( GetParent() && GetParent()->GetBaseAnimating() )
-	{
-		CBaseAnimating *pAnim = GetParent()->GetBaseAnimating();
-		if ( m_iszBaseAttachment != NULL_STRING )
-		{
-			int nAttachment = pAnim->LookupAttachment( STRING( m_iszBaseAttachment ) );
-			if ( nAttachment != 0 )
-			{
-				SetParent( pAnim, nAttachment );
-				SetLocalOrigin( vec3_origin );
-				SetLocalAngles( vec3_angle );
-			}
-		}
-
-		m_bUsePoseParameters = (m_iszYawPoseParam != NULL_STRING) && (m_iszPitchPoseParam != NULL_STRING);
-
-		if ( m_iszBarrelAttachment != NULL_STRING )
-		{
-			if ( m_bUsePoseParameters )
-			{
-				pAnim->SetPoseParameter( STRING( m_iszYawPoseParam ), 0 );
-				pAnim->SetPoseParameter( STRING( m_iszPitchPoseParam ), 0 );
-				pAnim->InvalidateBoneCache();
-			}
-
-			m_nBarrelAttachment = pAnim->LookupAttachment( STRING(m_iszBarrelAttachment) );
-
-			Vector vecWorldBarrelPos;
-			QAngle worldBarrelAngle;
-			pAnim->GetAttachment( m_nBarrelAttachment, vecWorldBarrelPos, worldBarrelAngle );
-			VectorITransform( vecWorldBarrelPos, EntityToWorldTransform( ), m_barrelPos );
-		}
-
-		if ( m_bUsePoseParameters )
-		{
-			// In this case, we're relying on the parent to have the gun model
-			AddEffects( EF_NODRAW );
-			QAngle localAngles( m_flPitchPoseCenter, m_flYawPoseCenter, 0 );
-			SetLocalAngles( localAngles );
-			SetSolid( SOLID_NONE );
-			SetMoveType( MOVETYPE_NOCLIP );
-
-			// If our parent is a prop_dynamic, make it use hitboxes for renderbox
-			CDynamicProp *pProp = dynamic_cast<CDynamicProp*>(GetParent());
-			if ( pProp )
-			{
-				pProp->m_bUseHitboxesForRenderBox = true;
-			}
-		}
-	}
-	
 	// Necessary for save/load
 	if ( (m_iszBarrelAttachment != NULL_STRING) && (m_nBarrelAttachment == 0) )
 	{
@@ -965,6 +907,11 @@ void CFuncTank::Precache( void )
 	if ( m_iEffectHandling == EH_COMBINE_CANNON )
 	{
 		PrecacheScriptSound( "NPC_Combine_Cannon.FireBullet" );
+		PrecacheEffect( "ChopperMuzzleFlash" );
+	}
+	else
+	{
+		PrecacheEffect( "MuzzleFlash" );
 	}
 }
 
@@ -1186,10 +1133,6 @@ void CFuncTank::StopControl()
 // Purpose:
 // Called each frame by the player's ItemPostFrame
 //-----------------------------------------------------------------------------
-
-// NVNT turret recoil
-ConVar hap_turret_mag("hap_turret_mag", "5", 0);
-
 void CFuncTank::ControllerPostFrame( void )
 {
 	// Make sure we have a contoller.
@@ -1229,7 +1172,7 @@ void CFuncTank::ControllerPostFrame( void )
 	}
 	
 	Fire( bulletCount, WorldBarrelPosition(), forward, pPlayer, false );
- 
+
 #if defined( WIN32 ) && !defined( _X360 ) 
 	// NVNT apply a punch on the player each time fired
 	//HapticPunch(pPlayer,0,0,hap_turret_mag.GetFloat());
@@ -1855,12 +1798,14 @@ bool CFuncTank::RotateTankToAngles( const QAngle &angles, float *pDistX, float *
 	QAngle vecAngVel = GetLocalAngularVelocity();
 
 	// Move toward target at rate or less
-	float distY = UTIL_AngleDistance( flActualYaw, GetLocalAngles().y );
+	float flLocalY = AngleNormalize( GetLocalAngles().y );
+	float distY = UTIL_AngleDistance( flActualYaw, flLocalY );
 	vecAngVel.y = distY * 10;
 	vecAngVel.y = clamp( vecAngVel.y, -m_yawRate, m_yawRate );
 
 	// Move toward target at rate or less
-	float distX = UTIL_AngleDistance( flActualPitch, GetLocalAngles().x );
+	float flLocalX = AngleNormalize( GetLocalAngles().x );
+	float distX = UTIL_AngleDistance( flActualPitch, flLocalX );
 	vecAngVel.x = distX  * 10;
 	vecAngVel.x = clamp( vecAngVel.x, -m_pitchRate, m_pitchRate );
 
@@ -2086,7 +2031,7 @@ void CFuncTank::AimFuncTankAtTarget( void )
 
 	SetMoveDoneTime( 0.1 );
 
-	if ( CanFire() && ( ( (fabs(distX) <= m_pitchTolerance) && (fabs(distY) <= m_yawTolerance) ) || (m_spawnflags & SF_TANK_LINEOFSIGHT) ) )
+	if ( CanFire() && ( (fabs(distX) <= m_pitchTolerance) && (fabs(distY) <= m_yawTolerance) || (m_spawnflags & SF_TANK_LINEOFSIGHT) ) )
 	{
 		bool fire = false;
 		Vector forward;
@@ -2753,6 +2698,8 @@ void CFuncTankLaser::Fire( int bulletCount, const Vector &barrelEnd, const Vecto
 	}
 }
 
+#ifdef HL2_DLL
+
 class CFuncTankRocket : public CFuncTank
 {
 public:
@@ -2801,6 +2748,9 @@ void CFuncTankRocket::Fire( int bulletCount, const Vector &barrelEnd, const Vect
 	CFuncTank::Fire( bulletCount, barrelEnd, forward, this, bIgnoreSpread );
 }
 
+#endif // HL2_DLL
+
+#ifdef HL2_DLL
 
 //-----------------------------------------------------------------------------
 // Airboat gun
@@ -2865,6 +2815,10 @@ void CFuncTankAirboatGun::Precache( void )
 	BaseClass::Precache();
 	PrecacheScriptSound( "Airboat.FireGunLoop" );
 	PrecacheScriptSound( "Airboat.FireGunRevDown");
+	if ( m_iszAirboatGunModel != NULL_STRING )
+	{
+		PrecacheEffect( "AirboatMuzzleFlash" );
+	}
 	CreateSounds();
 }
 
@@ -3080,6 +3034,9 @@ void CFuncTankAirboatGun::Fire( int bulletCount, const Vector &barrelEnd, const 
 	}
 }
 
+#endif // HL2_DLL
+
+#ifdef HL2_DLL
 
 //-----------------------------------------------------------------------------
 // APC Rocket 
@@ -3133,7 +3090,7 @@ void CFuncTankAPCRocket::Precache( void )
 	UTIL_PrecacheOther( "apc_missile" );
 
 	PrecacheScriptSound( "PropAPC.FireCannon" );
-
+	PrecacheEffect( "AirboatGunImpact" );
 	CFuncTank::Precache();
 }
 
@@ -3265,6 +3222,7 @@ void CFuncTankAPCRocket::InputDeathVolley( inputdata_t &inputdata )
 	}
 }
 
+#endif // HL2_DLL
 
 //-----------------------------------------------------------------------------
 // Mortar shell
@@ -3303,7 +3261,7 @@ private:
 
 	CNetworkVar( float, m_flLifespan );
 	CNetworkVar( float, m_flRadius );
-	CNetworkVar( Vector, m_vecSurfaceNormal );
+	CNetworkVector( m_vecSurfaceNormal );
 
 	DECLARE_DATADESC();
 	DECLARE_SERVERCLASS();
@@ -3481,6 +3439,7 @@ void CMortarShell::Precache()
 
 	PrecacheScriptSound( "Weapon_Mortar.Impact" );
 	PrecacheMaterial( "effects/ar2ground2" );
+	PrecacheEffect( "AR2Explosion" );
 
 	if ( NULL_STRING != m_warnSound )
 	{
@@ -4283,7 +4242,8 @@ void CFuncTankCombineCannon::FuncTankPostThink()
 			if( flDot >= 0.9f && m_bShouldHarrass )
 			{
 				//Msg("%s Harrassing player\n", GetDebugName() );
-				vecTargetPosition = pPlayer->EyePosition();
+				if (pPlayer)
+					vecTargetPosition = pPlayer->EyePosition();
 				bHarass = true;
 			}
 			else

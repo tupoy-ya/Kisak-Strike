@@ -197,7 +197,7 @@ void CHudRadar::SetVisible(bool state)
 	if( g_pMapOverview  &&  g_pMapOverview->GetMode() == CMapOverview::MAP_MODE_RADAR )
 	{
 		// We are the hud element still, but he is in charge of the new style now.
-		g_pMapOverview->SetVisible( state );		
+		g_pMapOverview->SetVisible( state );
 	}
 }
 

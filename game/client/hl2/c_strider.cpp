@@ -80,7 +80,7 @@ public:
 		BaseClass::EffectShutdown();
 	}
 
-	virtual int	DrawModel( int flags, const RenderableInstance_t &instance );
+	virtual int	DrawModel( int flags );
 	virtual void LimitTime( float tmax ) 
 	{ 
 		float dt = tmax - m_t;
@@ -426,7 +426,7 @@ void Strider_DrawLine( const Vector &start, const Vector &end, float width, IMat
 	FX_DrawLineFade( start, end, width, pMaterial, color, 8.0f );
 }
 
-int	C_StriderFX::DrawModel( int, const RenderableInstance_t& )
+int	C_StriderFX::DrawModel( int )
 {
 	static color32 white = {255,255,255,255};
 	Vector params[STRIDERFX_PARAMETERS];

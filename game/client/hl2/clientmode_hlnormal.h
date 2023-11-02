@@ -1,4 +1,4 @@
-//========= Copyright � 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: No need it in ASW [str]
 //
@@ -45,6 +45,8 @@ public:
 	virtual void	LevelShutdown( void );
 	virtual void	FireGameEvent( IGameEvent *event );
 	virtual void	DoPostScreenSpaceEffects( const CViewSetup *pSetup );
+	virtual void SDK_CloseAllWindows();
+	virtual void SDK_CloseAllWindowsFrom(vgui::Panel* pPanel);
 	virtual void	OnColorCorrectionWeightsReset( void );
 	virtual float	GetColorCorrectionScale( void ) const { return 1.0f; }
 

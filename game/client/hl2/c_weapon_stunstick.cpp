@@ -138,6 +138,15 @@ public:
 		//TODO: Play shutdown sound
 	}
 
+	//-----------------------------------------------------------------------------
+	// Purpose: 
+	// Output : RenderGroup_t
+	//-----------------------------------------------------------------------------
+	RenderGroup_t GetRenderGroup( void )
+	{
+		return RENDER_GROUP_TRANSLUCENT;
+	}
+
 private:
 	CNetworkVar( bool, m_bActive );
 };

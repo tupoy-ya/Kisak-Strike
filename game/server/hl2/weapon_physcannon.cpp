@@ -1679,6 +1679,8 @@ bool CWeaponPhysCannon::CanHolster( void )
 //-----------------------------------------------------------------------------
 bool CWeaponPhysCannon::Holster( CBaseCombatWeapon *pSwitchingTo )
 {
+	ForceDrop();
+	DestroyEffects();
 	//Don't holster this weapon if we're holding onto something
 	if ( m_bActive )
 	{
@@ -1700,7 +1702,6 @@ bool CWeaponPhysCannon::Holster( CBaseCombatWeapon *pSwitchingTo )
 		pOwner->RumbleEffect( RUMBLE_PHYSCANNON_OPEN, 0, RUMBLE_FLAG_STOP );
 	}
 
-	ForceDrop();
 
 	return BaseClass::Holster( pSwitchingTo );
 }
@@ -2408,7 +2409,7 @@ bool CWeaponPhysCannon::AttachObject( CBaseEntity *pObject, const Vector &vPosit
 
 		if ( pProp && pProp->HasInteraction( PROPINTER_PHYSGUN_CREATE_FLARE ) )
 		{
-			pOwner->FlashlightTurnOff();
+			pOwner->FlashlightTurnOff(true);
 		}
 #endif
 

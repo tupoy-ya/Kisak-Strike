@@ -71,9 +71,7 @@ IMPLEMENT_SERVERCLASS_ST(CWeaponBugBait, DT_WeaponBugBait)
 END_SEND_TABLE()
 
 LINK_ENTITY_TO_CLASS( weapon_bugbait, CWeaponBugBait );
-#ifndef HL2MP
 PRECACHE_WEAPON_REGISTER( weapon_bugbait );
-#endif
 
 BEGIN_DATADESC( CWeaponBugBait )
 
@@ -168,7 +166,7 @@ void CWeaponBugBait::Drop( const Vector &vecVelocity )
 
 		pSporeExplosion->m_flSpawnRate			= 16.0f;
 		pSporeExplosion->m_flParticleLifetime	= 0.5f;
-		pSporeExplosion->SetRenderColor( 0.0f, 0.5f, 0.25f);
+		pSporeExplosion->SetRenderColor( 0.0f, 0.5f, 0.25f );
 		pSporeExplosion->SetRenderAlpha( 0.15f );
 
 		pSporeExplosion->m_flStartSize			= 32;

@@ -49,6 +49,7 @@ void CGrenade_Molotov::Spawn( void )
 	SetMoveType( MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE );
 	SetSolid( SOLID_BBOX ); 
 	SetCollisionGroup( COLLISION_GROUP_PROJECTILE );
+	RemoveEffects( EF_NOINTERP );
 
 	SetModel( "models/weapons/w_molotov.mdl");
 
@@ -174,7 +175,7 @@ void CGrenade_Molotov::Detonate( void )
 	CPASFilter filter2( trace.endpos );
 
 	te->Explosion( filter2, 0.0,
-		&trace.endpos, 
+		trace.endpos, 
 		g_sModelIndexFireball,
 		2.0, 
 		15,

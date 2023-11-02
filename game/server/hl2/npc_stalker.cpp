@@ -1380,8 +1380,8 @@ void CNPC_Stalker::AddZigZagToPath(void)
 
 		// Now make sure that we can still get to the zigzag position and the waypoint
 		AIMoveTrace_t moveTrace1, moveTrace2;
-		GetMoveProbe()->MoveLimit( NAV_GROUND, GetAbsOrigin(), zigZagPos, MASK_NPCSOLID, NULL, &moveTrace1);
-		GetMoveProbe()->MoveLimit( NAV_GROUND, zigZagPos, waypointPos, MASK_NPCSOLID, NULL, &moveTrace2);
+		GetMoveProbe()->MoveLimit( NAV_GROUND, GetAbsOrigin(), zigZagPos, GetAITraceMask(), NULL, &moveTrace1);
+		GetMoveProbe()->MoveLimit( NAV_GROUND, zigZagPos, waypointPos, GetAITraceMask(), NULL, &moveTrace2);
 		if ( !IsMoveBlocked( moveTrace1 ) && !IsMoveBlocked( moveTrace2 ) )
 		{
 			GetNavigator()->PrependWaypoint( zigZagPos, NAV_GROUND, bits_WP_TO_DETOUR );

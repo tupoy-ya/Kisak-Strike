@@ -196,6 +196,10 @@ void CPropJeep::Precache( void )
 
 	PrecacheModel( GAUSS_BEAM_SPRITE );
 
+	PrecacheEffect( "ImpactJeep" );
+	PrecacheEffect( "watersplash" );
+	PrecacheEffect( "waterripple" );
+
 	BaseClass::Precache();
 }
 
@@ -277,7 +281,7 @@ void CPropJeep::DoImpactEffect( trace_t &tr, int nDamageType )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CPropJeep::TraceAttack( const CTakeDamageInfo &inputInfo, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator )
+void CPropJeep::TraceAttack( const CTakeDamageInfo &inputInfo, const Vector &vecDir, trace_t *ptr )
 {
 	CTakeDamageInfo info = inputInfo;
 	if ( ptr->hitbox != VEHICLE_HITBOX_DRIVER )
@@ -288,7 +292,7 @@ void CPropJeep::TraceAttack( const CTakeDamageInfo &inputInfo, const Vector &vec
 		}
 	}
 
-	BaseClass::TraceAttack( info, vecDir, ptr/*, pAccumulator*/ );
+	BaseClass::TraceAttack( info, vecDir, ptr );
 }
 
 //-----------------------------------------------------------------------------

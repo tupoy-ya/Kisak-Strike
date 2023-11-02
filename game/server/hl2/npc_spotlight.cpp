@@ -6,13 +6,13 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "ai_basenpc.h"
+#include "AI_BaseNPC.h"
 #include "AI_Default.h"
 #include "AI_Senses.h"
 #include "ai_node.h"	  // for hint defintions
 #include "ai_network.h"
 #include "AI_Hint.h"
-#include "ai_squad.h"
+#include "AI_Squad.h"
 #include "beam_shared.h"
 #include "globalstate.h"
 #include "soundent.h"
@@ -1468,7 +1468,7 @@ void CNPC_Spotlight::Spawn(void)
 	else
 	{
 		NPCInit();
-		SetThink(CallNPCThink);
+		SetThink(&CAI_BaseNPC::CallNPCThink);
 	}
 
 	AddEffects( EF_NODRAW );

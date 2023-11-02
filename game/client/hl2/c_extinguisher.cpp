@@ -11,13 +11,14 @@
 #include "decals.h"
 #include "beamdraw.h"
 #include "hud.h"
+#include "ClientEffectPrecacheSystem.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-PRECACHE_REGISTER_BEGIN( GLOBAL, PrecacheExtinguisher )
-	PRECACHE( MATERIAL, "particle/particle_smokegrenade" )
-PRECACHE_REGISTER_END()
+CLIENTEFFECT_REGISTER_BEGIN( PrecacheExtinguisher )
+	CLIENTEFFECT_MATERIAL( "particle/particle_smokegrenade" )
+CLIENTEFFECT_REGISTER_END()
 
 class C_ExtinguisherJet : public C_BaseEntity
 {
@@ -31,7 +32,7 @@ public:
 	void	OnDataChanged( DataUpdateType_t updateType );
 	void	Update( float fTimeDelta );
 	void	Start( void );
-	int		DrawModel( int flags, const RenderableInstance_t &instance );
+	int		DrawModel( int flags );
 	bool	ShouldDraw( void ) { return m_bEmit; }
 
 protected:
@@ -95,7 +96,7 @@ void C_ExtinguisherJet::OnDataChanged( DataUpdateType_t updateType )
 //-----------------------------------------------------------------------------
 void C_ExtinguisherJet::Start( void )
 {
-	AddToLeafSystem( RENDER_GROUP_TRANSLUCENT_IGNOREZ );
+	AddToLeafSystem( RENDER_GROUP_TRANSLUCENT_ENTITY );
 
 	m_ParticleSpawn.Init( 100 ); //Events per second
 
@@ -401,7 +402,7 @@ void C_ExtinguisherJet::Update( float fTimeDelta )
 // Purpose: 
 // Input  : flags - 
 //-----------------------------------------------------------------------------
-int C_ExtinguisherJet::DrawModel( int flags, const RenderableInstance_t &instance )
+int C_ExtinguisherJet::DrawModel( int flags )
 {
 	if ( m_bEmit == false )
 		return 1;

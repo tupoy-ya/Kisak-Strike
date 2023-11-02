@@ -25,8 +25,6 @@ public:
 	virtual int DrawModel( int flags, const RenderableInstance_t &instance );
 	virtual void ClientThink( void );
 
-	virtual bool ShouldUseLargeViewModelVROverride() OVERRIDE { return true; }
-
 private:
 
 	bool	SetupEmitter( void );
@@ -41,14 +39,15 @@ private:
 	CSmartPtr<CParticleAttractor>	m_pAttractor;
 };
 
-BEGIN_PREDICTION_DATA( C_WeaponPhysCannon )
-END_PREDICTION_DATA()
-LINK_ENTITY_TO_CLASS_CLIENTONLY( weapon_physcannon, C_WeaponPhysCannon );
-
 IMPLEMENT_CLIENTCLASS_DT( C_WeaponPhysCannon, DT_WeaponPhysCannon, CWeaponPhysCannon )
 	RecvPropBool( RECVINFO( m_bIsCurrentlyUpgrading ) ),
 	RecvPropFloat( RECVINFO( m_flTimeForceView) ), 
 END_RECV_TABLE()
+
+BEGIN_PREDICTION_DATA( C_WeaponPhysCannon )
+END_PREDICTION_DATA()
+LINK_ENTITY_TO_CLASS_CLIENTONLY( weapon_physcannon, C_WeaponPhysCannon );
+
 
 //-----------------------------------------------------------------------------
 // Constructor

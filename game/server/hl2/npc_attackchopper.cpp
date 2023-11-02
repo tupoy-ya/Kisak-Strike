@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//===== Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -381,7 +381,7 @@ public:
 	int		BloodColor( void ) { return DONT_BLEED; }
 	Class_T Classify ( void ) { return CLASS_COMBINE_GUNSHIP; }
 	virtual int	OnTakeDamage_Alive( const CTakeDamageInfo &info );
-	virtual void TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator );
+	virtual void TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr );
 	virtual int OnTakeDamage( const CTakeDamageInfo &info );
 
 	// Shot spread
@@ -956,6 +956,7 @@ void CNPC_AttackHelicopter::Precache( void )
 		UTIL_PrecacheOther( "env_fire_trail" );
 		Chopper_PrecacheChunks( this );
 		PrecacheModel("models/combine_soldier.mdl");
+		UTIL_PrecacheOther( "env_explosion" );
 	}
 
 	PrecacheScriptSound("NPC_AttackHelicopter.ChargeGun");
@@ -980,6 +981,17 @@ void CNPC_AttackHelicopter::Precache( void )
 
 	PrecacheScriptSound( "ReallyLoudSpark" );
 	PrecacheScriptSound( "NPC_AttackHelicopterGrenade.Ping" );
+
+	PrecacheEffect( "ChopperMuzzleFlash" );
+	PrecacheEffect( "TeslaZap" );
+	PrecacheEffect( "TeslaHitboxes" );
+	PrecacheEffect( "HelicopterMegaBomb" );
+
+	const char *pszTracerName = GetTracerType();
+	if ( pszTracerName )
+	{
+		PrecacheEffect( pszTracerName );
+	}
 }
 
 int CNPC_AttackHelicopter::ObjectCaps() 
@@ -1058,6 +1070,7 @@ void CNPC_AttackHelicopter::Spawn( void )
 	InitPathingData( CHOPPER_ARRIVE_DIST, flChaseDist, CHOPPER_AVOID_DIST );
 	SetFarthestPathDist( GetMaxFiringDistance() );
 
+	m_flFrozenMax = 0.0f;
 	m_takedamage = DAMAGE_YES;
 	m_nGunState = GUN_STATE_IDLE;
 	SetHullType( HULL_LARGE_CENTERED );
@@ -3470,7 +3483,7 @@ void CNPC_AttackHelicopter::DropCorpse( int nDamage )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CNPC_AttackHelicopter::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator )
+void CNPC_AttackHelicopter::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr )
 {
 	// Take no damage from trace attacks unless it's blast damage. RadiusDamage() sometimes calls
 	// TraceAttack() as a means for delivering blast damage. Usually when the explosive penetrates
@@ -3479,7 +3492,7 @@ void CNPC_AttackHelicopter::TraceAttack( const CTakeDamageInfo &info, const Vect
 		 ( info.GetInflictor()->Classify() == CLASS_MISSILE ) || 
 		 ( info.GetAttacker()->Classify() == CLASS_MISSILE ) )
 	{
-		BaseClass::BaseClass::TraceAttack( info, vecDir, ptr/*, pAccumulator*/ );
+		BaseClass::BaseClass::TraceAttack( info, vecDir, ptr );
 	}
 }
 
@@ -4976,6 +4989,10 @@ void CGrenadeHelicopter::Precache( void )
 	PrecacheScriptSound( "NPC_AttackHelicopterGrenade.Ping" );
 	PrecacheScriptSound( "NPC_AttackHelicopterGrenade.PingCaptured" );
 	PrecacheScriptSound( "NPC_AttackHelicopterGrenade.HardImpact" );
+	PrecacheEffect( "HelicopterImpact" );
+	PrecacheEffect( "WaterSurfaceExplosion" );
+	PrecacheEffect( "HelicopterMegaBomb" );
+	UTIL_PrecacheOther( "env_explosion" );
 }
 
 

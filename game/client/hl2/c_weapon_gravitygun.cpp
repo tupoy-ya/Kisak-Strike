@@ -10,13 +10,14 @@
 #include "in_buttons.h"
 #include "beamdraw.h"
 #include "c_weapon__stubs.h"
+#include "ClientEffectPrecacheSystem.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-PRECACHE_REGISTER_BEGIN( GLOBAL, PrecacheEffectGravityGun )
-	PRECACHE( MATERIAL, "sprites/physbeam" )
-PRECACHE_REGISTER_END()
+CLIENTEFFECT_REGISTER_BEGIN( PrecacheEffectGravityGun )
+	CLIENTEFFECT_MATERIAL( "sprites/physbeam" )
+CLIENTEFFECT_REGISTER_END()
 
 class C_BeamQuadratic : public CDefaultClientRenderable
 {
@@ -29,13 +30,9 @@ public:
 	virtual const QAngle&			GetRenderAngles( void ) { return vec3_angle; }
 	virtual bool					ShouldDraw( void ) { return true; }
 	virtual bool					IsTransparent( void ) { return true; }
-	virtual bool					ShouldReceiveProjectedTextures( int flags ) { return true; }
-	virtual int						DrawModel( int flags, const RenderableInstance_t &instance );
-	
+	virtual bool					ShouldReceiveProjectedTextures( int flags ) { return false; }
+	virtual int						DrawModel( int flags );
 
-	matrix3x4_t worldTransform;
-	const matrix3x4_t& RenderableToWorldTransform() { return worldTransform; }
-	
 	// Returns the bounds relative to the origin (render bounds)
 	virtual void	GetRenderBounds( Vector& mins, Vector& maxs )
 	{
@@ -88,17 +85,6 @@ public:
 		m_beam.Update( this );
 	}
 
-	void CreateMove(float flInputSampleTime, CUserCmd* pCmd, const QAngle& vecOldViewAngles)
-	{
-		BaseClass::CreateMove(flInputSampleTime, pCmd, vecOldViewAngles);
-
-		// Block angular movement when IN_ATTACK is pressed
-		if ((pCmd->buttons & IN_ATTACK) && (pCmd->buttons & IN_USE))
-		{
-			VectorCopy(vecOldViewAngles, pCmd->viewangles);
-		}
-	}
-
 private:
 	C_WeaponGravityGun( const C_WeaponGravityGun & );
 
@@ -121,7 +107,6 @@ END_RECV_TABLE()
 C_BeamQuadratic::C_BeamQuadratic()
 {
 	m_pOwner = NULL;
-	m_hRenderHandle = INVALID_CLIENT_RENDER_HANDLE;
 }
 
 void C_BeamQuadratic::Update( C_BaseEntity *pOwner )
@@ -131,7 +116,7 @@ void C_BeamQuadratic::Update( C_BaseEntity *pOwner )
 	{
 		if ( m_hRenderHandle == INVALID_CLIENT_RENDER_HANDLE )
 		{
-			ClientLeafSystem()->AddRenderable( this, RENDER_GROUP_TRANSLUCENT_IGNOREZ );
+			ClientLeafSystem()->AddRenderable( this, RENDER_GROUP_TRANSLUCENT_ENTITY );
 		}
 		else
 		{
@@ -141,12 +126,11 @@ void C_BeamQuadratic::Update( C_BaseEntity *pOwner )
 	else if ( !m_active && m_hRenderHandle != INVALID_CLIENT_RENDER_HANDLE )
 	{
 		ClientLeafSystem()->RemoveRenderable( m_hRenderHandle );
-		m_hRenderHandle = INVALID_CLIENT_RENDER_HANDLE;
 	}
 }
 
 
-int	C_BeamQuadratic::DrawModel( int, const RenderableInstance_t& )
+int	C_BeamQuadratic::DrawModel( int )
 {
 	Vector points[3];
 	QAngle tmpAngle;
@@ -177,8 +161,7 @@ int	C_BeamQuadratic::DrawModel( int, const RenderableInstance_t& )
 	}
 
 	float scrollOffset = gpGlobals->curtime - (int)gpGlobals->curtime;
-	CMatRenderContextPtr pRenderContext(materials);
-	pRenderContext->Bind( pMat );
+	materials->Bind( pMat );
 	DrawBeamQuadratic( points[0], points[1], points[2], 13, color, scrollOffset );
 	return 1;
 }

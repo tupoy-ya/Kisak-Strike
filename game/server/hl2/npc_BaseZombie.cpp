@@ -684,7 +684,7 @@ float CNPC_BaseZombie::GetHitgroupDamageMultiplier( int iHitGroup, const CTakeDa
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CNPC_BaseZombie::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator )
+void CNPC_BaseZombie::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr )
 {
 	CTakeDamageInfo infoCopy = info;
 
@@ -702,7 +702,7 @@ void CNPC_BaseZombie::TraceAttack( const CTakeDamageInfo &info, const Vector &ve
 		infoCopy.ScaleDamage( 0.625 );
 	}
 
-	BaseClass::TraceAttack( infoCopy, vecDir, ptr/*, pAccumulator*/ );
+	BaseClass::TraceAttack( infoCopy, vecDir, ptr );
 }
 
 
@@ -840,7 +840,7 @@ int CNPC_BaseZombie::OnTakeDamage_Alive( const CTakeDamageInfo &inputInfo )
 		Ignite( 100.0f );
 	}
 
-	int tookDamage = BaseClass::OnTakeDamage_Alive( info );
+	int tookDamage=BaseClass::OnTakeDamage_Alive( info );
 
 	// flDamageThreshold is what percentage of the creature's max health
 	// this amount of damage represents. (clips at 1.0)
@@ -949,12 +949,10 @@ int CNPC_BaseZombie::OnTakeDamage_Alive( const CTakeDamageInfo &inputInfo )
 //-----------------------------------------------------------------------------
 void CNPC_BaseZombie::MakeAISpookySound( float volume, float duration )
 {
-#ifdef HL2_EPISODIC
 	if ( HL2GameRules()->IsAlyxInDarknessMode() )
 	{
 		CSoundEnt::InsertSound( SOUND_COMBAT, EyePosition(), volume, duration, this, SOUNDENT_CHANNEL_SPOOKY_NOISE );
 	}
-#endif // HL2_EPISODIC
 }
 
 //-----------------------------------------------------------------------------
@@ -1252,6 +1250,7 @@ void CNPC_BaseZombie::CopyRenderColorTo( CBaseEntity *pOther )
 {
 	color24 color = GetRenderColor();
 	pOther->SetRenderColor( color.r, color.g, color.b );
+	pOther->SetRenderAlpha( GetRenderAlpha());
 }
 
 //-----------------------------------------------------------------------------
@@ -1911,7 +1910,7 @@ int CNPC_BaseZombie::SelectSchedule ( void )
 
 #ifdef DEBUG_ZOMBIES
 			DevMsg("Wandering\n");
-#endif
+#endif+
 
 			// Just lost track of our enemy. 
 			// Wander around a bit so we don't look like a dingus.
@@ -2318,7 +2317,7 @@ void CNPC_BaseZombie::StopLoopingSounds()
 void CNPC_BaseZombie::RemoveHead( void )
 {
 	m_fIsHeadless = true;
-	SetZombieModel();
+	SetHeadlessModel();
 }
 
 
@@ -2483,7 +2482,7 @@ void CNPC_BaseZombie::ReleaseHeadcrab( const Vector &vecOrigin, const Vector &ve
 		pCrab->SetNextThink( gpGlobals->curtime );
 		pCrab->PhysicsSimulate();
 		pCrab->SetAbsVelocity( vecVelocity );
-
+		
 		// if I have an enemy, stuff that to the headcrab.
 		CBaseEntity *pEnemy;
 		pEnemy = GetEnemy();
@@ -2508,7 +2507,7 @@ void CNPC_BaseZombie::ReleaseHeadcrab( const Vector &vecOrigin, const Vector &ve
 	{
 		RemoveHead();
 	}
-
+	
 	if( fRagdollBody )
 	{
 		BecomeRagdollOnClient( vec3_origin );

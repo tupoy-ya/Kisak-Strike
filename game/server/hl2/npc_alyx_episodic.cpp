@@ -274,7 +274,7 @@ void CNPC_Alyx::HandleAnimEvent( animevent_t *pEvent )
 		animevent_t fakeEvent;
 
 		fakeEvent.pSource = this;
-		fakeEvent.event = EVENT_WEAPON_AR2_ALTFIRE;
+		fakeEvent.Event( EVENT_WEAPON_AR2_ALTFIRE );
 		GetActiveWeapon()->Operator_HandleAnimEvent( &fakeEvent, this );
 		//m_iNumGrenades--;
 
@@ -1821,7 +1821,7 @@ int CNPC_Alyx::TranslateSchedule( int scheduleType )
 					// Does my enemy have enough health to warrant crouching?
 					if ( pEnemy->GetHealth() > ALYX_MIN_ENEMY_HEALTH_TO_CROUCH )
 					{
-						// And are they far enough away? Expand the min dist so we don't crouch & stand immediately.
+						// And are they far enough away? Expand the MIN dist so we don't crouch & stand immediately.
 						if ( EnemyDistance( pEnemy ) > (ALYX_MIN_ENEMY_DIST_TO_CROUCH * 1.5) && (pEnemy->GetFlags() & FL_ONGROUND) )
 						{
 							//Warning("CROUCH: Desiring due to enemy far away.\n" );
@@ -2224,9 +2224,9 @@ void CNPC_Alyx::OnStateChange( NPC_STATE OldState, NPC_STATE NewState )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-void CNPC_Alyx::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator )
+void CNPC_Alyx::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr )
 {
-	BaseClass::TraceAttack( info, vecDir, ptr/*, pAccumulator*/ );
+	BaseClass::TraceAttack( info, vecDir, ptr );
 
 	// FIXME: hack until some way of removing decals after healing
 	m_fNoDamageDecal = true;

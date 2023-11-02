@@ -28,9 +28,20 @@ extern ConVar sensitivity;
 ConVar cl_npc_speedmod_intime( "cl_npc_speedmod_intime", "0.25", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
 ConVar cl_npc_speedmod_outtime( "cl_npc_speedmod_outtime", "1.5", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
 
+#ifdef HL2_PLAYERANIMSTATE
+// ANIMSTATE: Don't alias here
+#if defined( CHL2_Player )
+#undef CHL2_Player	
+#endif
+#endif
+
 IMPLEMENT_CLIENTCLASS_DT(C_BaseHLPlayer, DT_HL2_Player, CHL2_Player)
 	RecvPropDataTable( RECVINFO_DT(m_HL2Local),0, &REFERENCE_RECV_TABLE(DT_HL2Local) ),
 	RecvPropBool( RECVINFO( m_fIsSprinting ) ),
+#ifdef HL2_PLAYERANIMSTATE
+	RecvPropFloat(RECVINFO(m_angEyeAngles[0])),
+	RecvPropFloat(RECVINFO(m_angEyeAngles[1])),
+#endif
 END_RECV_TABLE()
 
 BEGIN_PREDICTION_DATA( C_BaseHLPlayer )
@@ -53,20 +64,310 @@ void CC_DropPrimary( void )
 
 static ConCommand dropprimary("dropprimary", CC_DropPrimary, "dropprimary: Drops the primary weapon of the player.");
 
+// link to the correct class.
+#if !defined ( HL2MP ) && !defined ( PORTAL )
+LINK_ENTITY_TO_CLASS( player, C_BaseHLPlayer );
+#endif
+
 //-----------------------------------------------------------------------------
 // Constructor
 //-----------------------------------------------------------------------------
 C_BaseHLPlayer::C_BaseHLPlayer()
+#ifdef HL2_PLAYERANIMSTATE
+: m_iv_angEyeAngles("C_BaseHLPlayer::m_iv_angEyeAngles") //2051 animstate implementation
+#endif
 {
 	AddVar( &m_Local.m_viewPunchAngle, &m_Local.m_iv_viewPunchAngle, LATCH_SIMULATION_VAR );
 	AddVar( &m_Local.m_aimPunchAngleVel, &m_Local.m_iv_aimPunchAngleVel, LATCH_SIMULATION_VAR );
-
+#ifdef HL2_PLAYERANIMSTATE
+	m_PlayerAnimState = CreateHL2PlayerAnimState(this);
+	m_hRagdoll.Set(NULL);
+	m_angEyeAngles.Init();
+	AddVar(&m_angEyeAngles, &m_iv_angEyeAngles, LATCH_SIMULATION_VAR);
+	m_EntClientFlags |= ENTCLIENTFLAG_DONTUSEIK;
+#endif
 	m_flZoomStart		= 0.0f;
 	m_flZoomEnd			= 0.0f;
 	m_flZoomRate		= 0.0f;
 	m_flZoomStartTime	= 0.0f;
 	m_flSpeedMod		= cl_forwardspeed.GetFloat();
 }
+
+#ifdef HL2_PLAYERANIMSTATE
+//-----------------------------------------------------------------------------
+// DEstructor
+//-----------------------------------------------------------------------------
+C_BaseHLPlayer::~C_BaseHLPlayer(void)
+{
+	if (m_PlayerAnimState)
+	{
+		m_PlayerAnimState->Release();
+	}
+}
+
+//animstate stuff.
+void C_BaseHLPlayer::Initialize(void)
+{
+	m_headYawPoseParam = LookupPoseParameter("head_yaw");
+	GetPoseParameterRange(m_headYawPoseParam, m_headYawMin, m_headYawMax);
+
+	m_headPitchPoseParam = LookupPoseParameter("head_pitch");
+	GetPoseParameterRange(m_headPitchPoseParam, m_headPitchMin, m_headPitchMax);
+
+	CStudioHdr *hdr = GetModelPtr();
+	for (int i = 0; i < hdr->GetNumPoseParameters(); i++)
+	{
+		SetPoseParameter(hdr, i, 0.0);
+	}
+}
+
+
+
+CStudioHdr *C_BaseHLPlayer::OnNewModel(void)
+{
+	CStudioHdr *hdr = BaseClass::OnNewModel();
+
+	Initialize();
+
+	return hdr;
+}
+
+const QAngle& C_BaseHLPlayer::GetRenderAngles()
+{
+	if (IsRagdoll())
+	{
+		return vec3_angle;
+	}
+	else
+	{
+		return m_PlayerAnimState->GetRenderAngles();
+	}
+}
+
+const QAngle& C_BaseHLPlayer::EyeAngles()
+{
+	if (IsLocalPlayer() && g_nKillCamMode == OBS_MODE_NONE)
+	{
+		return BaseClass::EyeAngles();
+	}
+	else
+	{
+		//C_BaseEntity *pEntity1 = g_eKillTarget1.Get();
+		//C_BaseEntity *pEntity2 = g_eKillTarget2.Get();
+
+		//Vector vLook = Vector( 0.0f, 0.0f, 0.0f );
+
+		//if ( pEntity2 )
+		//{
+		//	vLook = pEntity1->GetAbsOrigin() - pEntity2->GetAbsOrigin();
+		//	VectorNormalize( vLook );
+		//}
+		//else if ( pEntity1 )
+		//{
+		//	return BaseClass::EyeAngles();
+		//	//vLook =  - pEntity1->GetAbsOrigin();
+		//}
+
+		//if ( vLook != Vector( 0.0f, 0.0f, 0.0f ) )
+		//{
+		//	VectorAngles( vLook, m_angEyeAngles );
+		//}
+
+		return m_angEyeAngles;
+	}
+}
+
+void C_BaseHLPlayer::PreThink(void)
+{
+	QAngle vTempAngles = GetLocalAngles();
+
+	if (IsLocalPlayer())
+	{
+		vTempAngles[PITCH] = EyeAngles()[PITCH];
+	}
+	else
+	{
+		vTempAngles[PITCH] = m_angEyeAngles[PITCH];
+	}
+
+	if (vTempAngles[YAW] < 0.0f)
+	{
+		vTempAngles[YAW] += 360.0f;
+	}
+
+	SetLocalAngles(vTempAngles);
+
+	BaseClass::PreThink();
+}
+
+void C_BaseHLPlayer::OnPreDataChanged(DataUpdateType_t type)
+{
+	PreDataChanged_Backup.m_qEyeAngles = m_iv_angEyeAngles.GetCurrent();
+
+	BaseClass::OnPreDataChanged(type);
+}
+// TODO: leftover portal animstate code. remove???
+void C_BaseHLPlayer::ClientThink(void)
+{
+	//PortalEyeInterpolation.m_bNeedToUpdateEyePosition = true;
+	Vector vForward;
+	AngleVectors(GetLocalAngles(), &vForward);
+}
+void C_BaseHLPlayer::PostDataUpdate(DataUpdateType_t updateType)
+{
+	// C_BaseEntity assumes we're networking the entity's angles, so pretend that it
+	// networked the same value we already have.
+	SetNetworkAngles(GetLocalAngles());
+
+	BaseClass::PostDataUpdate(updateType);
+}
+
+void C_BaseHLPlayer::UpdateClientSideAnimation(void)
+{
+	UpdateLookAt();
+
+	// Update the animation data. It does the local check here so this works when using
+	// a third-person camera (and we don't have valid player angles).
+	if (this == C_BaseHLPlayer::GetLocalPlayer())
+		m_PlayerAnimState->Update(EyeAngles()[YAW], m_angEyeAngles[PITCH]);
+	else
+		m_PlayerAnimState->Update(m_angEyeAngles[YAW], m_angEyeAngles[PITCH]);
+
+	BaseClass::UpdateClientSideAnimation();
+}
+
+void C_BaseHLPlayer::DoAnimationEvent(PlayerAnimEvent_t event, int nData)
+{
+	m_PlayerAnimState->DoAnimationEvent(event, nData);
+}
+
+void C_BaseHLPlayer::SetLocalViewAngles(const QAngle &viewAngles)
+{
+	// Nothing
+	if (engine->IsPlayingDemo())
+		return;
+	BaseClass::SetLocalViewAngles(viewAngles);
+}
+
+void C_BaseHLPlayer::SetViewAngles(const QAngle& ang)
+{
+	BaseClass::SetViewAngles(ang);
+
+	if (engine->IsPlayingDemo())
+	{
+		pl.v_angle = ang;
+	}
+}
+
+void C_BaseHLPlayer::Spawn(void)
+{
+	BaseClass::Spawn();
+
+	QAngle vTempAngles = GetLocalAngles();
+	vTempAngles[PITCH] = m_angEyeAngles[PITCH];
+
+	SetLocalAngles(vTempAngles);
+
+	// Zero out model pitch, blending takes care of all of it.
+	SetLocalAnglesDim(X_INDEX, 0);
+
+	if (this != GetLocalPlayer())
+	{
+		if (IsEffectActive(EF_DIMLIGHT))
+		{
+			int iAttachment = LookupAttachment("anim_attachment_RH");
+
+			if (iAttachment < 0)
+				return;
+
+			Vector vecOrigin;
+			QAngle eyeAngles = m_angEyeAngles;
+
+			GetAttachment(iAttachment, vecOrigin, eyeAngles);
+
+			Vector vForward;
+			AngleVectors(eyeAngles, &vForward);
+
+			trace_t tr;
+			UTIL_TraceLine(vecOrigin, vecOrigin + (vForward * 200), MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+/**
+* Orient head and eyes towards m_lookAt.
+*/
+void C_BaseHLPlayer::UpdateLookAt(void)
+{
+	// head yaw
+	if (m_headYawPoseParam < 0 || m_headPitchPoseParam < 0)
+		return;
+
+	// This is buggy with dt 0, just skip since there is no work to do.
+	if (gpGlobals->frametime <= 0.0f)
+		return;
+
+	// defaults if no portals are around
+	Vector vPlayerForward;
+	GetVectors(&vPlayerForward, NULL, NULL);
+	Vector vCurLookTarget = EyePosition();
+
+	if (!IsAlive())
+	{
+		m_viewtarget = EyePosition() + vPlayerForward*10.0f;
+		return;
+	}
+
+	bool bNewTarget = false;
+
+
+	// No other look targets, look straight ahead
+	vCurLookTarget += vPlayerForward*10.0f;
+
+
+	// Figure out where we want to look in world space.
+	QAngle desiredAngles;
+	Vector to = vCurLookTarget - EyePosition();
+	VectorAngles(to, desiredAngles);
+	QAngle aheadAngles;
+	VectorAngles(vCurLookTarget, aheadAngles);
+
+	// Figure out where our body is facing in world space.
+	QAngle bodyAngles(0, 0, 0);
+	bodyAngles[YAW] = GetLocalAngles()[YAW];
+
+	m_flLastBodyYaw = bodyAngles[YAW];
+
+	// Set the head's yaw.
+	float desiredYaw = AngleNormalize(desiredAngles[YAW] - bodyAngles[YAW]);
+	desiredYaw = clamp(desiredYaw, m_headYawMin, m_headYawMax);
+
+	float desiredPitch = AngleNormalize(desiredAngles[PITCH]);
+	desiredPitch = clamp(desiredPitch, m_headPitchMin, m_headPitchMax);
+
+	if (bNewTarget)
+	{
+		m_flStartLookTime = gpGlobals->curtime;
+	}
+
+	float dt = (gpGlobals->frametime);
+	float flSpeed = 1.0f - ExponentialDecay(0.7f, 0.033f, dt);
+
+	m_flCurrentHeadYaw = m_flCurrentHeadYaw + flSpeed * (desiredYaw - m_flCurrentHeadYaw);
+	m_flCurrentHeadYaw = AngleNormalize(m_flCurrentHeadYaw);
+	SetPoseParameter(m_headYawPoseParam, m_flCurrentHeadYaw);
+
+	m_flCurrentHeadPitch = m_flCurrentHeadPitch + flSpeed * (desiredPitch - m_flCurrentHeadPitch);
+	m_flCurrentHeadPitch = AngleNormalize(m_flCurrentHeadPitch);
+	SetPoseParameter(m_headPitchPoseParam, m_flCurrentHeadPitch);
+
+	// This orients the eyes
+	m_viewtarget = vCurLookTarget;
+}
+
+
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -218,7 +519,7 @@ bool C_BaseHLPlayer::TestMove( const Vector &pos, float fVertDist, float radius,
 			{
 				// check if the endpos intersects with the direction the object is travelling.  if it doesn't, this is a good direction to move.
 				if ( objDir.IsZero() ||
-					( IntersectInfiniteRayWithSphere( objPos, objDir, trOver.endpos, radius, &flHit1, &flHit2 ) && ( ( flHit1 >= 0.0f ) || ( flHit2 >= 0.0f ) ) ) )
+					IntersectInfiniteRayWithSphere( objPos, objDir, trOver.endpos, radius, &flHit1, &flHit2 ) && ( ( flHit1 >= 0.0f ) || ( flHit2 >= 0.0f ) ) )
 				{
 					return false;
 				}
@@ -636,14 +937,3 @@ bool C_BaseHLPlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd )
 
 	return bResult;
 }
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Input handling
-//-----------------------------------------------------------------------------
-void C_BaseHLPlayer::BuildTransformations( CStudioHdr *hdr, Vector *pos, Quaternion q[], const matrix3x4_t& cameraTransform, int boneMask, CBoneBitList &boneComputed )
-{
-	BaseClass::BuildTransformations( hdr, pos, q, cameraTransform, boneMask, boneComputed );
-	// BuildFirstPersonMeathookTransformations( hdr, pos, q, cameraTransform, boneMask, boneComputed, "ValveBiped.Bip01_Head1" );
-}
-

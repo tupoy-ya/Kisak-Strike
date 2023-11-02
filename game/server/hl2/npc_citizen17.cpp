@@ -1507,6 +1507,7 @@ int CNPC_Citizen::TranslateSchedule( int scheduleType )
 				}
 			}
 		}
+		return SCHED_RANGE_ATTACK1;
 		break;
 	}
 
@@ -1868,7 +1869,7 @@ void CNPC_Citizen::HandleAnimEvent( animevent_t *pEvent )
 			// If I have a name, make my weapon match it with "_weapon" appended
 			if ( GetEntityName() != NULL_STRING )
 			{
-				pWeapon->SetName( AllocPooledString(UTIL_VarArgs("%s_weapon", STRING(GetEntityName()) )) );
+				pWeapon->SetName( AllocPooledString(UTIL_VarArgs("%s_weapon", GetEntityName())) );
 			}
 			Weapon_Equip( pWeapon );
 		}
@@ -2184,7 +2185,7 @@ bool CNPC_Citizen::ShouldLookForBetterWeapon()
 			return false;
 		}
 
-#ifdef DBGFLAG_ASSERT
+#ifdef DEBUG
 		// Cached off to make sure you change this if you ask the code to defer.
 		float flOldWeaponSearchTime = m_flNextWeaponSearchTime;
 #endif
@@ -2902,7 +2903,7 @@ void CNPC_Citizen::UpdatePlayerSquad()
 				if ( bShouldAdd )
 				{
 					// @TODO (toml 05-25-04): probably everyone in a squad should be a candidate if one of them sees the player
-					AI_Waypoint_t *pPathToPlayer = pCitizen->GetPathfinder()->BuildRoute( pCitizen->GetAbsOrigin(), vPlayerPos, pPlayer, 5*12, NAV_NONE, true );
+					AI_Waypoint_t *pPathToPlayer = pCitizen->GetPathfinder()->BuildRoute( pCitizen->GetAbsOrigin(), vPlayerPos, pPlayer, 5*12, NAV_NONE, bits_BUILD_GET_CLOSE );
 					GetPathfinder()->UnlockRouteNodes( pPathToPlayer );
 
 					if ( !pPathToPlayer )
@@ -3489,7 +3490,7 @@ bool CNPC_Citizen::ShouldHealTarget( CBaseEntity *pTarget, bool bActiveUse )
 			else
 			{
 				// Does the player need the ammo we can give him?
-				int iMax = GetAmmoDef()->MaxCarry(iAmmoType, NULL);
+				int iMax = GetAmmoDef()->MaxCarry(iAmmoType, ((CBaseCombatCharacter*)pTarget));
 				int iCount = ((CBasePlayer*)pTarget)->GetAmmoCount(iAmmoType);
 				if ( !iCount || ((iMax - iCount) >= m_iAmmoAmount) )
 				{
@@ -3621,7 +3622,7 @@ void CNPC_Citizen::Heal()
 		{
 			if ( pTarget->IsPlayer() && npc_citizen_medic_emit_sound.GetBool() )
 			{
-				CPASAttenuationFilter filter( pTarget, "HealthKit.Touch" );
+				CPASAttenuationFilter filter( pTarget, "HealthKit.Touch" ); //gcc hated this being inline in the function.
 				EmitSound( filter, pTarget->entindex(), "HealthKit.Touch" );
 			}
 

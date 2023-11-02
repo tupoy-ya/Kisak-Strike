@@ -18,7 +18,7 @@ public:
 
 						C_Corpse( void );
 
-	virtual int			DrawModel( int flags, const RenderableInstance_t &instance );
+	virtual int			DrawModel( int flags );
 
 public:
 	// The player whom we are copying our data from

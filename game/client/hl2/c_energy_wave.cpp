@@ -15,6 +15,7 @@
 #include "materialsystem/imesh.h"
 #include "energy_wave_effect.h"
 #include "mathlib/vmatrix.h"
+#include "precache_register.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -67,7 +68,7 @@ END_RECV_TABLE()
 
 C_EnergyWave::C_EnergyWave() : m_EWaveEffect(NULL, NULL)
 {
-	m_pWireframe = materials->FindMaterial("shadertest/wireframevertexcolor", TEXTURE_GROUP_OTHER);
+	m_pWireframe = materials->FindMaterial("debug/debugwireframevertexcolor", TEXTURE_GROUP_OTHER);
 	m_pEWaveMat  = materials->FindMaterial("effects/energywave/energywave", TEXTURE_GROUP_CLIENT_EFFECTS);
 	m_EWaveEffect.Spawn();
 }

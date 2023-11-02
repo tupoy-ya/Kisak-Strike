@@ -10,9 +10,9 @@
 #include "AI_Navigator.h"
 #include "npc_Assassin.h"
 #include "game.h"
-#include "npcevent.h"
+#include "NPCEvent.h"
 #include "engine/IEngineSound.h"
-#include "ai_squad.h"
+#include "AI_Squad.h"
 #include "AI_SquadSlot.h"
 #include "ai_moveprobe.h"
 
@@ -334,19 +334,19 @@ void CNPC_Assassin::FirePistol( int hand )
 void CNPC_Assassin::HandleAnimEvent( animevent_t *pEvent )
 {
 	
-	if ( pEvent->Event() == AE_ASSASIN_FIRE_PISTOL_RIGHT )
+	if ( pEvent->event == AE_ASSASIN_FIRE_PISTOL_RIGHT )
 	{
 		FirePistol( 0 );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ASSASIN_FIRE_PISTOL_LEFT )
+	if ( pEvent->event == AE_ASSASIN_FIRE_PISTOL_LEFT )
 	{
 		FirePistol( 1 );
 		return;
 	}
 	
-	if ( pEvent->Event() == AE_ASSASIN_KICK_HIT )
+	if ( pEvent->event == AE_ASSASIN_KICK_HIT )
 	{
 		Vector	attackDir = BodyDirection2D();
 		Vector	attackPos = WorldSpaceCenter() + ( attackDir * 64.0f );

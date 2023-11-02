@@ -378,7 +378,7 @@ void CNPC_Combine::PostNPCInit()
 		// an AR2. 
 		if( !GetActiveWeapon() || !FClassnameIs( GetActiveWeapon(), "weapon_ar2" ) )
 		{
-			// DevWarning("**Combine Elite Soldier MUST be equipped with AR2\n");
+			DevWarning("**Combine Elite Soldier MUST be equipped with AR2\n");
 		}
 	}
 
@@ -2320,18 +2320,7 @@ void CNPC_Combine::HandleAnimEvent( animevent_t *pEvent )
 	{
 		if ( pEvent->Event() == COMBINE_AE_BEGIN_ALTFIRE )
 		{
-			if( FClassnameIs( GetActiveWeapon(), "weapon_ar2" ) )
-			{
-				EmitSound( "Weapon_CombineGuard.Special1" );
-			}
-			else if( FClassnameIs( GetActiveWeapon(), "weapon_smg1" ) )
-			{
-				EmitSound( "Weapon_SMG1.Double" );
-			}
-			else
-			{
-				EmitSound( "Weapon_CombineGuard.Special1" );
-			}
+			EmitSound( "Weapon_CombineGuard.Special1" );
 			handledEvent = true;
 		}
 		else if ( pEvent->Event() == COMBINE_AE_ALTFIRE )
@@ -2341,7 +2330,7 @@ void CNPC_Combine::HandleAnimEvent( animevent_t *pEvent )
 				animevent_t fakeEvent;
 
 				fakeEvent.pSource = this;
-				fakeEvent.Event( EVENT_WEAPON_AR2_ALTFIRE );
+				fakeEvent.Event(EVENT_WEAPON_AR2_ALTFIRE);
 				GetActiveWeapon()->Operator_HandleAnimEvent( &fakeEvent, this );
 
 				// Stop other squad members from combine balling for a while.
@@ -2576,7 +2565,7 @@ void CNPC_Combine::SpeakSentence( int sentenceType )
 //=========================================================
 // PainSound
 //=========================================================
-void CNPC_Combine::PainSound ( const CTakeDamageInfo &damageinfo )
+void CNPC_Combine::PainSound ( void )
 {
 	// NOTE: The response system deals with this at the moment
 	if ( GetFlags() & FL_DISSOLVING )

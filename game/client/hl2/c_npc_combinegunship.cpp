@@ -14,6 +14,7 @@
 #include "iefx.h"
 #include "dlight.h"
 #include "c_sprite.h"
+#include "precache_register.h"
 #include <bitbuf.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -257,7 +258,7 @@ void Gunship_DrawSprite( const Vector &vecOrigin, float size, const color32 &col
 // Purpose: 
 // Input  : int - 
 //-----------------------------------------------------------------------------
-int	C_GunshipFX::DrawModel( int, const RenderableInstance_t& )
+int	C_GunshipFX::DrawModel( int, const RenderableInstance_t &instance )
 {
 	static color32 white = {255,255,255,255};
 	Vector params[GUNSHIPFX_PARAMETERS];
@@ -420,11 +421,21 @@ public:
 		}
 	}
 
+	// Can't participate in fast path because it renders effects in DrawModel()
+	virtual IClientModelRenderable*	GetClientModelRenderable() { return NULL; }
+
 	void OnDataChanged( DataUpdateType_t updateType )
 	{
 		BaseClass::OnDataChanged( updateType );
 
 		m_cannonFX.Update( this, m_vecHitPos );
+	}
+
+	virtual RenderableTranslucencyType_t ComputeTranslucencyType()
+	{
+		if ( hl2_episodic.GetBool() == true )
+			return RENDERABLE_IS_TWO_PASS;
+		return BaseClass::ComputeTranslucencyType();
 	}
 
 private:

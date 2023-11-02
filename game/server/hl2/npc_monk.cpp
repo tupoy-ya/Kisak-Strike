@@ -37,7 +37,7 @@ class CNPC_Monk : public CAI_PlayerAlly
 
 public:
 
-	CNPC_Monk() = default;
+	CNPC_Monk() {}
 	void Spawn();
 	void Precache();
 
@@ -73,7 +73,7 @@ public:
 	bool PassesDamageFilter( const CTakeDamageInfo &info );
 	void OnKilledNPC( CBaseCombatCharacter *pKilled );
 
-	bool IsJumpLegal( const Vector &startPos, const Vector &apex, const Vector &endPos ) const;
+	bool IsJumpLegal( const Vector &startPos, const Vector &apex, const Vector &endPos, float maxUp, float maxDown, float maxDist ) const;
 	int SelectFailSchedule( int failedSchedule, int failedTask, AI_TaskFailureCode_t taskFailCode );
 
 	DECLARE_DATADESC();
@@ -675,11 +675,11 @@ int CNPC_Monk::SelectFailSchedule( int failedSchedule, int failedTask, AI_TaskFa
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-bool CNPC_Monk::IsJumpLegal( const Vector &startPos, const Vector &apex, const Vector &endPos ) const
+bool CNPC_Monk::IsJumpLegal( const Vector &startPos, const Vector &apex, const Vector &endPos, float maxUp, float maxDown, float maxDist ) const
 {
 	if ( startPos.z - endPos.z < 0 )
 		return false;
-	return BaseClass::IsJumpLegal( startPos, apex, endPos, 100.0f, 100.0f, 400.0f );
+	return BaseClass::IsJumpLegal( startPos, apex, endPos, maxUp, maxDown, maxDist );
 }
 
 //-----------------------------------------------------------------------------

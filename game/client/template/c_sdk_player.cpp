@@ -1,4 +1,4 @@
-//=========== Copyright © 2014, rHetorical, All rights reserved. =============
+//=========== Copyright ï¿½ 2014, rHetorical, All rights reserved. =============
 //
 // Purpose: 
 //		
@@ -51,8 +51,8 @@ static ConCommand dev_print_players_health ("dev_print_players_health", CC_Repor
 */
 C_SDKPlayer::C_SDKPlayer()
 {
-	AddVar( &m_Local.m_vecPunchAngle, &m_Local.m_iv_vecPunchAngle, LATCH_SIMULATION_VAR );
-	AddVar( &m_Local.m_vecPunchAngleVel, &m_Local.m_iv_vecPunchAngleVel, LATCH_SIMULATION_VAR );
+	AddVar( &m_Local.m_viewPunchAngle, &m_Local.m_iv_viewPunchAngle, LATCH_SIMULATION_VAR );
+	AddVar( &m_Local.m_aimPunchAngleVel, &m_Local.m_iv_aimPunchAngleVel, LATCH_SIMULATION_VAR );
 
 	m_flSpeedMod		= cl_forwardspeed.GetFloat();
 

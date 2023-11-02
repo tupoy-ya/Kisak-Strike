@@ -15,7 +15,6 @@
 #include "view.h"
 #include "view_scene.h"
 #include "beamdraw.h"
-#include "precache_register.h"
 
 // Precache our effects
 PRECACHE_REGISTER_BEGIN( GLOBAL, PrecacheEffectCombineBall )
@@ -58,6 +57,15 @@ void C_PropCombineBall::OnDataChanged( DataUpdateType_t updateType )
 		m_vecLastOrigin = GetAbsOrigin();
 		InitMaterials();
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Output : RenderGroup_t
+//-----------------------------------------------------------------------------
+RenderGroup_t C_PropCombineBall::GetRenderGroup( void )
+{
+	return RENDER_GROUP_TRANSLUCENT;
 }
 
 //-----------------------------------------------------------------------------

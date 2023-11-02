@@ -12,7 +12,7 @@
 #pragma once
 #endif
 
-#include "ai_basenpc.h"
+#include "AI_BaseNPC.h"
 #include "soundenvelope.h"
 
 class CNPC_Hydra;

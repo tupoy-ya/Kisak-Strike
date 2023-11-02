@@ -24,14 +24,11 @@
 #include "hl2_player.h"
 #include "npc_scanner.h"
 #include "materialsystem/imaterialsystemhardwareconfig.h"
+#include "tier2/tier2.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-//-----------------------------------------------------------------------------
-// Singleton interfaces
-//-----------------------------------------------------------------------------
-extern IMaterialSystemHardwareConfig *g_pMaterialSystemHardwareConfig;
 
 //-----------------------------------------------------------------------------
 // Parameters for how the scanner relates to citizens.
@@ -485,7 +482,7 @@ Activity CNPC_CScanner::NPC_TranslateActivity( Activity eNewActivity )
 //-----------------------------------------------------------------------------
 void CNPC_CScanner::HandleAnimEvent( animevent_t *pEvent )
 {
-	if( pEvent->Event() == AE_SCANNER_CLOSED )
+	if ( pEvent->Event() == AE_SCANNER_CLOSED )
 	{
 		m_bIsOpen = false;
 		SetActivity( ACT_IDLE );
@@ -1298,7 +1295,7 @@ void CNPC_CScanner::PrescheduleThink(void)
 Disposition_t CNPC_CScanner::IRelationType(CBaseEntity *pTarget)
 {
 	// If it's the player and they are a criminal, we hates them
-	if ( pTarget && pTarget->Classify() == CLASS_PLAYER )
+	if ( pTarget->Classify() == CLASS_PLAYER )
 	{
 		if ( GlobalEntity_GetState("gordon_precriminal") == GLOBAL_ON )
 			return D_NU;
@@ -1988,7 +1985,7 @@ void CNPC_CScanner::BlindFlashTarget( CBaseEntity *pTarget )
 
 		if ( tr.startsolid == false && tr.fraction == 1.0)
 		{
-			color32 white = { 255, 255, 255, (uint8)(SCANNER_FLASH_MAX_VALUE * dotPr) };
+			color32 white = { 255, 255, 255, byte(SCANNER_FLASH_MAX_VALUE * dotPr) };
 
 			if ( ( g_pMaterialSystemHardwareConfig != NULL ) && ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE ) )
 			{
@@ -2312,10 +2309,7 @@ bool CNPC_CScanner::OverrideMove( float flInterval )
 		Vector vMoveTargetPos(0,0,0);
 		CBaseEntity *pMoveTarget = NULL;
 		
-		// The original line of code was, due to the accidental use of '|' instead of
-		// '&', always true. Replacing with 'true' to suppress the warning without changing
-		// the (long-standing) behavior.
-		if ( true ) //!GetNavigator()->IsGoalActive() || ( GetNavigator()->GetCurWaypointFlags() | bits_WP_TO_PATHCORNER ) )
+		if ( !GetNavigator()->IsGoalActive() || ( GetNavigator()->GetCurWaypointFlags() | bits_WP_TO_PATHCORNER ) )
 		{
 			// Select move target 
 			if ( GetTarget() != NULL )
@@ -2349,7 +2343,7 @@ bool CNPC_CScanner::OverrideMove( float flInterval )
 		if ( pMoveTarget || HaveInspectTarget() )
 		{
 			trace_t tr;
-			AI_TraceHull( GetAbsOrigin(), vMoveTargetPos, GetHullMins(), GetHullMaxs(), MASK_NPCSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr );
+			AI_TraceHull( GetAbsOrigin(), vMoveTargetPos, GetHullMins(), GetHullMaxs(), GetAITraceMask_BrushOnly(), this, COLLISION_GROUP_NONE, &tr );
 
 			float fTargetDist = (1.0f-tr.fraction)*(GetAbsOrigin() - vMoveTargetPos).Length();
 			

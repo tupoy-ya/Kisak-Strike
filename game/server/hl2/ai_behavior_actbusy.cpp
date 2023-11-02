@@ -69,6 +69,8 @@ BEGIN_DATADESC( CAI_ActBusyBehavior )
 	DEFINE_FIELD( m_iNumEnemiesInSafeZone, FIELD_INTEGER ),
 END_DATADESC();
 
+LINK_BEHAVIOR_TO_CLASSNAME( CAI_ActBusyBehavior );
+
 enum
 {
 	ACTBUSY_SIGHT_METHOD_FULL	= 0,	// LOS and Viewcone
@@ -677,7 +679,7 @@ bool CAI_ActBusyBehavior::ShouldIgnoreSound( CSound *pSound )
 			return true;
 		}
 
-		if ( pBusyAnim && ( ( pBusyAnim->iBusyInterruptType == BA_INT_AMBUSH ) || ( pBusyAnim->iBusyInterruptType == BA_INT_COMBAT ) ) )
+		if ( pBusyAnim && ( pBusyAnim->iBusyInterruptType == BA_INT_AMBUSH ) || ( pBusyAnim->iBusyInterruptType == BA_INT_COMBAT ) )
 		{
 			/*
 			// Robin: First version ignored sounds in front of the NPC.
@@ -952,12 +954,14 @@ Activity CAI_ActBusyBehavior::NPC_TranslateActivity( Activity nActivity )
 //-----------------------------------------------------------------------------
 void CAI_ActBusyBehavior::HandleAnimEvent( animevent_t *pEvent )
 {
-	if( pEvent->Event() == AE_ACTBUSY_WEAPON_FIRE_ON )
+	int nEvent = pEvent->Event();
+
+	if( nEvent == AE_ACTBUSY_WEAPON_FIRE_ON )
 	{
 		m_bAutoFireWeapon = true;
 		return;
 	}
-	else if( pEvent->Event() == AE_ACTBUSY_WEAPON_FIRE_OFF )
+	else if( nEvent == AE_ACTBUSY_WEAPON_FIRE_OFF )
 	{
 		m_bAutoFireWeapon = false;
 		return;
@@ -1168,7 +1172,7 @@ int CAI_ActBusyBehavior::SelectScheduleWhileNotBusy( int iBase )
 		{
 			if( IsCombatActBusy() )
 			{
-				if ( m_hActBusyGoal->IsCombatActBusyTeleportAllowed() && m_iNumConsecutivePathFailures >= 2 && !AI_GetSinglePlayer()->FInViewCone(GetOuter()) ) 
+				if ( m_hActBusyGoal->IsCombatActBusyTeleportAllowed() && m_iNumConsecutivePathFailures >= 2 && (AI_IsSinglePlayer() && !AI_GetSinglePlayer()->FInViewCone(GetOuter())) )
 				{
 					// Looks like I've tried several times to find a path to a valid hint node and
 					// haven't been able to. This means I'm on a patch of node graph that simply
@@ -1500,7 +1504,7 @@ bool CAI_ActBusyBehavior::ShouldPlayerAvoid( void )
 	{
 		if ( IsCurSchedule ( SCHED_ACTBUSY_START_BUSYING ) )
 		{
-			if ( ( GetCurTask() && GetCurTask()->iTask == TASK_WAIT_FOR_MOVEMENT ) || GetOuter()->GetTask()->iTask == TASK_ACTBUSY_PLAY_ENTRY )
+			if ( GetCurTask() && GetCurTask()->iTask == TASK_WAIT_FOR_MOVEMENT || GetOuter()->GetTask()->iTask == TASK_ACTBUSY_PLAY_ENTRY )
 				return true;
 		}
 		else if ( IsCurSchedule(SCHED_ACTBUSY_STOP_BUSYING) )
@@ -1645,7 +1649,7 @@ void CAI_ActBusyBehavior::PlaySoundForActBusy( busyanimparts_t AnimPart )
 			CAI_Expresser *pExpresser = GetOuter()->GetExpresser();
 			if ( pExpresser )
 			{
-				AIConcept_t concept(pBusyAnim->iszSounds[AnimPart].ToCStr());
+				AIConcept_t concept(STRING(pBusyAnim->iszSounds[AnimPart]));
 
 				// Must be able to speak the concept
 				if ( !pExpresser->IsSpeaking() && pExpresser->CanSpeakConcept( concept ) )
@@ -2094,7 +2098,7 @@ void CAI_ActBusyBehavior::RunTask( const Task_t *pTask )
 				// Trace my normal hull over this spot to see if I'm able to stand up right now.
 				trace_t tr;
 				CTraceFilterOnlyNPCsAndPlayer filter( GetOuter(), COLLISION_GROUP_NONE );
-				UTIL_TraceHull( GetOuter()->GetAbsOrigin(), GetOuter()->GetAbsOrigin(), NAI_Hull::Mins( HULL_HUMAN ), NAI_Hull::Maxs( HULL_HUMAN ), MASK_NPCSOLID, &filter, &tr );
+				UTIL_TraceHull( GetOuter()->GetAbsOrigin(), GetOuter()->GetAbsOrigin(), NAI_Hull::Mins( HULL_HUMAN ), NAI_Hull::Maxs( HULL_HUMAN ), GetOuter()->GetAITraceMask(), &filter, &tr );
 
 				if( tr.startsolid )
 				{

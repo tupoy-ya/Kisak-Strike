@@ -240,7 +240,7 @@ END_SEND_TABLE()
 //-----------------------------------------------------------------------------
 // Gets at the spawner
 //-----------------------------------------------------------------------------
-CFuncCombineBallSpawner *CPropCombineBall::GetSpawner()
+inline CFuncCombineBallSpawner *CPropCombineBall::GetSpawner()
 {
 	return m_hSpawner;
 }
@@ -275,6 +275,8 @@ void CPropCombineBall::Precache( void )
 	}
 
 	PrecacheScriptSound( "NPC_CombineBall.HoldingInPhysCannon" );
+	PrecacheEffect( "cball_bounce" );
+	PrecacheEffect( "cball_explode" );
 }
 
 
@@ -706,9 +708,63 @@ void CPropCombineBall::WhizSoundThink()
 	pPhysicsObject->GetPosition( &vecPosition, NULL );
 	pPhysicsObject->GetVelocity( &vecVelocity, NULL );
 	
-	if ( gpGlobals->maxClients == 1 )
+	// Multiplayer equivelent, loops through players and decides if it should go or not, like SP.
+	if ( gpGlobals->maxClients > 1 )
+	{
+		CBasePlayer *pPlayer = NULL;
+
+		for (int i = 1;i <= gpGlobals->maxClients; i++)
+		{
+			pPlayer = UTIL_PlayerByIndex( i );
+			if ( pPlayer )
+			{
+				Vector vecDelta;
+				VectorSubtract( pPlayer->GetAbsOrigin(), vecPosition, vecDelta );
+				VectorNormalize( vecDelta );
+				if ( DotProduct( vecDelta, vecVelocity ) > 0.5f )
+				{
+					Vector vecEndPoint;
+					VectorMA( vecPosition, 2.0f * TICK_INTERVAL, vecVelocity, vecEndPoint );
+					float flDist = CalcDistanceToLineSegment( pPlayer->GetAbsOrigin(), vecPosition, vecEndPoint );
+					if ( flDist < 200.0f )
+					{
+						// We're basically doing what CPASAttenuationFilter does, on a per-user basis, if it passes we create the filter and send off the sound
+						// if it doesn't, we skip the player.
+						float distance, maxAudible;
+						Vector vecRelative;
+
+						VectorSubtract( pPlayer->EarPosition(), vecPosition, vecRelative );
+						distance = VectorLength( vecRelative );
+						maxAudible = ( 2 * SOUND_NORMAL_CLIP_DIST ) / ATTN_NORM;
+						if ( distance <= maxAudible )
+							continue;
+
+						// Set the recipient to the player it checked against so multiple sounds don't play.
+						CSingleUserRecipientFilter filter( pPlayer );
+
+						EmitSound_t ep;
+						ep.m_nChannel = CHAN_STATIC;
+						if ( hl2_episodic.GetBool() )
+						{
+							ep.m_pSoundName = "NPC_CombineBall_Episodic.WhizFlyby";
+						}
+						else
+						{
+							ep.m_pSoundName = "NPC_CombineBall.WhizFlyby";
+						}
+						ep.m_flVolume = 1.0f;
+						ep.m_SoundLevel = SNDLVL_NORM;
+
+						EmitSound( filter, entindex(), ep );
+					}
+				}
+			}
+		}
+	}
+	else
 	{
 		CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+
 		if ( pPlayer )
 		{
 			Vector vecDelta;
@@ -743,6 +799,7 @@ void CPropCombineBall::WhizSoundThink()
 				}
 			}
 		}
+
 	}
 
 	SetContextThink( &CPropCombineBall::WhizSoundThink, gpGlobals->curtime + 2.0f * TICK_INTERVAL, s_pWhizThinkContext );
@@ -795,7 +852,7 @@ void CPropCombineBall::OnPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup
 	{
 		m_pGlowTrail->TurnOff();
 		m_pGlowTrail->SetRenderColor( 0, 0, 0 );
-		m_pGlowTrail->SetRenderAlpha( 0 );
+		m_pGlowTrail->SetRenderAlpha(0);
 	}
 
 	if ( reason != PUNTED_BY_CANNON )
@@ -902,7 +959,7 @@ void CPropCombineBall::OnPhysGunDrop( CBasePlayer *pPhysGunUser, PhysGunDrop_t R
 	{
 		m_pGlowTrail->TurnOn();
 		m_pGlowTrail->SetRenderColor( 255, 255, 255 );
-		m_pGlowTrail->SetRenderAlpha( 255 );
+		m_pGlowTrail->SetRenderAlpha( 255);
 	}
 
 	// Set our desired speed to be launched at
@@ -1235,7 +1292,7 @@ void CPropCombineBall::OnHitEntity( CBaseEntity *pHitEntity, float flSpeed, int 
 
 					if ( pHitEntity->IsNPC() && pHitEntity->Classify() != CLASS_PLAYER_ALLY_VITAL && hl2_episodic.GetBool() == true )
 					{
-						if ( pHitEntity->Classify() != CLASS_PLAYER_ALLY || ( pHitEntity->Classify() == CLASS_PLAYER_ALLY && m_bStruckEntity == false ) )
+						if ( pHitEntity->Classify() != CLASS_PLAYER_ALLY || pHitEntity->Classify() == CLASS_PLAYER_ALLY && m_bStruckEntity == false )
 						{
 							info.SetDamage( pHitEntity->GetMaxHealth() );
 							m_bStruckEntity = true;

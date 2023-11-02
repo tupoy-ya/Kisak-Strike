@@ -217,7 +217,7 @@ public:
 	//---------------------------------
 	// Damage handling
 	//---------------------------------
-	void			TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator );
+	void			TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr );
 	int				OnTakeDamage_Alive( const CTakeDamageInfo &info );
 	int				TakeDamageFromCombineBall( const CTakeDamageInfo &info );
 	void			Event_Killed( const CTakeDamageInfo &info );

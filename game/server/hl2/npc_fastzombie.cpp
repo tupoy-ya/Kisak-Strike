@@ -26,9 +26,10 @@
 #include "props.h"
 #include "physics_npc_solver.h"
 #include "physics_prop_ragdoll.h"
+#include "gib.h"
 
 #ifdef HL2_EPISODIC
-#include "episodic/ai_behavior_passenger_zombie.h"
+//#include "episodic/ai_behavior_passenger_zombie.h"
 #endif	// HL2_EPISODIC
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -210,6 +211,7 @@ public:
 	void Spawn( void );
 	void Precache( void );
 
+	void SetHeadlessModel( void );
 	void SetZombieModel( void );
 	bool CanSwatPhysicsObjects( void ) { return false; }
 
@@ -294,7 +296,7 @@ public:
 
 //=============================================================================
 #ifdef HL2_EPISODIC
-
+/*
 public:
 	virtual bool	CreateBehaviors( void );
 	virtual void	VPhysicsCollision( int index, gamevcollisionevent_t *pEvent );
@@ -307,8 +309,8 @@ private:
 	void			VehicleLeapAttack( void );
 	bool			CanEnterVehicle( CPropJeepEpisodic *pVehicle );
 
-	CAI_PassengerBehaviorZombie		m_PassengerBehavior;
-
+	//CAI_PassengerBehaviorZombie		m_PassengerBehavior;
+*/
 #endif	// HL2_EPISODIC
 //=============================================================================
 
@@ -363,8 +365,8 @@ BEGIN_DATADESC( CFastZombie )
 	DEFINE_SOUNDPATCH( m_pLayer2 ),
 
 #ifdef HL2_EPISODIC
-	DEFINE_ENTITYFUNC( VehicleLeapAttackTouch ),
-	DEFINE_INPUTFUNC( FIELD_STRING, "AttachToVehicle", InputAttachToVehicle ),
+/*	DEFINE_ENTITYFUNC( VehicleLeapAttackTouch ),
+	DEFINE_INPUTFUNC( FIELD_STRING, "AttachToVehicle", InputAttachToVehicle ),*/
 #endif	// HL2_EPISODIC
 
 END_DATADESC()
@@ -446,12 +448,12 @@ int CFastZombie::SelectSchedule ( void )
 // ========================================================
 #ifdef HL2_EPISODIC
 
-	// Defer all decisions to the behavior if it's running
+	/*// Defer all decisions to the behavior if it's running
 	if ( m_PassengerBehavior.CanSelectSchedule() )
 	{
 		DeferSchedulingToBehavior( &m_PassengerBehavior );
 		return BaseClass::SelectSchedule();
-	}
+	}*/
 
 #endif //HL2_EPISODIC
 // ========================================================
@@ -742,6 +744,16 @@ float CFastZombie::MaxYawSpeed( void )
 	}
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Little hack to avoid game crash when changing bodygroup (DmitRex)
+//
+//
+//-----------------------------------------------------------------------------
+void CFastZombie::SetHeadlessModel( void )
+{
+	SetModel("");
+	CreateRagGib( "models/zombie/fast.mdl", GetLocalOrigin(), GetLocalAngles(), GetLocalVelocity(), 0, ShouldIgniteZombieGib() );
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -1100,7 +1112,7 @@ void CFastZombie::HandleAnimEvent( animevent_t *pEvent )
 
 //=============================================================================
 #ifdef HL2_EPISODIC
-
+/*
 	// Do the leap attack
 	if ( pEvent->Event() == AE_FASTZOMBIE_VEHICLE_LEAP )
 	{
@@ -1136,7 +1148,7 @@ void CFastZombie::HandleAnimEvent( animevent_t *pEvent )
 		}
 		return;
 	}
-
+*/
 #endif // HL2_EPISODIC
 //=============================================================================
 
@@ -1765,9 +1777,8 @@ void CFastZombie::BuildScheduleTestBits( void )
 	// BaseClass::BuildScheduleTestBits();
 	//
 	// For now, make sure our active behavior gets a chance to add its own bits
-
-	if ( GetPrimaryBehavior() )
-		GetPrimaryBehavior()->BuildScheduleTestBits(); 
+//	if ( GetRunningBehavior() )
+//		GetRunningBehavior()->BridgeBuildScheduleTestBits(); 
 
 #ifdef HL2_EPISODIC
 	SetCustomInterruptCondition( COND_PROVOKED );
@@ -1876,7 +1887,7 @@ bool CFastZombie::ShouldBecomeTorso( const CTakeDamageInfo &info, float flDamage
 
 //=============================================================================
 #ifdef HL2_EPISODIC
-
+/*
 //-----------------------------------------------------------------------------
 // Purpose: Add the passenger behavior to our repertoire
 //-----------------------------------------------------------------------------
@@ -2028,7 +2039,7 @@ void CFastZombie::UpdateEfficiency( bool bInPVS )
 	// Do the default behavior
 	BaseClass::UpdateEfficiency( bInPVS );
 }
-
+*/
 #endif	// HL2_EPISODIC
 //=============================================================================
 

@@ -16,6 +16,7 @@ class C_AlyxEmpEffect : public C_BaseEntity
 
 public:
 	void			OnDataChanged( DataUpdateType_t updateType );
+	RenderGroup_t	GetRenderGroup( void );
 
 	void			ClientThink( void );
 	void			NotifyShouldTransmit( ShouldTransmitState_t state );
@@ -43,6 +44,15 @@ IMPLEMENT_CLIENTCLASS_DT( C_AlyxEmpEffect, DT_AlyxEmpEffect, CAlyxEmpEffect )
 	RecvPropFloat( RECVINFO(m_flDuration) ),
 	RecvPropFloat( RECVINFO(m_flStartTime) ),
 END_RECV_TABLE()
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Output : RenderGroup_t
+//-----------------------------------------------------------------------------
+RenderGroup_t C_AlyxEmpEffect::GetRenderGroup( void )
+{
+	return RENDER_GROUP_TRANSLUCENT;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 

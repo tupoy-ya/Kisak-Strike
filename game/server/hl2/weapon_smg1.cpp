@@ -135,17 +135,6 @@ acttable_t	CWeaponSMG1::m_acttable[] =
 
 IMPLEMENT_ACTTABLE(CWeaponSMG1);
 
-// Allows Weapon_BackupActivity() to access the SMG1's activity table.
-acttable_t *GetSMG1Acttable()
-{
-	return CWeaponSMG1::m_acttable;
-}
-
-int GetSMG1ActtableCount()
-{
-	return ARRAYSIZE(CWeaponSMG1::m_acttable);
-}
-
 //=========================================================
 CWeaponSMG1::CWeaponSMG1( )
 {
@@ -301,7 +290,7 @@ Activity CWeaponSMG1::GetPrimaryAttackActivity( void )
 
 	if ( m_nShotsFired < 3 )
 		return ACT_VM_RECOIL1;
-
+	
 	if ( m_nShotsFired < 4 )
 		return ACT_VM_RECOIL2;
 
@@ -427,7 +416,7 @@ int CWeaponSMG1::WeaponRangeAttack2Condition(/* float flDot, float flDist */)
 {
 	CAI_BaseNPC *npcOwner = GetOwner()->MyNPCPointer();
 
-	// return COND_NONE;
+	return COND_NONE;
 
 /*
 	// --------------------------------------------------------

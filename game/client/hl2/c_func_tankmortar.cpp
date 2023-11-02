@@ -16,8 +16,9 @@ public:
 	DECLARE_CLIENTCLASS();
 
 	void OnDataChanged( DataUpdateType_t updateType );
-	int DrawModel( int flags, const RenderableInstance_t &instance );
+	int DrawModel( int flags );
 	
+	RenderGroup_t	GetRenderGroup( void )	{ return RENDER_GROUP_TRANSLUCENT; }
 private:
 
 	void AddRisingParticles( float flPerc );
@@ -52,7 +53,7 @@ void C_MortarShell::OnDataChanged( DataUpdateType_t updateType )
 	if ( updateType == DATA_UPDATE_CREATED )
 	{
 		m_flStarttime = gpGlobals->curtime;
-		AddToLeafSystem( RENDER_GROUP_TRANSLUCENT_IGNOREZ );
+		AddToLeafSystem( RENDER_GROUP_TRANSLUCENT );
 
 		m_pEmitter = CSimpleEmitter::Create( "C_EntityDissolve" );
 		m_pEmitter->SetSortOrigin( GetAbsOrigin() );
@@ -193,7 +194,7 @@ inline float C_MortarShell::GetEndPerc( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-int C_MortarShell::DrawModel( int flags, const RenderableInstance_t &instance )
+int C_MortarShell::DrawModel( int flags )
 {
 	if ( gpGlobals->frametime <= 0.0f )
 		return 0;

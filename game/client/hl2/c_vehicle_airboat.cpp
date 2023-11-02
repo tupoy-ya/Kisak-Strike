@@ -23,9 +23,8 @@
 #include "fx_water.h"
 #include "engine/ivdebugoverlay.h"
 #include "view.h"
+#include "precache_register.h"
 #include "c_basehlplayer.h"
-#include "vgui_controls/Controls.h"
-#include "vgui/ISurface.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -248,13 +247,8 @@ void C_PropAirboat::DrawHudElements( )
 		float x, y;
 		Vector screen;
 
-		int vx, vy, vw, vh;
-		vgui::surface()->GetAbsoluteWindowBounds( vx, vy, vw, vh );
-		float screenWidth = vw;
-		float screenHeight = vh;
-		
-		x = screenWidth/2;
-		y = screenHeight/2;
+		x = ScreenWidth()/2;
+		y = ScreenHeight()/2;
 
 		int eyeAttachmentIndex = LookupAttachment( "vehicle_driver_eyes" );
 		Vector vehicleEyeOrigin;
@@ -269,8 +263,8 @@ void C_PropAirboat::DrawHudElements( )
 		VectorMA( vehicleEyeOrigin, 100.0f, vecForward, vehicleEyeOrigin );
 
 		ScreenTransform( vehicleEyeOrigin, screen );
-		x += 0.5 * screen[0] * screenWidth + 0.5;
-		y -= 0.5 * screen[1] * screenHeight + 0.5;
+		x += 0.5 * screen[0] * ScreenWidth() + 0.5;
+		y -= 0.5 * screen[1] * ScreenHeight() + 0.5;
 
 		x -= pIcon->Width() / 2; 
 		y -= pIcon->Height() / 2; 
@@ -872,12 +866,12 @@ int C_PropAirboat::DrawWake( void )
 		float flLifePerc = RemapValClamped( ( pPoint->m_flDieTime - gpGlobals->curtime ), 0, WAKE_LIFETIME, 0.0f, 1.0f );
 
 		BeamSeg_t curSeg;
-		curSeg.m_color.r = curSeg.m_color.g = curSeg.m_color.b = 255;
+		curSeg.m_color.r = curSeg.m_color.g = curSeg.m_color.b = 1.0f;
 
 		float flAlphaFade = flLifePerc;
 		float alpha = RemapValClamped( fabs( m_vecPhysVelocity.y ), 128, 600, 0.0f, 1.0f );
 
-		curSeg.m_color.a = 25;
+		curSeg.m_color.a = 0.25f;
 		curSeg.m_color.a *= flAlphaFade * alpha;
 
 		curSeg.m_vPos = pPoint->m_vecScreenPos;

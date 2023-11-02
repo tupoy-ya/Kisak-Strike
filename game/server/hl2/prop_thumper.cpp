@@ -147,6 +147,8 @@ void CPropThumper::Precache( void )
 {
 	BaseClass::Precache();
 
+	PrecacheEffect( "ThumperDust" );
+
 	PrecacheModel( STRING( GetModelName() ) );
 	PrecacheScriptSound( "coast.thumper_hit" );
 	PrecacheScriptSound( "coast.thumper_ambient" );

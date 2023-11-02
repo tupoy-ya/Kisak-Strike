@@ -26,6 +26,12 @@ public:
 	
 	C_CrossbowBolt( void );
 
+	virtual RenderGroup_t GetRenderGroup( void )
+	{
+		// We want to draw translucent bits as well as our main model
+		return RENDER_GROUP_TRANSLUCENT;
+	}
+
 	virtual void	ClientThink( void );
 
 	virtual void	OnDataChanged( DataUpdateType_t updateType );
@@ -128,7 +134,7 @@ void C_CrossbowBolt::ClientThink( void )
 {
 	m_bUpdated = false;
 }
-
+/*
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : &data - 
@@ -150,3 +156,4 @@ void CrosshairLoadCallback( const CEffectData &data )
 }
 
 DECLARE_CLIENT_EFFECT( CrossbowLoad, CrosshairLoadCallback );
+*/

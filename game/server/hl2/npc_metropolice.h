@@ -34,7 +34,7 @@ class CNPC_MetroPolice : public CAI_BaseActor
 	DECLARE_DATADESC();
 
 public:
-	CNPC_MetroPolice() = default;
+	CNPC_MetroPolice();
 
 	virtual bool CreateComponents();
 	bool CreateBehaviors();
@@ -83,7 +83,7 @@ public:
 	virtual bool ShouldMoveAndShoot();
 
 	// TraceAttack
-	virtual void TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator );
+	virtual void TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr );
 
 	// Speaking
 	virtual void SpeakSentence( int nSentenceType );

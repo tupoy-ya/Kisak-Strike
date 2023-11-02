@@ -36,6 +36,7 @@ public:
 
 	void	PrimaryAttack( void );
 	void	Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
+	void Precache(void){ BaseClass::Precache(); PrecacheEffect("ShellEject"); };
 
 	float	WeaponAutoAimScale()	{ return 0.6f; }
 
@@ -87,6 +88,9 @@ void CWeapon357::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatChara
 
 				break;
 			}
+		default:
+			BaseClass::Operator_HandleAnimEvent(pEvent, pOperator);
+			break;
 	}
 }
 

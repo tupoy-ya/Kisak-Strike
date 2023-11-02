@@ -17,6 +17,7 @@ class C_CitadelEnergyCore : public C_BaseEntity
 
 public:
 	void			OnDataChanged( DataUpdateType_t updateType );
+	RenderGroup_t	GetRenderGroup( void );
 
 	void			ClientThink( void );
 	void			NotifyShouldTransmit( ShouldTransmitState_t state );
@@ -47,6 +48,15 @@ IMPLEMENT_CLIENTCLASS_DT( C_CitadelEnergyCore, DT_CitadelEnergyCore, CCitadelEne
 	RecvPropFloat( RECVINFO(m_flStartTime) ),
 	RecvPropInt( RECVINFO(m_spawnflags) ),
 END_RECV_TABLE()
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Output : RenderGroup_t
+//-----------------------------------------------------------------------------
+RenderGroup_t C_CitadelEnergyCore::GetRenderGroup( void )
+{
+	return RENDER_GROUP_TRANSLUCENT;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 

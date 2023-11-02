@@ -254,7 +254,7 @@ public:
 	virtual void	UpdateEfficiency( bool bInPVS )	{ SetEfficiency( ( GetSleepState() != AISS_AWAKE ) ? AIE_DORMANT : AIE_NORMAL ); SetMoveEfficiency( AIME_NORMAL ); }
 	virtual void	PrescheduleThink( void );
 	virtual void	GatherConditions( void );
-	virtual void	TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator );
+	virtual void	TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr );
 	virtual void	StartTask( const Task_t *pTask );
 	virtual void	RunTask( const Task_t *pTask );
 	virtual void	StopLoopingSounds();
@@ -615,7 +615,7 @@ impactdamagetable_t gAntlionGuardImpactDamageTable =
 	45,		// large mass in kg 
 	2,		// large mass scale (anything over 500kg does 4X as much energy to read from damage table)
 	1,		// large mass falling scale
-	0,		// my min velocity
+	0,		// my MIN velocity
 };
 
 //-----------------------------------------------------------------------------
@@ -2278,7 +2278,7 @@ int CNPC_AntlionGuard::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 //			*ptr - 
 //			bitsDamageType - 
 //-----------------------------------------------------------------------------
-void CNPC_AntlionGuard::TraceAttack( const CTakeDamageInfo &inputInfo, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator )
+void CNPC_AntlionGuard::TraceAttack( const CTakeDamageInfo &inputInfo, const Vector &vecDir, trace_t *ptr )
 {
 	CTakeDamageInfo info = inputInfo;
 
@@ -2298,7 +2298,7 @@ void CNPC_AntlionGuard::TraceAttack( const CTakeDamageInfo &inputInfo, const Vec
 		info.SetDamage( 1.0f );
 	}
 
-	BaseClass::TraceAttack( info, vecDir, ptr/*, pAccumulator*/ );
+	BaseClass::TraceAttack( info, vecDir, ptr );
 }
 
 //-----------------------------------------------------------------------------
@@ -2508,7 +2508,7 @@ void CNPC_AntlionGuard::StartTask( const Task_t *pTask )
 	case TASK_ANTLIONGUARD_GET_CHASE_PATH_ENEMY_TOLERANCE:
 		{
 			// Chase the enemy, but allow local navigation to succeed if it gets within the goal tolerance
-			//GetNavigator()->SetLocalSucceedOnWithinTolerance( true );
+//			GetNavigator()->SetLocalSucceedOnWithinTolerance( true );
 
 			if ( GetNavigator()->SetGoal( GOALTYPE_ENEMY ) )
 			{
@@ -2520,7 +2520,7 @@ void CNPC_AntlionGuard::StartTask( const Task_t *pTask )
 				TaskFail(FAIL_NO_ROUTE);
 			}
 
-			//GetNavigator()->SetLocalSucceedOnWithinTolerance( false );
+//			GetNavigator()->SetLocalSucceedOnWithinTolerance( false );
 		}
 		break;
 

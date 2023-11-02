@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -517,7 +517,7 @@ void CBaseServerVehicle::SetPassenger( int nRole, CBaseCombatCharacter *pPasseng
 
 				if ( pHL2Player->FlashlightIsOn() )
 				{
-					pHL2Player->FlashlightTurnOff();
+					pHL2Player->FlashlightTurnOff( true );
 				}
 			}
 #endif

@@ -79,7 +79,8 @@ void CGrenadeEnergy::Shoot( CBaseEntity* pOwner, const Vector &vStart, Vector vV
 	pEnergy->SetNextThink( gpGlobals->curtime + 0.1f );
 
 	pEnergy->m_nRenderMode = kRenderTransAdd;
-	pEnergy->SetRenderColor( 160, 160, 160);
+	pEnergy->SetRenderColor( 160, 160, 160 );
+	pEnergy->SetRenderAlpha( 255 );
 	pEnergy->m_nRenderFX = kRenderFxNone;
 }
 
@@ -127,8 +128,8 @@ void CGrenadeEnergy::GrenadeEnergyTouch( CBaseEntity *pOther )
 		{
 			CBasePlayer *pPlayer = ( CBasePlayer * )pOther;
 			float		flKick	 = 120 * flLifeLeft;
-			pPlayer->m_Local.m_vecPunchAngle.SetX( flKick * (random->RandomInt(0,1) == 1) ? -1 : 1 );
-			pPlayer->m_Local.m_vecPunchAngle.SetY( flKick * (random->RandomInt(0,1) == 1) ? -1 : 1 );
+			pPlayer->m_Local.m_aimPunchAngle.SetX( flKick * (random->RandomInt(0,1) == 1) ? -1 : 1 );
+			pPlayer->m_Local.m_aimPunchAngle.SetY( flKick * (random->RandomInt(0,1) == 1) ? -1 : 1 );
 		}
 		float flDamage = m_flDamage * flLifeLeft;
 		if (flDamage < 1) 

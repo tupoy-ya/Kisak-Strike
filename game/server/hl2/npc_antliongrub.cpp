@@ -6,7 +6,7 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "gib.h"
+#include "Gib.h"
 #include "Sprite.h"
 #include "te_effect_dispatch.h"
 #include "npc_antliongrub.h"

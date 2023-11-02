@@ -116,10 +116,13 @@ void CHudAmmo::Reset()
 //-----------------------------------------------------------------------------
 void CHudAmmo::UpdatePlayerAmmo( C_BasePlayer *player )
 {
+	if (!player)
+		return;
+
 	// Clear out the vehicle entity
 	m_hCurrentVehicle = NULL;
 
-	C_BaseCombatWeapon *wpn = GetActiveWeapon();
+	C_BaseCombatWeapon *wpn = player->GetActiveWeapon();
 
 	hudlcd->SetGlobalStat( "(weapon_print_name)", wpn ? wpn->GetPrintName() : " " );
 	hudlcd->SetGlobalStat( "(weapon_name)", wpn ? wpn->GetName() : " " );
@@ -444,8 +447,10 @@ protected:
 	virtual void OnThink()
 	{
 		// set whether or not the panel draws based on if we have a weapon that supports secondary ammo
-		C_BaseCombatWeapon *wpn = GetActiveWeapon();
 		C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
+		if ( player == NULL )
+			return;
+		C_BaseCombatWeapon *wpn = player->GetActiveWeapon();
 		IClientVehicle *pVehicle = player ? player->GetVehicle() : NULL;
 		if (!wpn || !player || pVehicle)
 		{
@@ -465,8 +470,10 @@ protected:
 
 	void UpdateAmmoState()
 	{
-		C_BaseCombatWeapon *wpn = GetActiveWeapon();
 		C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
+		if ( player == NULL )
+			return;
+		C_BaseCombatWeapon *wpn = player->GetActiveWeapon();
 
 		if (player && wpn && wpn->UsesSecondaryAmmo())
 		{

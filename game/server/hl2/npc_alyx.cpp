@@ -153,7 +153,7 @@ void CNPC_Alyx::SelectModel()
 	const char *szModel = STRING( GetModelName() );
 	if (!szModel || !*szModel)
 	{
-		SetModelName( AllocPooledString("models/alyx.mdl") );
+		SetModelName( AllocPooledString("models/alyx.mdl") ); //alyx.mdl
 	}
 }
 
@@ -241,9 +241,9 @@ Activity CNPC_Alyx::NPC_TranslateActivity( Activity activity )
 // Purpose:
 //-----------------------------------------------------------------------------
 
-void CNPC_Alyx::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator )
+void CNPC_Alyx::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr )
 {
-	BaseClass::TraceAttack( info, vecDir, ptr/*, pAccumulator*/ );
+	BaseClass::TraceAttack( info, vecDir, ptr );
 
 	// FIXME: hack until some way of removing decals after healing
 	m_fNoDamageDecal = true;

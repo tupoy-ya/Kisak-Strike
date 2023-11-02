@@ -22,6 +22,14 @@ public:
 
 	int		DrawModel( int flags, const RenderableInstance_t &instance );
 
+	RenderGroup_t GetRenderGroup( void ) 
+	{	
+		if ( m_bIsOpen )
+			return RENDER_GROUP_TRANSLUCENT;	
+		else
+			return RENDER_GROUP_OPAQUE;
+	}
+
 private:
 	C_RollerMine( const C_RollerMine & ) {}
 
