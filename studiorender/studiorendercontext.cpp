@@ -1362,6 +1362,7 @@ void CStudioRenderContext::R_StudioCreateSingleMesh( studiohdr_t *pStudioHdr, st
 
 		// get the minimal vertex format for this mesh
 		VertexFormat_t vertexFormat = CalculateVertexFormat( pStudioHdr, pStudioLodData, pMesh, pStripGroup, bIsHwSkinned );
+		VertexStreamSpec_t *pStreamSpec = CalculateStreamSpec( pStudioHdr, pStudioLodData, pMesh, pStripGroup, bIsHwSkinned, &vertexFormat );
 
 		// Build the vertex + index buffers
 		R_StudioBuildMeshGroup( pStudioHdr->pszName(), bNeedsTangentSpace, pStudioLodData, pMeshGroup, pStripGroup, pMesh, pStudioHdr, vertexFormat, pStreamSpec );

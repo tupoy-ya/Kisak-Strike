@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -139,12 +139,12 @@ void CGameConsole::ActivateDelayed(float time)
 	m_pConsole->PostMessage(m_pConsole, new KeyValues("Activate"), time);
 }
 
-void CGameConsole::SetParent( int parent )
+void CGameConsole::SetParent( vgui::VPANEL parent )
 {	
 	if (!m_bInitialized)
 		return;
 
-	m_pConsole->SetParent( static_cast<vgui::VPANEL>( parent ));
+	m_pConsole->SetParent( parent );
 }
 
 void CGameConsole::Shutdown( void )

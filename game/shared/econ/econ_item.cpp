@@ -19,10 +19,6 @@
 
 using namespace GCSDK;
 
-#ifdef CLIENT_DLL
-#include "bannedwords.h"
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -516,10 +512,6 @@ static const char *GetCustomNameOrAttributeDesc( const CEconItem *pItem, const C
 	const char *pszStrContents;
 	if ( FindAttribute_UnsafeBitwiseCast<CAttribute_String>( pItem, pAttrDef, &pszStrContents ) )
 	{
-		#ifdef CLIENT_DLL
-		if ( pszStrContents && *pszStrContents )
-			g_BannedWords.CensorBannedWordsInplace( const_cast< char * >( pszStrContents ) );
-		#endif
 		return pszStrContents;
 	}
 

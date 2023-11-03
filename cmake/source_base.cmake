@@ -35,11 +35,20 @@ if( USE_TRACY )
     endif()
 endif()
 
+# Release asserts
+if( RELEASE_ASSERTS )
+    add_definitions(-DRELEASE_ASSERTS)
+endif()
+
 #CMAKE FILLS THESE IN BY DEFAULT. NUKE THEM!
 set(CMAKE_CXX_FLAGS_RELEASE "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "")
 set(CMAKE_CXX_FLAGS_MINSIZEREL "")
 set(CMAKE_CXX_FLAGS_DEBUG "")
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_SYSTEM_PROCESSOR MATCHES "aarch")
+	include_directories("${CMAKE_SOURCE_DIR}/thirdparty/sse2neon")
+endif()
 
 #add_definitions(-DVPC) #lwss - might not be needed?
 #if( ${CSTRIKE_TRUNK_BUILD} MATCHES "1" )

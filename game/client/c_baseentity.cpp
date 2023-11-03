@@ -5324,12 +5324,6 @@ C_BaseEntity *C_BaseEntity::Instance( int iEnt )
 	return ClientEntityList().GetBaseEntity( iEnt );
 }
 
-#ifdef WIN32
-#pragma warning( push )
-#include <typeinfo.h>
-#pragma warning( pop )
-#endif
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Output : char const
@@ -6836,7 +6830,7 @@ void C_BaseEntity::ToolRecordEntities()
 	}
 }
 
-#ifdef _DEBUG
+#if defined( _DEBUG ) || defined( RELEASE_ASSERTS )
 static entity_list_ids_t s_nSuppressChanges = NUM_ENTITY_LISTS;
 #endif
 
