@@ -79,9 +79,8 @@ PRECACHE_REGISTER_END()
 
 void W_Precache(void)
 {
-	PrecacheFileWeaponInfoDatabase();
+	PrecacheFileWeaponInfoDatabase( filesystem, g_pGameRules->GetEncryptionKey() );
 }
-
 //-----------------------------------------------------------------------------
 // Purpose: Transmit weapon data
 //-----------------------------------------------------------------------------

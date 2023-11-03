@@ -49,7 +49,9 @@ public:
 	virtual void VidInit( void );
 	virtual void Reset( void );
 	virtual void OnThink();
-			void MsgFunc_Damage( bf_read &msg );
+			bool MsgFunc_Damage( const CHLUsrMsg_Damage &msg );
+	
+	CUserMessageBinder m_UMCMsgDamage;
 
 private:
 	// old variables
@@ -144,19 +146,19 @@ void CHudHealth::OnThink()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CHudHealth::MsgFunc_Damage( bf_read &msg )
+bool CHudHealth::MsgFunc_Damage( const CHLUsrMsg_Damage &msg )
 {
 
-	int armor = msg.ReadByte();	// armor
-	int damageTaken = msg.ReadByte();	// health
-	long bitsDamage = msg.ReadLong(); // damage bits
-	bitsDamage; // variable still sent but not used
+	int armor = msg.armor();	// armor
+	int damageTaken = msg.amount();	// health
+	long bitsDamage = msg.damage_bits(); // damage bits
+	// bitsDamage; // variable still sent but not used
 
 	Vector vecFrom;
 
-	vecFrom.x = msg.ReadBitCoord();
-	vecFrom.y = msg.ReadBitCoord();
-	vecFrom.z = msg.ReadBitCoord();
+	vecFrom.x = msg.inflictor_world_pos().x();
+	vecFrom.y = msg.inflictor_world_pos().y();
+	vecFrom.z = msg.inflictor_world_pos().z();
 
 	// Actually took damage?
 	if ( damageTaken > 0 || armor > 0 )
@@ -167,4 +169,5 @@ void CHudHealth::MsgFunc_Damage( bf_read &msg )
 			GetClientMode()->GetViewportAnimationController()->StartAnimationSequence("HealthDamageTaken");
 		}
 	}
+	return true;
 }

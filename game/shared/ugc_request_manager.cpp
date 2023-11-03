@@ -6,6 +6,7 @@
 
 #include "cbase.h"
 #include "ugc_request_manager.h"
+#include "GameEventListener.h"
 
 #if !defined(NO_STEAM) && !defined(_PS3)
 

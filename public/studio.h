@@ -1860,6 +1860,7 @@ inline mstudiovertex_t *mstudio_meshvertexdata_t::Vertex( int i ) const
 // a group of studio model data
 enum studiomeshgroupflags_t
 {
+	MESHGROUP_IS_FLEXED			= 0x1,
 	MESHGROUP_IS_HWSKINNED		= 0x2,
 	MESHGROUP_IS_DELTA_FLEXED	= 0x4
 };
@@ -3657,7 +3658,7 @@ inline bool Studio_ConvertStudioHdrToNewVersion( studiohdr_t *pStudioHdr )
 			pAnim->zeroframeindex = 0;
 			pAnim->zeroframespan = 0;
 		}
-	} 
+	}
 	else if (version == 47)
 	{
 		// clear out stale version of zeroframe cache data
@@ -3687,7 +3688,9 @@ inline bool Studio_ConvertStudioHdrToNewVersion( studiohdr_t *pStudioHdr )
 		}
 	}
 	// for now, just slam the version number since they're compatible
-	pStudioHdr->version = STUDIO_VERSION;
+
+	// nillerusr: that's stupid, comment this shit
+	//pStudioHdr->version = STUDIO_VERSION;
 
 	return bResult;
 }

@@ -76,6 +76,7 @@
 #endif
 #include "GameUI/IGameUI.h"
 #include "inputsystem/iinputsystem.h"
+#include "GameEventListener.h"
 
 #if defined( CSTRIKE15 )
 #include "cstrike15_item_inventory.h"

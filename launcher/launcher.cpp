@@ -136,6 +136,7 @@ static IEngineAPI *g_pEngineAPI;
 static IHammer *g_pHammer;
 
 bool g_bTextMode = false;
+bool g_MultiRun = false;
 
 #ifndef _PS3
 static char g_szBasedir[MAX_PATH];
@@ -1100,6 +1101,9 @@ char g_lockFilename[MAX_PATH];
 
 bool GrabSourceMutex()
 {
+	if( g_MultiRun )
+		return true;
+
 #ifdef WIN32
 	if ( IsPC() )
 	{
@@ -1207,6 +1211,9 @@ bool GrabSourceMutex()
 
 void ReleaseSourceMutex()
 {
+	if( g_MultiRun )
+		return;
+
 #ifdef WIN32
 	if ( IsPC() && g_hMutex )
 	{
@@ -1547,6 +1554,11 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 	CommandLine()->RemoveParm( "+mat_dxlevel" );
 #endif
 
+
+	// Allow the user to explicitly say they want to be able to run multiple instances of the source mutex.
+	// Useful for side-by-side comparisons of different renderers.
+	g_MultiRun = CommandLine()->CheckParm( "-multirun" ) != NULL;
+
 #ifndef _PS3
 	// Figure out the directory the executable is running from
 	UTIL_ComputeBaseDir();
@@ -1829,10 +1841,14 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 			}
 			else
 			{
-				::MessageBox(NULL, "Only one instance of the game can be running at one time.", "Source - Warning", MB_ICONINFORMATION | MB_OK);
+				if (!g_MultiRun) {
+					::MessageBox(NULL, "Only one instance of the game can be running at one time.", "Source - Warning", MB_ICONINFORMATION | MB_OK);
+				}
 			}
 
-			return retval;
+			if (!g_MultiRun) {
+				return retval;
+			}
 		}
 	}
 #elif defined( POSIX )
