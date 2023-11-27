@@ -1860,7 +1860,6 @@ inline mstudiovertex_t *mstudio_meshvertexdata_t::Vertex( int i ) const
 // a group of studio model data
 enum studiomeshgroupflags_t
 {
-	MESHGROUP_IS_FLEXED			= 0x1,
 	MESHGROUP_IS_HWSKINNED		= 0x2,
 	MESHGROUP_IS_DELTA_FLEXED	= 0x4
 };
@@ -3689,8 +3688,7 @@ inline bool Studio_ConvertStudioHdrToNewVersion( studiohdr_t *pStudioHdr )
 	}
 	// for now, just slam the version number since they're compatible
 
-	// nillerusr: that's stupid, comment this shit
-	//pStudioHdr->version = STUDIO_VERSION;
+	pStudioHdr->version = STUDIO_VERSION;
 
 	return bResult;
 }

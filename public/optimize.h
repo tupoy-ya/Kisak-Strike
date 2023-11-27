@@ -87,11 +87,9 @@ struct StripHeader_t
 
 enum StripGroupFlags_t
 {
-	STRIPGROUP_IS_FLEXED		 = 0x01,
 	STRIPGROUP_IS_HWSKINNED		 = 0x02,
 	STRIPGROUP_IS_DELTA_FLEXED	 = 0x04,
 	STRIPGROUP_SUPPRESS_HW_MORPH = 0x08,	// NOTE: This is a temporary flag used at run time.
-	STRIPGROUP_IS_MDL49 = 0x80
 };
 
 // a locking group

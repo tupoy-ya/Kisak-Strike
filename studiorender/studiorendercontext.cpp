@@ -1206,6 +1206,11 @@ VertexFormat_t CStudioRenderContext::CalculateVertexFormat( const studiohdr_t *p
 		for (int j = 0; j < VERTEX_MAX_TEXTURE_COORDINATES; ++j)
 		{
 			int nSize = TexCoordSize( j, vertexFormat );
+			if ((j==1)&&(pStudioHdr->flags & STUDIOHDR_FLAGS_EXTRA_VERTEX_DATA))
+			{
+				// If model includes extra vertex data, assume it contains an additional UV channel
+				nSize = 2;
+			}
 			if ( nSize > TexCoordSize( j, newVertexFormat ) )
 			{
 				newVertexFormat &= ~VERTEX_TEXCOORD_SIZE( j, 0x7 );
@@ -1344,10 +1349,6 @@ void CStudioRenderContext::R_StudioCreateSingleMesh( studiohdr_t *pStudioHdr, st
 
 		// Set the flags...
 		pMeshGroup->m_Flags = 0;
-		if (pStripGroup->flags & OptimizedModel::STRIPGROUP_IS_FLEXED)
-		{
-			pMeshGroup->m_Flags |= MESHGROUP_IS_FLEXED;
-		}
 
 		if (pStripGroup->flags & OptimizedModel::STRIPGROUP_IS_DELTA_FLEXED)
 		{
@@ -1373,9 +1374,12 @@ void CStudioRenderContext::R_StudioCreateSingleMesh( studiohdr_t *pStudioHdr, st
 		// Builds morph targets
 		R_StudioBuildMorph( pStudioHdr, pMeshGroup, pMesh, pStripGroup );
 
-		// Build the mapping from strip group vertex idx to actual mesh idx
-		pMeshGroup->m_pGroupIndexToMeshIndex = new unsigned short[pStripGroup->numVerts + PREFETCH_VERT_COUNT];
-		pMeshGroup->m_NumVertices = pStripGroup->numVerts;
+		{
+			// Build the mapping from strip group vertex idx to actual mesh idx
+			MEM_ALLOC_CREDIT_( "Models:Index data" );
+			pMeshGroup->m_pGroupIndexToMeshIndex = new unsigned short[pStripGroup->numVerts + PREFETCH_VERT_COUNT];
+			pMeshGroup->m_NumVertices = pStripGroup->numVerts;
+		}
 
 		int j;
 		for ( j = 0; j < pStripGroup->numVerts; ++j )
