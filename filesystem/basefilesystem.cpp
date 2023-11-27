@@ -456,10 +456,7 @@ CUtlSortVector< DLCContent_t, CDLCLess > CBaseFileSystem::m_DLCContents;
 CUtlVector< DLCCorrupt_t > CBaseFileSystem::m_CorruptDLC;
 
 CUtlBuffer	g_UpdateZipBuffer;
-
-#ifdef _X360
 CUtlBuffer	g_XLSPPatchZipBuffer;
-#endif
 
 class CStoreIDEntry
 {
@@ -2880,8 +2877,16 @@ void CBaseFileSystem::AddSearchPath( const char *pPath, const char *pathID, Sear
 		V_strncpy( szPathHead, pPath, sizeof( szPathHead ) );
 		V_StripLastDir( szPathHead, sizeof( szPathHead ) );
 
-		// followed by update
+		// xlsppatch trumps all
+		V_ComposeFileName( szPathHead, "xlsppatch", szUpdatePath, sizeof( szUpdatePath ) );
 		struct _stat buf;
+		if ( FS_stat( szUpdatePath, &buf ) != -1 )
+		{
+			// found
+			AddSearchPathInternal( szUpdatePath, pathID, addType, true );
+		}
+
+		// followed by update
 		V_ComposeFileName( szPathHead, "update", szUpdatePath, sizeof( szUpdatePath ) );
 		if ( FS_stat( szUpdatePath, &buf ) != -1 )
 		{
@@ -8394,7 +8399,11 @@ void CBaseFileSystem::PrintDLCInfo()
 
 bool CBaseFileSystem::AddXLSPUpdateSearchPath( const void *pData, int nSize )
 {
-#ifdef _X360
+	if ( IsPC() )
+	{
+		return false;
+	}
+
 	const char *targetPathIDs[] = { "PLATFORM", "GAME", "MOD" };
 	for ( int i = 0; i <ARRAYSIZE( targetPathIDs ); i++ )
 	{
@@ -8491,10 +8500,6 @@ bool CBaseFileSystem::AddXLSPUpdateSearchPath( const void *pData, int nSize )
 	}
 
 	return bXLSPPatchValid;
-#else
-	Assert( 0 ); // should not be reached on pc
-	return false;
-#endif
 }
 
 void CBaseFileSystem::MarkLocalizedPath( CSearchPath *sp )

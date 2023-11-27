@@ -15,11 +15,6 @@
 #include "tier1/functors.h"
 #include "workthreadpool.h"
 
-#ifdef GC
-	#include "gcsqlquery.h"
-	#include "sqlaccess/schema.h"
-#endif
-
 class GCConVar;
 
 namespace GCSDK

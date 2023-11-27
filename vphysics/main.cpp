@@ -26,15 +26,9 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#ifdef POSIX
-void __attribute__((constructor)) vphysics_init(void);
-#endif		// POSIX
-
-void vphysics_init(void)
+static void ivu_string_print_function( const char *str )
 {
-	//ivp_set_message_print_function( ivu_string_print_function ); //lwss - commented out, seems to be non existant in this version
-
-	MathLib_Init(2.2f, 2.2f, 0.0f, 2.0f, false, false, false);
+	Msg("%s", str);
 }
 
 #if defined(_WIN32) && !defined(_XBOX)
@@ -46,10 +40,9 @@ BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
 {
  	if ( fdwReason == DLL_PROCESS_ATTACH )
 	{
-		//ivp_set_message_print_function( ivu_string_print_function );
+		ivp_set_message_print_function( ivu_string_print_function );
 
-		//MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false );
-		vphysics_init();
+		MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
 		// store out module handle
 		//gPhysicsDLLHandle = (HMODULE)hinstDLL;
 	}
@@ -60,6 +53,17 @@ BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
 }
 
 #endif		// _WIN32
+
+#ifdef POSIX
+void __attribute__ ((constructor)) vphysics_init(void);
+void vphysics_init(void)
+{
+	//ivp_set_message_print_function( ivu_string_print_function ); //lwss - commented out, seems to be non existant in this version
+
+	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
+}
+#endif
+
 
 // simple 32x32 bit array
 class CPhysicsCollisionSet : public IPhysicsCollisionSet
@@ -187,8 +191,8 @@ IPhysicsCollisionSet *CPhysicsInterface::FindOrCreateCollisionSet( uintptr_t id,
 	IPhysicsCollisionSet *pSet = FindCollisionSet( id );
 	if ( pSet )
 		return pSet;
-	intp index = m_collisionSets.AddToTail(); // 64 bit fix
-	m_pCollisionSetHash->add_elem( (void *)(intp)id, (void *)(intp)(index+1) );
+	int index = m_collisionSets.AddToTail();
+	m_pCollisionSetHash->add_elem( (void *)id, (void *)(index+1) );
 	return &m_collisionSets[index];
 }
 
@@ -198,7 +202,7 @@ IPhysicsCollisionSet *CPhysicsInterface::FindCollisionSet( uintptr_t id )
 	{
 	    //lwss - x64 fixes
 		//int index = (int)m_pCollisionSetHash->find_elem( (void *)id );
-		intptr_t index = (intptr_t)m_pCollisionSetHash->find_elem( (void*)(intp)id );
+		intptr_t index = (intptr_t)m_pCollisionSetHash->find_elem( (void*)id );
 		//lwss end
 		if ( index > 0 )
 		{
@@ -218,3 +222,26 @@ void CPhysicsInterface::DestroyAllCollisionSets()
 	delete m_pCollisionSetHash;
 	m_pCollisionSetHash = NULL;
 }
+
+	
+
+// In release build, each of these libraries must contain a symbol that indicates it is also a release build
+// You MUST disable this in order to run a release vphysics.dll with a debug library.
+// This should not usually be necessary
+#if !defined(_DEBUG) && defined(_WIN32)
+extern int ivp_physics_lib_is_a_release_build;
+extern int ivp_compactbuilder_lib_is_a_release_build;
+extern int hk_base_lib_is_a_release_build;
+extern int hk_math_lib_is_a_release_build;
+extern int havana_constraints_lib_is_a_release_build;
+
+void DebugTestFunction()
+{
+	ivp_physics_lib_is_a_release_build = 0;
+	ivp_compactbuilder_lib_is_a_release_build = 0;
+	hk_base_lib_is_a_release_build = 0;
+	hk_math_lib_is_a_release_build = 0;
+	havana_constraints_lib_is_a_release_build = 0;
+}
+#endif
+

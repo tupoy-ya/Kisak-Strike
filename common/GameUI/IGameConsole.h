@@ -11,7 +11,6 @@
 #endif
 
 #include "tier1/interface.h"
-#include "vgui/vgui.h"
 
 
 //-----------------------------------------------------------------------------
@@ -34,7 +33,7 @@ public:
 	// return true if the console has focus
 	virtual bool IsConsoleVisible() = 0;
 
-	virtual void SetParent( vgui::VPANEL parent ) = 0;
+	virtual void SetParent( int parent ) = 0;
 
 	// hides and deletes panel
 	virtual void Shutdown( void ) = 0;

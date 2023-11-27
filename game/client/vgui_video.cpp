@@ -174,7 +174,7 @@ VideoPanel::VideoPanel( unsigned int nXPos, unsigned int nYPos, unsigned int nHe
 	SetWide( nWidth );
 	SetPos( nXPos, nYPos );
 
-	SetScheme( "ClientScheme" );
+	SetScheme( "basemodui_scheme" );
 	SetProportional( true );
 
 	// Let us update

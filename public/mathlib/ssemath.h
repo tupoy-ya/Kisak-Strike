@@ -12,11 +12,7 @@
 #include <vectormath/c/vectormath_aos.h>
 #include <vectormath/c/vectormath_aos_v.h>
 #else
-#if defined( __arm__ ) || defined(__aarch64__)
-#include "sse2neon.h"
-#else
-#include <xmmintrin.h>  // for sse
-#endif
+#include <xmmintrin.h>
 #ifndef _LINUX
 #include <emmintrin.h>
 #endif

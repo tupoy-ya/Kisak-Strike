@@ -645,7 +645,7 @@ void CHostage::HostageRescueZoneTouch( inputdata_t &inputdata )
 
 			m_OnRescued.FireOutput(this, player);
 
-			if ( !mp_hostages_moveable.GetBool() )
+			if ( HOSTAGE_RULE_CAN_PICKUP == 1 )
 			{
 				// Put him a short distance in front of the player.
 				Vector vecTarget;
@@ -740,7 +740,7 @@ void CHostage::HostageRescueZoneTouch( inputdata_t &inputdata )
 		if ( CSGameRules()->CheckWinConditions() && player )
 		{
 			//Check hostage rescue achievements
-			if ( !CSGameRules()->WasHostageKilled() && (!mp_hostages_moveable.GetBool() || ( CSGameRules()->m_arrRescuers.Count() == 1 ) ) )
+			if ( !CSGameRules()->WasHostageKilled() && ( HOSTAGE_RULE_CAN_PICKUP || ( CSGameRules()->m_arrRescuers.Count() == 1 ) ) )
 			{
 				//check for unrescued hostages
 				bool allHostagesRescued = true;				
@@ -833,7 +833,7 @@ void CHostage::Touch( CBaseEntity *other )
 {
 	BaseClass::Touch( other );
 
-	if (!mp_hostages_moveable.GetBool())
+	if ( HOSTAGE_RULE_CAN_PICKUP == 1 )
 		return;
 
 	// allow players and other hostages to push me around
@@ -912,7 +912,7 @@ void CHostage::Wiggle( void )
  */
 void CHostage::UpdateFollowing( float deltaT )
 {
-	if ( !mp_hostages_moveable.GetBool() && IsFollowingSomeone() && GetLeader()  )
+	if ( HOSTAGE_RULE_CAN_PICKUP && IsFollowingSomeone() && GetLeader()  )
 	{
 		if ( m_nHostageState != k_EHostageStates_GettingPickedUp )
 		{
@@ -949,7 +949,7 @@ void CHostage::UpdateFollowing( float deltaT )
 			return;
 		}
 
-		if ( mp_hostages_moveable.GetBool() )
+		if ( HOSTAGE_RULE_CAN_PICKUP == 0 )
 			m_nHostageState = k_EHostageStates_FollowingPlayer;
 
 		// if leader has moved, repath
@@ -1047,7 +1047,7 @@ void CHostage::UpdateFollowing( float deltaT )
 //-----------------------------------------------------------------------------------------------------
 void CHostage::AvoidPhysicsProps( void )
 {
-	if ( m_lifeState == LIFE_DEAD || !mp_hostages_moveable.GetBool() )
+	if ( m_lifeState == LIFE_DEAD || HOSTAGE_RULE_CAN_PICKUP )
 		return;
 
 	CBaseEntity *props[512];
@@ -1117,7 +1117,7 @@ void CHostage::AvoidPhysicsProps( void )
  */
 void CHostage::PushawayThink( void )
 {
-	if ( !mp_hostages_moveable.GetBool() )
+	if ( HOSTAGE_RULE_CAN_PICKUP )
 		return;
 
 	PerformObstaclePushaway( this );
@@ -1153,12 +1153,12 @@ void CHostage::HostageThink( void )
 		SetCollisionBounds( HOSTAGE_BBOX_VEC_MIN, HOSTAGE_BBOX_VEC_MAX );
 	}
 
-	const float deltaT = ( !mp_hostages_moveable.GetBool() && IsFollowingSomeone() ) ? HOSTAGE_THINK_CARRIED_INTERVAL : HOSTAGE_THINK_INTERVAL;
+	const float deltaT = ( HOSTAGE_RULE_CAN_PICKUP && IsFollowingSomeone() ) ? HOSTAGE_THINK_CARRIED_INTERVAL : HOSTAGE_THINK_INTERVAL;
 
 	SetNextThink( gpGlobals->curtime + deltaT );
 
 	//if the defusing process has started
-	if ( !mp_hostages_moveable.GetBool() && m_nHostageState == k_EHostageStates_BeingUntied  && (m_pHostageGrabber != NULL))
+	if ( HOSTAGE_RULE_CAN_PICKUP && m_nHostageState == k_EHostageStates_BeingUntied  && (m_pHostageGrabber != NULL))
 	{
 		//if the defusing process has not ended yet
 		if ( gpGlobals->curtime < m_flGrabSuccessTime )
@@ -1441,7 +1441,7 @@ void CHostage::Follow( CCSPlayer *leader )
 	m_isWaitingForLeader = false;
 	m_lastLeaderID = (leader) ? leader->GetUserID() : 0;
 
-	if ( leader && !mp_hostages_moveable.GetBool() )
+	if ( leader && HOSTAGE_RULE_CAN_PICKUP )
 	{
 		leader->GiveCarriedHostage( this );
 	}
@@ -1486,7 +1486,7 @@ void CHostage::HostageUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 		return;
 	}
 
-	if ( !mp_hostages_moveable.GetBool() )
+	if ( HOSTAGE_RULE_CAN_PICKUP == 1 )
 	{
 		if ( pPlayer->m_hCarriedHostage != NULL )
 		{

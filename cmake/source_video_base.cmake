@@ -1,19 +1,22 @@
-if( GL AND NOT OSX32 AND NOT DEDICATED )
+if( GL AND NOT OSX32 )
     set(SDL "1")
 endif()
 
-if( WIN32 )
-	 add_definitions(-DAVI_VIDEO)
+if( OSXALL )
+
+elseif( (WINDOWS AND NOT QUICKTIME_WINDOWS ) OR X360 OR PS3 )
+
+elseif( WINDOWS AND QUICKTIME_WINDOWS )
+
 endif()
 
 if( GL )
     add_definitions(-DGL_GLEXT_PROTOTYPES -DDX_TO_GL_ABSTRACTION)
 endif()
-if( SDL AND NOT DEDICATED )
+if( SDL )
     add_definitions(-DUSE_SDL)
     #Use system SDL2 for linux.
-    if( LINUXALL OR OSXALL )
-        include_directories("/usr/local/include/SDL2")
+    if( LINUXALL )
         include_directories("/usr/include/SDL2")
     else()
         include_directories("${SRCDIR}/thirdparty/SDL2")

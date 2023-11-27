@@ -429,7 +429,7 @@ int CriteriaSet::InterceptWorldSetContexts( CriteriaSet * RESTRICT pFrom, Criter
 		return 0;
 	}
 
-#if defined( _DEBUG ) || defined( RELEASE_ASSERTS )
+#ifdef DEBUG
 	// save this off for later error checking.
 	const int nPrefixedContexts = pFrom->m_nNumPrefixedContexts;
 #endif

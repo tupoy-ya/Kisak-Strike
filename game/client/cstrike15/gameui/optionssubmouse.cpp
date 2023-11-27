@@ -31,6 +31,12 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
 		"ReverseMouse", 
 		"#GameUI_ReverseMouse", 
 		"m_pitch" );
+	
+	m_pMouseFilterCheckBox = new CCvarToggleCheckButton( 
+		this, 
+		"MouseFilter", 
+		"#GameUI_MouseFilter", 
+		"m_filter" );
 
 	m_pMouseRawCheckBox = new CCvarToggleCheckButton( 
 		this, 
@@ -109,6 +115,7 @@ COptionsSubMouse::~COptionsSubMouse()
 void COptionsSubMouse::OnResetData()
 {
 	m_pReverseMouseCheckBox->Reset();
+	m_pMouseFilterCheckBox->Reset();
 	m_pMouseRawCheckBox->Reset();
 	m_pJoystickCheckBox->Reset();
 	m_pJoystickSouthpawCheckBox->Reset();
@@ -130,6 +137,7 @@ void COptionsSubMouse::OnResetData()
 void COptionsSubMouse::OnApplyChanges()
 {
 	m_pReverseMouseCheckBox->ApplyChanges();
+	m_pMouseFilterCheckBox->ApplyChanges();
 	m_pMouseRawCheckBox->ApplyChanges();
 	m_pJoystickCheckBox->ApplyChanges();
 	m_pJoystickSouthpawCheckBox->ApplyChanges();

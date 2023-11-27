@@ -770,7 +770,7 @@ public:
 
 	template< typename C > CDmrElementArray<T>& operator=( const C &val )
 	{ 
-		this->CopyArray( val.Base(), val.Count() ); 
+		CopyArray( val.Base(), val.Count() ); 
 		return *this; 
 	}
 

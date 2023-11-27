@@ -13,7 +13,6 @@
 #include "vphysics/friction.h"
 
 // IsInContact
-#include "ivp_mindist_intern.hxx"
 #include "ivp_mindist.hxx"
 #include "ivp_core.hxx"
 #include "ivp_friction.hxx"

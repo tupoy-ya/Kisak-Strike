@@ -22,6 +22,8 @@
 #include "fmtstr.h"
 #include "sfhudfreezepanel.h"
 
+#include "bannedwords.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -801,6 +803,18 @@ void SFHudInfoPanel::SetPriorityText( char *pMsg )
 			
 			if ( pMsg && m_PriorityMessageBodyTextHandle )
 			{
+				if ( g_BannedWords.BInitialized() )
+				{
+					int nLen = V_strlen( pMsg );
+					int cubDestSizeInBytes = ( 1 + nLen ) * sizeof( wchar_t );
+					wchar_t * pwchBuffer = ( wchar_t * ) stackalloc( cubDestSizeInBytes );
+					V_UTF8ToUnicode( pMsg, pwchBuffer, cubDestSizeInBytes );
+					if ( g_BannedWords.CensorBannedWordsInplace( pwchBuffer ) )
+					{
+						m_pScaleformUI->Value_SetText( m_PriorityMessageBodyTextHandle, pwchBuffer );
+						pMsg = NULL;
+					}
+				}
 				if ( pMsg )
 				{
 					m_pScaleformUI->Value_SetText( m_PriorityMessageBodyTextHandle, pMsg );
@@ -821,6 +835,7 @@ void SFHudInfoPanel::SetPriorityText( wchar_t *pMsg )
 
 			if ( pMsg && m_PriorityMessageBodyTextHandle )
 			{
+				g_BannedWords.CensorBannedWordsInplace( pMsg );
 				m_pScaleformUI->Value_SetTextHTML( m_PriorityMessageBodyTextHandle, m_pScaleformUI->ReplaceGlyphKeywordsWithHTML( pMsg ) );
 			}
 		}
@@ -838,6 +853,7 @@ void SFHudInfoPanel::SetPriorityHintText( wchar_t *pMsg )
 			if ( pMsg )
 			{
 				// make it visible
+				g_BannedWords.CensorBannedWordsInplace( pMsg );
 				SetHintText( pMsg );
 			}
 		}

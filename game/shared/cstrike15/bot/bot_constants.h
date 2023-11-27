@@ -34,7 +34,7 @@ enum BotDifficultyType
 		"EASY", "NORMAL", "HARD", "EXPERT", NULL
 	};
 #else
-	extern const char *BotDifficultyName[];
+	extern char *BotDifficultyName[];
 #endif
 
 namespace BotProfileInputDevice

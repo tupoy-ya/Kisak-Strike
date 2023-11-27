@@ -5,6 +5,9 @@
 #//-----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.16)
 #dont build this on dedicated build
+if( DEDICATED )
+    return()
+endif()
 project(launcher_main)
 set(SRCDIR "${CMAKE_SOURCE_DIR}")
 set(CMAKE_MODULE_PATH ${SRCDIR}/cmake)
@@ -12,9 +15,9 @@ set(OUTBINDIR "${SRCDIR}/../game")
 
 include(${CMAKE_MODULE_PATH}/detect_platform.cmake)
 
-if( WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+if( WIN32 )
     set(OUTBINNAME "csgo")
-elseif( WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+elseif( WIN64 )
     set(OUTBINNAME "csgo_win64")
 elseif( OSX32 )
     set(OUTBINNAME "csgo_osx")
@@ -32,11 +35,6 @@ set(NOSKELETONBASE "1")
 include(${CMAKE_MODULE_PATH}/source_exe_base.cmake)
 
 target_sources(${OUTBINNAME} PRIVATE main.cpp)
-
-# I dont know if mingw can compile resource files
-if( MSVC )
-	target_sources(${OUTBINNAME} PRIVATE launcher_main.rc)
-endif()
 
 if( LINUXALL )
     target_link_libraries(${OUTBINNAME} dl pthread)

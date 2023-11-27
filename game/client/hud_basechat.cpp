@@ -23,6 +23,7 @@
 #if defined( CSTRIKE15 )
 #include "cstrike15/c_cs_playerresource.h"
 #endif
+#include "ihudlcd.h"
 #include "vgui/IInput.h"
 #include "vgui/ILocalize.h"
 #include "multiplay_gamerules.h"
@@ -36,10 +37,6 @@
 
 #if defined( _X360 )
 #include "xbox/xbox_win32stubs.h"
-#endif
-
-#if defined( CSTRIKE15 )
-#include "cstrike15/cs_hud_chat.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -90,12 +87,12 @@ static const char *gBugTokenTable[] = {
 inline void CS15ForwardStatusMsg( const char* text, int clientid )
 {
 	/* Removed for partner depot */
-	ConMsg("[forwardstatusmsg] %s\n", text);
+	ConMsg("[forwardstatusmsg]%s", text);
 }
 inline void CS15ForwardStatusMsg( const wchar_t* text, int clientid )
 {
 	/* Removed for partner depot */
-	ConMsg("[forwardstatusmsg] %ls\n", text);
+	ConMsg("[forwardstatusmsg]%ls", text);
 }
 #endif // CSTRIKE15
 
@@ -735,6 +732,15 @@ void CHudChatHistory::ApplySettings( KeyValues *inResourceData )
 void CHudChatHistory::Paint()
 {
 	BaseClass::Paint();
+	// 84928: Messages/Instructions from coop partners are important and
+	// we don't want to have them disappear. Keep them on and let them spam.
+#if !defined ( PORTAL2 ) 
+	if ( IsAllTextAlphaZero() && HasText() )
+	{
+		SetText( "" );
+		// Wipe
+	}
+#endif
 }
 
 CBaseHudChat *g_pHudChat = NULL;
@@ -1114,7 +1120,7 @@ bool CBaseHudChat::MsgFunc_TextMsg( const CHLUsrMsg_TextMsg &msg )
 		{
 			Q_strncat( szString, "\n", sizeof( szString), 1 );
 		}
-		Printf( CHAT_FILTER_NONE, "%c%s", COLOR_USEOLDCOLORS, ConvertCRtoNL( szString ) );
+		Printf( CHAT_FILTER_NONE, "%s", ConvertCRtoNL( szString ) );
 		// TERROR: color console echo
 		//Msg( "%s", ConvertCRtoNL( szString ) );
 		break;
@@ -1127,7 +1133,7 @@ bool CBaseHudChat::MsgFunc_TextMsg( const CHLUsrMsg_TextMsg &msg )
 		{
 			Q_strncat( szString, "\n", sizeof( szString), 1 );
 		}
-		Msg( "%c%s", COLOR_USEOLDCOLORS, ConvertCRtoNL( szString ) );
+		Msg( "%s", ConvertCRtoNL( szString ) );
 		break;
 	}
 
@@ -1565,11 +1571,7 @@ void CBaseHudChatLine::InsertAndColorizeText( wchar_t *buf, int clientIndex )
 
 	m_text = CloneWString( buf );
 
-#if defined( CSTRIKE15 )
-	CHudChat* pChat = dynamic_cast<CHudChat*>(GetParent());
-#else
 	CBaseHudChat *pChat = dynamic_cast<CBaseHudChat*>( GetParent() );
-#endif
 
 	if ( pChat == NULL )
 		return;
@@ -1929,7 +1931,7 @@ void CBaseHudChat::ChatPrintf( int iPlayerIndex, int iFilter, const char *fmt, .
 	}
 
 	CS15ForwardStatusMsg( pmsg, iPlayerIndex );	
-	//return;
+	return;
 
 #endif // CSTRIKE15
 
@@ -1963,6 +1965,18 @@ void CBaseHudChat::ChatPrintf( int iPlayerIndex, int iFilter, const char *fmt, .
 #endif
 		if ( !( iFilter & GetFilterFlags() ) )
 			return;
+	}
+
+	if ( hudlcd )
+	{
+		if ( *pmsg < 32 )
+		{
+			hudlcd->AddChatLine( pmsg + 1 );
+		}
+		else
+		{
+			hudlcd->AddChatLine( pmsg );
+		}
 	}
 
 	line->SetText( "" );

@@ -23,7 +23,7 @@ namespace vgui
 {
 
 // safe handle to a panel - can be converted to and from a VPANEL
-typedef uintp HPanel;
+typedef unsigned long HPanel;
 typedef int HContext;
 
 enum
@@ -32,7 +32,7 @@ enum
 };
 
 // safe handle to a panel - can be converted to and from a VPANEL
-typedef uintp HPanel;
+typedef unsigned long HPanel;
 
 class IMessageContextIdHandler
 {

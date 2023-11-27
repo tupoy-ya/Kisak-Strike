@@ -718,6 +718,7 @@ void CBaseFileSystem::InitAsync()
 	if ( !IsX360() && !IsPS3() )
 	{
 		params.nThreads = MIN( GetCPUInformation().m_nLogicalProcessors, 3 ); // > 3 threads doing IO on one drive, are you crazy?
+		params.nThreads = MAX( params.nThreads, 1 );
 		params.nStackSize = 256 * 1024;
 	}
 

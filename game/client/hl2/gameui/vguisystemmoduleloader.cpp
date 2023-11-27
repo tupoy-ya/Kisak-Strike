@@ -1,4 +1,4 @@
-//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -8,6 +8,7 @@
 
 #include "ienginevgui.h"
 #include "vguisystemmoduleloader.h"
+#include "sys_utils.h"
 #include "IVguiModule.h"
 #include "ServerBrowser/IServerBrowser.h"
 

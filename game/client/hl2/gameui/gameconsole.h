@@ -1,4 +1,4 @@
-//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -42,7 +42,7 @@ public:
 	// activates the console after a delay
 	void ActivateDelayed(float time);
 
-	void SetParent( vgui::VPANEL parent );
+	void SetParent( int parent );
 
 	// hides and deletes panel
 	void Shutdown( void );

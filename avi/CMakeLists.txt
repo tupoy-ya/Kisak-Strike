@@ -21,19 +21,20 @@ include(${CMAKE_MODULE_PATH}/detect_platform.cmake)
 include(${CMAKE_MODULE_PATH}/source_dll_base.cmake)
 #include("${CMAKE_MODULE_PATH}/source_video_base.cmake") already included in source_bases.
 
-#if( QUICKTIME_WINDOWS )
+if( QUICKTIME_WINDOWS )
     #$AdditionalIncludeDirectories	"$BASE,..\common\quicktime_win32\"		[$QUICKTIME_WINDOWS]
-#endif()
-#if( WINDOWS )
+endif()
+if( WINDOWS )
     #$AdditionalIncludeDirectories	"$BASE;$SRCDIR\dx9sdk\include"			[$WINDOWS]
-#endif()
+endif()
 
 #Compiler
-#if( LINUXALL )
+if( LINUXALL )
     #these dont exist... Seems to work... Commented out
     #include_directories(${SRCDIR}/thirdparty/sdl/include)
     #include_directories(${SRCDIR}/thirdparty/sdl_mixer)
-#endif()
+endif()
+
 
 #linker
 if( LINUXALL )
@@ -41,8 +42,10 @@ if( LINUXALL )
     target_link_libraries(${OUTBINNAME} SDL2)
 endif()
 
+
+
 #source files
-if( WIN32 )
+if( WINDOWS )
     target_sources(${OUTBINNAME} PRIVATE "avi.cpp")
 endif()
 if( OSXALL )
@@ -55,13 +58,10 @@ if( QUICKTIME_VIDEO OR QUICKTIME_WINDOWS )
     target_sources(${OUTBINNAME} PRIVATE "quicktime.cpp")
 endif()
 
-if( NOT OSXALL )
-    target_link_libraries(${OUTBINNAME} vstdlib_client tier2_client tier3_client)
+if( WINDOWS OR X360 OR POSIX )
+    target_link_libraries(${OUTBINNAME} tier2_client tier3_client)
     if( LINUXALL )
         #target_link_libraries(${OUTBINNAME} ${SRCDIR}/lib/common/libSDL2_mixer.a)
         target_link_libraries(${OUTBINNAME} SDL2_mixer)
     endif()
-	if( WIN32 )
-		target_link_libraries(${OUTBINNAME} Vfw32.lib)
-	endif()
 endif()

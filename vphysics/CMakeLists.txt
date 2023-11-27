@@ -4,10 +4,10 @@
 #//	Project Script
 #//-----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.16)
-project(vphysics_client)
+project(kisakvphysics_client)
 set(SRCDIR "${CMAKE_SOURCE_DIR}")
 set(CMAKE_MODULE_PATH ${SRCDIR}/cmake)
-set(OUTBINNAME "vphysics_client")
+set(OUTBINNAME "kisakvphysics_client")
 set(OUTBINDIR ${SRCDIR}/../game/bin)
 
 include(${CMAKE_MODULE_PATH}/detect_platform.cmake)
@@ -59,5 +59,5 @@ target_sources(${OUTBINNAME} PRIVATE "vphysics_saverestore.cpp")
 #		$Lib "$LIBCOMMON/hk_math"
 #		$Lib "$LIBCOMMON/ivp_compactbuilder"
 #		$Lib "$LIBCOMMON/ivp_physics"
-target_link_libraries(${OUTBINNAME} havana_constraints hk_math hk_base ivp_compactbuilder ivp_physics)
-target_link_libraries(${OUTBINNAME} mathlib_client tier2_client vstdlib_client)
+target_link_libraries(${OUTBINNAME} havana_constraints hk_base hk_math ivp_compactbuilder ivp_physics)
+target_link_libraries(${OUTBINNAME} mathlib_client tier2_client libvstdlib_client)

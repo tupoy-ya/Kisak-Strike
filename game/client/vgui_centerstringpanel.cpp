@@ -45,8 +45,6 @@
 
 #ifdef TF_CLIENT_DLL
 static ConVar		scr_centertime( "scr_centertime", "5" );
-#elif CSTRIKE15
-static ConVar		scr_centertime( "scr_centertime", "3" );
 #else
 static ConVar		scr_centertime( "scr_centertime", "4" );
 #endif
@@ -234,7 +232,7 @@ void CCenterStringLabel::OnTick( void )
 bool CCenterStringLabel::ShouldDraw( void )
 {
 	// [jason] This element only exists to forward center print messages to the Scaleform InfoPanel
-#if defined ( CSTRIKE15 ) && defined( INCLUDE_SCALEFORM )
+#if defined ( CSTRIKE15 )
 	return false;
 #endif
 
@@ -273,8 +271,8 @@ void CCenterPrint::SetTextColor( int r, int g, int b, int a )
 void CCenterPrint::Print( const char *text )
 {
 	// [jason] Forward the message to the Scaleform info panel
-#if defined ( CSTRIKE15 ) && defined( INCLUDE_SCALEFORM )
-	FORWARD_PRIORITY_MSG(text);
+#if defined ( CSTRIKE15 )
+	FORWARD_PRIORITY_MSG( text );
 	return;
 #endif
 
@@ -287,7 +285,7 @@ void CCenterPrint::Print( const char *text )
 void CCenterPrint::Print( const wchar_t *text )
 {
 	// [jason] Forward the message to the Scaleform info panel
-#if defined ( CSTRIKE15 ) && defined( INCLUDE_SCALEFORM )
+#if defined ( CSTRIKE15 )
 	FORWARD_PRIORITY_MSG( text );
 	return;
 #endif
@@ -301,8 +299,8 @@ void CCenterPrint::Print( const wchar_t *text )
 void CCenterPrint::ColorPrint( int r, int g, int b, int a, char *text )
 {
 	// [jason] Forward the message to the Scaleform info panel
-#if defined ( CSTRIKE15 ) && defined( INCLUDE_SCALEFORM )
-	FORWARD_PRIORITY_MSG(text);
+#if defined ( CSTRIKE15 )
+	FORWARD_PRIORITY_MSG( text );
 	return;
 #endif
 
@@ -315,8 +313,8 @@ void CCenterPrint::ColorPrint( int r, int g, int b, int a, char *text )
 void CCenterPrint::ColorPrint( int r, int g, int b, int a, wchar_t *text )
 {
 	// [jason] Forward the message to the Scaleform info panel
-#if defined ( CSTRIKE15 ) && defined( INCLUDE_SCALEFORM )
-	FORWARD_PRIORITY_MSG(text);
+#if defined ( CSTRIKE15 )
+	FORWARD_PRIORITY_MSG( text );
 	return;
 #endif
 
@@ -329,8 +327,8 @@ void CCenterPrint::ColorPrint( int r, int g, int b, int a, wchar_t *text )
 void CCenterPrint::Clear( void )
 {
 	// [jason] Forward the message to the Scaleform info panel
-#if defined ( CSTRIKE15 ) && defined( INCLUDE_SCALEFORM )
-	FORWARD_PRIORITY_MSG(text);
+#if defined ( CSTRIKE15 )
+	FORWARD_PRIORITY_MSG( static_cast<wchar_t*>(NULL) );
 	return;
 #endif
 

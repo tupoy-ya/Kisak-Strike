@@ -8,7 +8,9 @@
 
 #include "stdafx.h"
 
-#ifndef WIN32
+#ifdef WIN32
+#include "typeinfo.h"
+#else
 #include <typeinfo>
 #endif
 

@@ -15,8 +15,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-extern ConVar mp_hostages_moveable;
-
 //--------------------------------------------------------------------------------------------------------------
 /**
  * Move to a potentially far away position.
@@ -300,7 +298,7 @@ void MoveToState::OnUpdate( CCSBot *me )
 						const float useRange = PLAYER_USE_RADIUS - 10.0f; // shave off a fudge factor to make sure we're within range
 						if (to.IsLengthLessThan( useRange ))
 						{
-							if ( !mp_hostages_moveable.GetBool() )
+							if ( HOSTAGE_RULE_CAN_PICKUP == 1 )
 							{
 								//me->PickupHostage( me->GetGoalEntity() );
 

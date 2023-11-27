@@ -28,9 +28,7 @@ target_sources(${OUTLIBNAME} PRIVATE "FontEffects.h")
 target_sources(${OUTLIBNAME} PRIVATE "fonttexturecache.cpp")
 target_sources(${OUTLIBNAME} PRIVATE "texturedictionary.cpp")
 #$File	"Win32Font.cpp"			[$WINDOWS]
-if(WIN32)
-	target_sources(${OUTLIBNAME} PRIVATE "Win32Font.cpp")
-endif()
+#$File	"Win32Font_x360.cpp"	[$X360]
 #$File	"ps3font.cpp"			[$PS3]
 #$File	"osxfont.cpp"			[$OSXALL]
 if( LINUXALL )

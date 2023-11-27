@@ -1,7 +1,7 @@
 #Something custom/made by me(lwss).
 #Include this in your CMakeLists.txt to set the various platform defines the codebase expects
 if(WIN32)
-	set(_DLL_EXT "_client.dll")
+    message(FATAL_ERROR "install gentoo")
 elseif(UNIX AND NOT APPLE) #LINUX
     add_definitions(-DLINUX -D_LINUX -DPOSIX)
     set(LINUXALL "1")
@@ -19,14 +19,7 @@ elseif(UNIX AND NOT APPLE) #LINUX
     endif()
 elseif(UNIX AND APPLE) #MAC
     set(OSXALL "1")
-    set(GL "1")
-    set(POSIX "1")
-    set(_DLL_EXT "_client.dylib")
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(OSX64 "1")
-    else()
-        set(OSX32 "1")
-    endif()
+    message(FATAL_ERROR "install gentoo")
 else()
     message(FATAL_ERROR "platform undetected!")
 endif()

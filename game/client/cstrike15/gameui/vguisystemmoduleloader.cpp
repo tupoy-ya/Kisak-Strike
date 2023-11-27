@@ -8,6 +8,7 @@
 
 #include "ienginevgui.h"
 #include "vguisystemmoduleloader.h"
+#include "sys_utils.h"
 #include "IVguiModule.h"
 #include "ServerBrowser/IServerBrowser.h"
 
@@ -129,7 +130,7 @@ bool CVGuiSystemModuleLoader::LoadPlatformModules(CreateInterfaceFn *factorylist
 {
 #ifdef DEDICATED
 	return false;
-#else
+#endif
 
 	if ( IsGameConsole() )
 	{
@@ -181,7 +182,7 @@ bool CVGuiSystemModuleLoader::LoadPlatformModules(CreateInterfaceFn *factorylist
 		CSysModule *mod = g_pFullFileSystem->LoadModule(dllPath, "EXECUTABLE_PATH");
 		if (!mod)
 		{
-			Warning("Platform Error: bad module '%s', not loading\n", it->GetString("dll"));
+			Error("Platform Error: bad module '%s', not loading\n", it->GetString("dll"));
 			bSuccess = false;
 			continue;
 		}
@@ -204,7 +205,6 @@ bool CVGuiSystemModuleLoader::LoadPlatformModules(CreateInterfaceFn *factorylist
 
 	m_pPlatformModuleData = kv;
 	return InitializeAllModules(factorylist, factorycount) && bSuccess;
-#endif
 }
 
 //-----------------------------------------------------------------------------

@@ -63,6 +63,7 @@ target_sources(${OUTBINNAME} PRIVATE "${SRVSRCDIR}/server_log_http_dispatcher.cp
 target_sources(${OUTBINNAME} PRIVATE "${SRCDIR}/game/shared/vehicle_choreo_generic_shared.h")
 target_sources(${OUTBINNAME} PRIVATE "${SRCDIR}/game/shared/achievements_hlx.cpp")
 target_sources(${OUTBINNAME} PRIVATE "${SRCDIR}/game/shared/weapon_parse_default.cpp")
+target_sources(${OUTBINNAME} PRIVATE "${SRVSRCDIR}/dedicated_server_ugc_manager.cpp")#[!$X360 && !$PS3])
 
 # $Folder	"HL2 DLL"
 # {

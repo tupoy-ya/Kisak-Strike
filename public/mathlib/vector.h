@@ -26,11 +26,9 @@
 #include "mathlib/math_pfns.h"
 #endif
 
-#if !defined(PLATFORM_PPC) // we want our linux with xmm support
+#ifndef PLATFORM_PPC // we want our linux with xmm support
 // For MMX intrinsics
-#if defined(__SSE__) || defined(_M_IX86_FP)
-	#include <xmmintrin.h>
-#endif
+#include <xmmintrin.h>
 #endif
 
 #ifndef ALIGN16_POST

@@ -45,6 +45,7 @@ public:
 //-----------------------------------------------------------------------------
 enum FileOpenStateMachineFlags_t
 {
+	FOSM_SHOW_PERFORCE_DIALOGS	= 0x1,
 	FOSM_SHOW_SAVE_QUERY		= 0x2,
 };
 
@@ -79,7 +80,7 @@ public:
 
 	// Used to save a specified file, and deal with all the lovely dialogs
 	// Pass in NULL to get a dialog to choose a filename to save
-	void SaveFile( KeyValues *pContextKeyValues, const char *pFileName, const char *pFileType, int nFlags = FOSM_SHOW_SAVE_QUERY );
+	void SaveFile( KeyValues *pContextKeyValues, const char *pFileName, const char *pFileType, int nFlags = FOSM_SHOW_PERFORCE_DIALOGS );
 
 	// Returns the state machine completion state
 	CompletionState_t GetCompletionState();
@@ -103,6 +104,7 @@ private:
 		STATE_SHOWING_CHECK_OUT_DIALOG,
 		STATE_SHOWING_MAKE_FILE_WRITEABLE_DIALOG,
 		STATE_WRITING_FILE,
+		STATE_SHOWING_PERFORCE_ADD_DIALOG,
 		STATE_SHOWING_OPEN_DIALOG,
 		STATE_READING_FILE,
 	};
@@ -157,6 +159,7 @@ private:
 	CUtlString m_SaveFileType;
 	CUtlString m_OpenFileType;
 	CUtlString m_OpenFileName;
+	bool m_bShowPerforceDialogs : 1;
 	bool m_bShowSaveQuery : 1;
 	bool m_bIsOpeningFile : 1;
 	bool m_bWroteFile : 1;

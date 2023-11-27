@@ -81,7 +81,7 @@ public:
 };
 
 
-CMMNotificationClient *g_pNotify;
+extern CMMNotificationClient *g_pNotify;
 
 HRESULT SetupWindowsMixerPreferences( float flMasterVolume = 1.0f, bool bDuckingOptOut = true )
 {

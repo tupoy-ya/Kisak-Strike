@@ -25,6 +25,7 @@
 #include "filesystem.h"
 #include <vgui_controls/AnimationController.h>
 #include <vgui/ISurface.h>
+#include "hud_lcd.h"
 #if defined( CSTRIKE15 )
 	#include "c_cs_player.h"
 	#include "cs_gamerules.h"
@@ -405,6 +406,8 @@ void CHud::Init( void )
 	// Create all the Hud elements
 	CHudElementHelper::CreateAllElements();
 
+	gLCD.Init();
+
 	// Initialize all created elements
 	for ( int i = 0; i < GetHudList().Count(); i++ )
 	{
@@ -476,6 +479,8 @@ void CHud::InitFonts()
 //-----------------------------------------------------------------------------
 void CHud::Shutdown( void )
 {
+	gLCD.Shutdown();
+
 	// Delete all the Hud elements
 	int iMax = GetHudList().Count();
 	for ( int i = iMax-1; i >= 0; i-- )
@@ -1146,6 +1151,8 @@ void CHud::UpdateHud( bool bActive )
 	m_iKeyBits &= ( ~( IN_WEAPON1|IN_WEAPON2 ));
 
 	GetClientMode()->Update();
+
+	gLCD.Update();
 }
 
 void CHud::OnSplitScreenStateChanged()
@@ -1292,7 +1299,7 @@ void CHudIcons::SetupNewHudTexture( CHudTexture *t )
 {
 	if ( t->bRenderUsingFont )
 	{
-		vgui::HScheme scheme = vgui::scheme()->GetScheme( "ClientScheme" );
+		vgui::HScheme scheme = vgui::scheme()->GetScheme( "basemodui_scheme" );
 		t->hFont = vgui::scheme()->GetIScheme( scheme )->GetFont( t->szTextureFile, true );
 		t->rc.top = 0;
 		t->rc.left = 0;
@@ -1370,7 +1377,7 @@ void CHudIcons::RefreshHudTextures()
 	FreeHudTextureList( textureList );
 
 	// fixup all the font icons
-	vgui::HScheme scheme = vgui::scheme()->GetScheme( "ClientScheme" );
+	vgui::HScheme scheme = vgui::scheme()->GetScheme( "basemodui_scheme" );
 	for ( int i = m_Icons.First(); m_Icons.IsValidIndex( i ); i = m_Icons.Next( i ))
 	{
 		CHudTexture *icon = m_Icons[i];
