@@ -306,6 +306,7 @@ public:
 	virtual void			VCollideFreeUserData( vcollide_t *pVCollide ) = 0;
 	virtual void			VCollideCheck( vcollide_t *pVCollide, const char *pName ) = 0;
 	virtual bool			TraceBoxAA( const Ray_t &ray, const CPhysCollide *pCollide, trace_t *ptr ) = 0;
+	virtual void			DuplicateAndScale( vcollide_t *pOut, const vcollide_t *pIn, float flScale ) = 0;
 };
 
 
@@ -1061,7 +1062,7 @@ public:
 	virtual void	GetPhysicsParameters( int surfaceDataIndex, surfacephysicsparams_t *pParamsOut ) const = 0;
 
 	//lwss - commented this out, not used.
-	//virtual ISaveRestoreOps* GetMaterialIndexDataOps() const = 0;
+	virtual ISaveRestoreOps* GetMaterialIndexDataOps() const = 0;
 };
 
 abstract_class IPhysicsFluidController

@@ -737,7 +737,11 @@ bool CSourceAppSystemGroup::Create()
 #endif
 		{ LAUNCHER_APPSYSTEM( "inputsystem" ),			INPUTSYSTEM_INTERFACE_VERSION },
 
-		{ LAUNCHER_APPSYSTEM( "vphysics" ),			VPHYSICS_INTERFACE_VERSION },
+//#if defined( USE_KISAK_PHYSICS )
+        { LAUNCHER_APPSYSTEM( "vphysics" ),				VPHYSICS_INTERFACE_VERSION },
+//#elif defined( USE_BULLET_PHYSICS )
+//        { LAUNCHER_APPSYSTEM( "vphysics_jolt" ),		VPHYSICS_INTERFACE_VERSION },
+//#endif
 		{ LAUNCHER_APPSYSTEM( "materialsystem" ),		MATERIAL_SYSTEM_INTERFACE_VERSION },
 		{ LAUNCHER_APPSYSTEM( "datacache" ),			DATACACHE_INTERFACE_VERSION },
 		{ LAUNCHER_APPSYSTEM( "datacache" ),			MDLCACHE_INTERFACE_VERSION },

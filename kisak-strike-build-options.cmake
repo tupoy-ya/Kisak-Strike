@@ -11,6 +11,9 @@ option(USE_SCALEFORM "Use In-Complete Proprietary Flash UI with blob ( Not Recom
 option(DEDICATED "Build as DEDICATED server. This is Separate from the main build and they are not in-tree compatible.
 Make sure to build with -DDEDICATED=0 once you want a regular client again." OFF)
 
+option(USE_KISAK_PHYSICS "Use the Open Source Physics Re-Build made for kisak-strike from various leaked sources" OFF)
+option(USE_JOLT_PHYSICS "Use Open Source Jolt Physics Engine" OFF)
+
 # Kisak-Strike Developer Options
 # (Gamer Tip: use gdb command `b __asan::ReportGenericError` to break on ASAN errors)
 option(USE_ASAN "Enable the Address Sanitizer GCC plugin, used for finding memory errors/bugs" OFF)

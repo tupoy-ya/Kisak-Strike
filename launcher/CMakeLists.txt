@@ -37,6 +37,12 @@ elseif( USE_ROCKETUI )
     add_definitions(-DINCLUDE_ROCKETUI)
 endif()
 
+if( USE_KISAK_PHYSICS )
+    add_definitions(-DUSE_KISAK_PHYSICS)
+elseif( USE_JOLT_PHYSICS )
+    add_definitions(-DUSE_JOLT_PHYSICS)
+endif()
+
 if( LINUXALL )
     target_link_libraries(${OUTBINNAME} SDL2)
 endif()

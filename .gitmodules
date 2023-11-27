@@ -1,3 +1,6 @@
 [submodule "ivp"]
 	path = ivp
 	url = https://github.com/tyabus/kisak-physics.git
+[submodule "SourceX64-VPhysicsJolt"]
+	path = vphysics-jolt
+	url = https://github.com/dillydylann/SourceX64-VPhysicsJolt.git
