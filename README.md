@@ -1,9 +1,17 @@
+# Credits
+- [Kisak-Strike](https://github.com/SwagSoftware/Kisak-Strike) The base this shit fork is built upon.
+- [Enhanced-Source](https://github.com/Enhanced-Source-Project/Enhanced-Source/) All the updated Half-Life 2 Code is from them.
+- [nillerusr's source-engine](https://github.com/nillerusr/source-engine) Some patches are taken from there. (Mostly dt_send & dt_recv)
+
+# Original README.md
+
 # Kisak-Strike
 Kisak-Strike: Gentoo Offensive(KSGO) is a CSGO port aimed towards Linux enthusiasts. 
 
-It can be built 100% Open-Source with optional Closed-source components.
+It can be built 100% Source-avaliable with optional Closed-source components.
 
 Want to learn more about the History of Kisak-Strike? See this accompanying blog post: https://lwss.github.io/Kisak-Strike/
+
 # Current Building Steps
 
 ```
